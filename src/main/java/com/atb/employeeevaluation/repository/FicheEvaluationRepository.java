@@ -1,0 +1,22 @@
+package com.atb.employeeevaluation.repository;
+
+import com.atb.employeeevaluation.entity.FicheEvaluation;
+import com.atb.employeeevaluation.enums.StatutFiche;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface FicheEvaluationRepository extends JpaRepository<FicheEvaluation, Long> {
+    Optional<FicheEvaluation> findByEmployeIdAndEvaluationId(Long employeId, Long evaluationId);
+
+    List<FicheEvaluation> findByEmployeId(Long employeId);
+    List<FicheEvaluation> findByEvaluationId(Long evaluationId);
+    List<FicheEvaluation> findByStatut(StatutFiche statut);
+    List<FicheEvaluation> findByEmployeIdAndStatut(Long employeId, StatutFiche statut);
+    List<FicheEvaluation> findByEvaluationIdAndStatut(Long evaluationId, StatutFiche statut);
+
+    boolean existsByEmployeIdAndEvaluationId(Long employeId, Long evaluationId);
+}

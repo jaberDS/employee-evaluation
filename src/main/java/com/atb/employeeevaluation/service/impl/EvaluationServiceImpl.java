@@ -1,0 +1,237 @@
+package com.atb.employeeevaluation.service.impl;
+
+import com.atb.employeeevaluation.dto.EvaluationDTO;
+import com.atb.employeeevaluation.dto.QuestionDTO;
+import com.atb.employeeevaluation.entity.Evaluation;
+import com.atb.employeeevaluation.entity.Question;
+import com.atb.employeeevaluation.enums.StatutCampagne;
+import com.atb.employeeevaluation.exception.ResourceNotFoundException;
+import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
+import com.atb.employeeevaluation.mapper.EvaluationMapper;
+import com.atb.employeeevaluation.mapper.QuestionMapper;
+import com.atb.employeeevaluation.repository.EvaluationRepository;
+import com.atb.employeeevaluation.repository.QuestionRepository;
+import com.atb.employeeevaluation.service.EvaluationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class EvaluationServiceImpl implements EvaluationService {
+
+    private final EvaluationRepository evaluationRepository;
+    private final QuestionRepository questionRepository;
+    private final EvaluationMapper evaluationMapper;
+    private final QuestionMapper questionMapper;
+
+    // ===================== CRUD Evaluation =====================
+
+    @Override
+    public EvaluationDTO createEvaluation(EvaluationDTO dto) {
+        // Vérifier que la date de début est avant la date de fin
+        if (dto.getDateDebut().isAfter(dto.getDateFin())) {
+            throw new RuntimeException("La date de début doit être avant la date de fin");
+        }
+
+        Evaluation evaluation = evaluationMapper.toEntity(dto);
+        evaluation.setStatut(StatutCampagne.BROUILLON);
+        evaluation = evaluationRepository.save(evaluation);
+        return evaluationMapper.toDto(evaluation);
+    }
+
+    @Override
+    public EvaluationDTO updateEvaluation(Long id, EvaluationDTO dto) {
+        Evaluation evaluation = getEntityById(id);
+
+        // Vérifier que la campagne est en BROUILLON
+        if (evaluation.getStatut() != StatutCampagne.BROUILLON) {
+            throw new UnauthorizedOperationException(
+                    "Impossible de modifier une campagne déjà ouverte ou clôturée. Statut actuel: " + evaluation.getStatut()
+            );
+        }
+
+        // Vérifier que la date de début est avant la date de fin
+        if (dto.getDateDebut().isAfter(dto.getDateFin())) {
+            throw new RuntimeException("La date de début doit être avant la date de fin");
+        }
+
+        evaluation.setNomEvaluation(dto.getNomEvaluation());
+        evaluation.setDateDebut(dto.getDateDebut());
+        evaluation.setDateFin(dto.getDateFin());
+
+        evaluation = evaluationRepository.save(evaluation);
+        return evaluationMapper.toDto(evaluation);
+    }
+
+    @Override
+    public EvaluationDTO getEvaluationById(Long id) {
+        return evaluationMapper.toDto(getEntityById(id));
+    }
+
+    @Override
+    public List<EvaluationDTO> getAllEvaluations() {
+        return evaluationRepository.findAll().stream()
+                .map(evaluationMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteEvaluation(Long id) {
+        Evaluation evaluation = getEntityById(id);
+
+        // Vérifier que la campagne est en BROUILLON
+        if (evaluation.getStatut() != StatutCampagne.BROUILLON) {
+            throw new UnauthorizedOperationException(
+                    "Impossible de supprimer une campagne déjà ouverte ou clôturée. Statut actuel: " + evaluation.getStatut()
+            );
+        }
+
+        evaluationRepository.deleteById(id);
+    }
+
+    // ===================== Gestion des statuts =====================
+
+    @Override
+    public void ouvrirCampagne(Long evaluationId) {
+        Evaluation evaluation = getEntityById(evaluationId);
+
+        // Vérifier que la campagne est en BROUILLON
+        if (evaluation.getStatut() != StatutCampagne.BROUILLON) {
+            throw new UnauthorizedOperationException(
+                    "Seules les campagnes en BROUILLON peuvent être ouvertes. Statut actuel: " + evaluation.getStatut()
+            );
+        }
+
+        // Vérifier que la date de début est atteinte
+        if (LocalDateTime.now().isBefore(evaluation.getDateDebut())) {
+            throw new UnauthorizedOperationException(
+                    "La date de début n'est pas encore atteinte. Date de début: " + evaluation.getDateDebut()
+            );
+        }
+
+        // Vérifier qu'il y a des questions
+        if (evaluation.getQuestions().isEmpty()) {
+            throw new UnauthorizedOperationException(
+                    "Impossible d'ouvrir une campagne sans questions. Ajoutez au moins une question."
+            );
+        }
+
+        evaluation.setStatut(StatutCampagne.OUVERTE);
+        evaluationRepository.save(evaluation);
+    }
+
+    @Override
+    public void fermerCampagne(Long evaluationId) {
+        Evaluation evaluation = getEntityById(evaluationId);
+
+        // Vérifier que la campagne est OUVERTE
+        if (evaluation.getStatut() != StatutCampagne.OUVERTE) {
+            throw new UnauthorizedOperationException(
+                    "Seules les campagnes OUVERTES peuvent être fermées. Statut actuel: " + evaluation.getStatut()
+            );
+        }
+
+        evaluation.setStatut(StatutCampagne.FERMEE);
+        evaluationRepository.save(evaluation);
+    }
+
+    @Override
+    public void cloturerCampagne(Long evaluationId) {
+        Evaluation evaluation = getEntityById(evaluationId);
+
+        // Vérifier que la campagne est FERMEE
+        if (evaluation.getStatut() != StatutCampagne.FERMEE) {
+            throw new UnauthorizedOperationException(
+                    "Seules les campagnes FERMEES peuvent être clôturées. Statut actuel: " + evaluation.getStatut()
+            );
+        }
+
+        evaluation.setStatut(StatutCampagne.CLOTUREE);
+        evaluationRepository.save(evaluation);
+    }
+
+    // ===================== Gestion des questions =====================
+
+    @Override
+    public QuestionDTO addQuestion(Long evaluationId, QuestionDTO questionDTO) {
+        Evaluation evaluation = getEntityById(evaluationId);
+
+        // Vérifier que la campagne est en BROUILLON
+        if (evaluation.getStatut() != StatutCampagne.BROUILLON) {
+            throw new UnauthorizedOperationException(
+                    "Impossible d'ajouter une question à une campagne déjà ouverte. Statut actuel: " + evaluation.getStatut()
+            );
+        }
+
+        Question question = questionMapper.toEntity(questionDTO);
+        question.setEvaluation(evaluation);
+
+        // Déterminer l'ordre si non fourni
+        if (question.getOrdre() == null || question.getOrdre() == 0) {
+            int maxOrdre = evaluation.getQuestions().stream()
+                    .mapToInt(Question::getOrdre)
+                    .max()
+                    .orElse(0);
+            question.setOrdre(maxOrdre + 1);
+        }
+
+        question = questionRepository.save(question);
+        return questionMapper.toDto(question);
+    }
+
+    @Override
+    public QuestionDTO updateQuestion(Long questionId, QuestionDTO questionDTO) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question non trouvée avec id: " + questionId));
+
+        // Vérifier que la campagne est en BROUILLON
+        if (question.getEvaluation().getStatut() != StatutCampagne.BROUILLON) {
+            throw new UnauthorizedOperationException(
+                    "Impossible de modifier une question d'une campagne déjà ouverte."
+            );
+        }
+
+        question.setLibelle(questionDTO.getLibelle());
+        question.setNoteMax(questionDTO.getNoteMax());
+        question.setOrdre(questionDTO.getOrdre());
+
+        question = questionRepository.save(question);
+        return questionMapper.toDto(question);
+    }
+
+    @Override
+    public void removeQuestion(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question non trouvée avec id: " + questionId));
+
+        // Vérifier que la campagne est en BROUILLON
+        if (question.getEvaluation().getStatut() != StatutCampagne.BROUILLON) {
+            throw new UnauthorizedOperationException(
+                    "Impossible de supprimer une question d'une campagne déjà ouverte."
+            );
+        }
+
+        questionRepository.deleteById(questionId);
+    }
+
+    @Override
+    public List<QuestionDTO> getQuestionsByEvaluation(Long evaluationId) {
+        Evaluation evaluation = getEntityById(evaluationId);
+        return evaluation.getQuestions().stream()
+                .map(questionMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // ===================== Méthodes privées =====================
+
+    private Evaluation getEntityById(Long id) {
+        return evaluationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Campagne non trouvée avec id: " + id));
+    }
+}

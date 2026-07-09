@@ -1,0 +1,33 @@
+﻿# Backend
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.pid
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Frontend
+employee-evaluation-frontend/node_modules/
+employee-evaluation-frontend/dist/
+employee-evaluation-frontend/.angular/
+employee-evaluation-frontend/.env
+employee-evaluation-frontend/npm-debug.log
+employee-evaluation-frontend/yarn-error.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environnement
+*.properties
+application-local.properties
+application-dev.properties
+.env
