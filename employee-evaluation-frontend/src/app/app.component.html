@@ -1,0 +1,19 @@
+<!-- Header -->
+<app-header *ngIf="authService.isAuthenticated()"></app-header>
+
+<!-- Layout principal -->
+<div class="d-flex" *ngIf="authService.isAuthenticated()">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenu -->
+  <main class="atb-main">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
+<!-- Footer -->
+<app-footer *ngIf="authService.isAuthenticated()"></app-footer>
+
+<!-- Login (sans layout) -->
+<router-outlet *ngIf="!authService.isAuthenticated()"></router-outlet>

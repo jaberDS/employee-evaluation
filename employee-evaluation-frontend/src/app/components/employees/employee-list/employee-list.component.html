@@ -1,0 +1,129 @@
+<div class="employee-wrapper">
+  <div class="container">
+    <!-- ===== EN-TÊTE AVEC STATISTIQUES ===== -->
+    <div class="employee-header">
+      <div class="header-left">
+        <div class="header-icon"><i class="fas fa-users-cog"></i></div>
+        <div>
+          <h1>Gestion des employés</h1>
+          <p class="text-muted">Gérez l'ensemble du personnel de la banque</p>
+        </div>
+      </div>
+      <a routerLink="/employees/create" class="btn btn-atb btn-lg">
+        <i class="fas fa-plus-circle"></i> Nouvel employé
+      </a>
+    </div>
+
+    <!-- ===== STATS RAPIDES ===== -->
+    <div class="stats-mini-row">
+      <div class="stat-mini-item">
+        <span class="stat-mini-number">{{ employees.length }}</span>
+        <span class="stat-mini-label">Total</span>
+      </div>
+      <div class="stat-mini-item">
+        <span class="stat-mini-number text-success">{{ getActiveCount() }}</span>
+        <span class="stat-mini-label">Actifs</span>
+      </div>
+      <div class="stat-mini-item">
+        <span class="stat-mini-number text-danger">{{ getInactiveCount() }}</span>
+        <span class="stat-mini-label">Inactifs</span>
+      </div>
+      <div class="stat-mini-item">
+        <span class="stat-mini-number text-primary">{{ getAdminCount() }}</span>
+        <span class="stat-mini-label">Admins</span>
+      </div>
+    </div>
+
+    <!-- ===== BARRE DE RECHERCHE ===== -->
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Rechercher un employé..." [(ngModel)]="searchTerm">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-outline-secondary btn-sm" (click)="searchTerm = ''">
+          <i class="fas fa-times"></i> Effacer
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== TABLEAU ===== -->
+    <div class="atb-card table-card">
+      <div class="card-body p-0">
+        <!-- Loading -->
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="text-muted mt-2">Chargement des employés...</p>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!loading">
+          <div *ngIf="filteredEmployees.length === 0" class="text-center py-5">
+            <i class="fas fa-users-slash display-1 text-muted"></i>
+            <p class="text-muted mt-3">Aucun employé trouvé</p>
+          </div>
+
+          <div class="table-responsive" *ngIf="filteredEmployees.length > 0">
+            <table class="table atb-table employee-table">
+              <thead>
+              <tr>
+                <th><i class="fas fa-id-badge"></i> Matricule</th>
+                <th><i class="fas fa-user"></i> Nom</th>
+                <th><i class="fas fa-user"></i> Prénom</th>
+                <th><i class="fas fa-envelope"></i> Email</th>
+                <th><i class="fas fa-user-tag"></i> Rôle</th>
+                <th><i class="fas fa-circle"></i> Statut</th>
+                <th class="text-center"><i class="fas fa-cog"></i> Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let emp of filteredEmployees">
+                <td><strong>{{ emp.matricule }}</strong></td>
+                <td>{{ emp.nom }}</td>
+                <td>{{ emp.prenom }}</td>
+                <td>{{ emp.email }}</td>
+                <td>
+                    <span class="badge role-badge" [ngClass]="getRoleClass(emp.role)">
+                      <i class="fas" [ngClass]="getRoleIcon(emp.role)"></i>
+                      {{ emp.role }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge status-badge" [ngClass]="{'active': emp.actif, 'inactive': !emp.actif}">
+                      <span class="status-dot-small" [ngClass]="{'active': emp.actif, 'inactive': !emp.actif}"></span>
+                      {{ emp.actif ? 'Actif' : 'Inactif' }}
+                    </span>
+                </td>
+                <td class="text-center action-buttons">
+                  <a [routerLink]="['/employees', emp.id]" class="btn-action view" title="Voir les détails">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a [routerLink]="['/employees/edit', emp.id]" class="btn-action edit" title="Modifier">
+                    <i class="fas fa-pen"></i>
+                  </a>
+                  <button class="btn-action delete" (click)="deleteEmployee(emp.id!)" title="Supprimer">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Footer du tableau -->
+          <div class="table-footer" *ngIf="filteredEmployees.length > 0">
+            <span>
+              <i class="fas fa-users"></i>
+              {{ filteredEmployees.length }} employé(s) affiché(s)
+              <span *ngIf="searchTerm" class="text-muted">
+                ({{ employees.length }} au total)
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

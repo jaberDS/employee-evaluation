@@ -1,0 +1,91 @@
+<div class="login-container">
+  <!-- Panneau gauche - Marque ATB -->
+  <div class="brand-panel">
+    <div class="brand-content">
+      <!-- Logo ATB -->
+      <img src="assets/atb-logo.png" alt="ATB" class="logo" />
+      <h1>ATB</h1>
+      <p class="tagline">Arab Tunisian Bank</p>
+      <p class="tagline" style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.7;">
+        Gestion des Évaluations RH
+      </p>
+    </div>
+    <!-- Cercles décoratifs -->
+    <div class="decorative-circles">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- Panneau droit - Formulaire -->
+  <div class="form-panel">
+    <div class="form-card">
+      <div class="form-header">
+        <h2>Connexion</h2>
+        <p>Entrez vos identifiants pour accéder à votre espace</p>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Champ Matricule -->
+        <div class="form-group">
+          <label for="matricule">Matricule</label>
+          <div class="input-icon">
+            <i class="fas fa-user"></i>
+            <input
+              id="matricule"
+              type="text"
+              formControlName="matricule"
+              placeholder="Entrez votre matricule"
+              [class.is-invalid]="loginForm.get('matricule')?.invalid && loginForm.get('matricule')?.touched"
+            />
+          </div>
+          <div *ngIf="loginForm.get('matricule')?.invalid && loginForm.get('matricule')?.touched" class="invalid-feedback">
+            Le matricule est obligatoire.
+          </div>
+        </div>
+
+        <!-- Champ Mot de passe -->
+        <div class="form-group">
+          <label for="motDePasse">Mot de passe</label>
+          <div class="input-icon">
+            <i class="fas fa-lock"></i>
+            <input
+              id="motDePasse"
+              type="password"
+              formControlName="motDePasse"
+              placeholder="Entrez votre mot de passe"
+              [class.is-invalid]="loginForm.get('motDePasse')?.invalid && loginForm.get('motDePasse')?.touched"
+            />
+          </div>
+          <div *ngIf="loginForm.get('motDePasse')?.invalid && loginForm.get('motDePasse')?.touched" class="invalid-feedback">
+            Le mot de passe est obligatoire (min 4 caractères).
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" checked /> Se souvenir de moi
+          </label>
+          <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+        </div>
+
+        <!-- Bouton -->
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
+        </button>
+      </form>
+
+      <div class="form-footer">
+        &copy; 2026 Arab Tunisian Bank - Tous droits réservés
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="atb-card">
+        <div class="card-header"><h5><i class="fas {{ isEdit ? 'fa-edit' : 'fa-user-plus' }}"></i> {{ isEdit ? 'Modifier' : 'Nouvel' }} employé</h5></div>
+        <div class="card-body">
+          <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Matricule</label>
+                <input type="text" class="form-control" formControlName="matricule" [readonly]="isEdit">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nom</label>
+                <input type="text" class="form-control" formControlName="nom">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Prénom</label>
+                <input type="text" class="form-control" formControlName="prenom">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" formControlName="email">
+              </div>
+              <div class="col-md-6" *ngIf="!isEdit">
+                <label class="form-label">Mot de passe</label>
+                <input type="password" class="form-control" formControlName="motDePasse">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Rôle</label>
+                <select class="form-select" formControlName="role">
+                  <option value="ADMIN">ADMIN</option>
+                  <option value="N1">N+1</option>
+                  <option value="N2">N+2</option>
+                  <option value="EMPLOYE">Employé</option>
+                </select>
+              </div>
+              <div class="col-md-6" *ngIf="isEdit">
+                <div class="form-check mt-4">
+                  <input type="checkbox" class="form-check-input" formControlName="actif">
+                  <label class="form-check-label">Actif</label>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button type="submit" class="btn btn-atb"><i class="fas fa-save"></i> {{ isEdit ? 'Modifier' : 'Créer' }}</button>
+              <a routerLink="/employees" class="btn btn-outline-secondary">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

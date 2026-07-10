@@ -1,0 +1,11 @@
+main {
+  margin-left: 250px;
+  min-height: calc(100vh - 56px - 56px);
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  main {
+    margin-left: 0;
+  }
+}

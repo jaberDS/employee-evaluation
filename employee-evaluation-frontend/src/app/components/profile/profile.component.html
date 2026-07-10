@@ -1,0 +1,182 @@
+<div class="profile-wrapper">
+  <!-- En-tête du profil -->
+  <div class="profile-header">
+    <div>
+      <h1><i class="fas fa-user-circle"></i> Mon Profil</h1>
+      <p class="text-muted">Gérez vos informations personnelles et vos préférences</p>
+    </div>
+    <button class="btn btn-atb" (click)="editMode = !editMode">
+      <i class="fas fa-edit"></i> {{ editMode ? 'Annuler' : 'Modifier' }}
+    </button>
+  </div>
+
+  <div class="row g-4">
+    <!-- ===== CARTE UTILISATEUR ===== -->
+    <div class="col-lg-4">
+      <div class="profile-card user-card">
+        <div class="user-card-avatar">
+          <div class="avatar-large">{{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}</div>
+          <div class="status-badge online">
+            <span class="status-dot"></span> En ligne
+          </div>
+        </div>
+        <div class="user-card-body">
+          <h3 class="user-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</h3>
+          <span class="user-role">{{ currentUser?.role }}</span>
+          <div class="user-meta">
+            <span><i class="fas fa-building"></i> Arab Tunisian Bank</span>
+            <span><i class="fas fa-map-marker-alt"></i> Tunisie</span>
+          </div>
+          <div class="user-divider"></div>
+          <div class="user-stats-mini">
+            <div>
+              <span class="stat-number">{{ stats.totalEvaluations || 0 }}</span>
+              <span class="stat-label-mini">Évaluations</span>
+            </div>
+            <div>
+              <span class="stat-number">{{ stats.averageNote || 0 }}<small>/10</small></span>
+              <span class="stat-label-mini">Note moyenne</span>
+            </div>
+            <div>
+              <span class="stat-number">{{ stats.pendingEvaluations || 0 }}</span>
+              <span class="stat-label-mini">En attente</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INFORMATIONS PERSONNELLES ===== -->
+    <div class="col-lg-8">
+      <div class="profile-card">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-address-card"></i> Informations personnelles</h5>
+          <span class="card-subtitle">Vos données personnelles sont sécurisées</span>
+        </div>
+        <div class="card-body-custom">
+          <form [formGroup]="profileForm" class="profile-form">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Matricule</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-id-badge"></i></span>
+                  <input type="text" class="form-control" formControlName="matricule" readonly>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Rôle</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                  <input type="text" class="form-control" formControlName="role" readonly>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nom</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                  <input type="text" class="form-control" formControlName="nom" [readonly]="!editMode">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Prénom</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                  <input type="text" class="form-control" formControlName="prenom" [readonly]="!editMode">
+                </div>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Adresse email</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                  <input type="email" class="form-control" formControlName="email" [readonly]="!editMode">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Département</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-building"></i></span>
+                  <input type="text" class="form-control" formControlName="departement" [readonly]="!editMode" placeholder="Non renseigné">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Statut</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-circle"></i></span>
+                  <input type="text" class="form-control" value="{{ currentUser?.actif ? 'Actif' : 'Inactif' }}" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="profile-actions" *ngIf="editMode">
+              <button type="submit" class="btn btn-atb" (click)="saveProfile()">
+                <i class="fas fa-save"></i> Enregistrer les modifications
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION SÉCURITÉ ===== -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="profile-card security-card">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-shield-alt"></i> Sécurité</h5>
+          <span class="card-subtitle">Protégez votre compte</span>
+        </div>
+        <div class="card-body-custom d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <div class="security-item">
+              <i class="fas fa-key security-icon"></i>
+              <div>
+                <span class="security-label">Mot de passe</span>
+                <span class="security-desc">Dernière modification : il y a 30 jours</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+            <i class="fas fa-key"></i> Changer le mot de passe
+          </button>
+        </div>
+        <div class="card-footer-custom">
+          <i class="fas fa-clock"></i> Dernière connexion : {{ lastLogin | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CHANGER MOT DE PASSE ===== -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-key text-danger"></i> Changer le mot de passe</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="passwordForm">
+          <div class="mb-3">
+            <label class="form-label">Mot de passe actuel</label>
+            <input type="password" class="form-control" formControlName="currentPassword" placeholder="Entrez votre mot de passe actuel">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nouveau mot de passe</label>
+            <input type="password" class="form-control" formControlName="newPassword" placeholder="Entrez votre nouveau mot de passe">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirmer le mot de passe</label>
+            <input type="password" class="form-control" formControlName="confirmPassword" placeholder="Confirmez votre nouveau mot de passe">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="changePassword()">
+          <i class="fas fa-check"></i> Mettre à jour
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

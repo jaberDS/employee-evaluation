@@ -1,0 +1,214 @@
+<div class="evaluation-wrapper">
+  <div class="container">
+
+    <!-- ===== EN-TÊTE ===== -->
+    <div class="evaluation-header">
+      <div class="header-left">
+        <div class="header-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div>
+          <h1>Gestion des campagnes</h1>
+          <p class="text-muted">Gérez le cycle de vie de vos campagnes d'évaluation</p>
+        </div>
+      </div>
+      <a routerLink="/evaluations/create" class="btn btn-atb btn-lg">
+        <i class="fas fa-plus-circle"></i> Nouvelle campagne
+      </a>
+    </div>
+
+    <!-- ===== STATS RAPIDES ===== -->
+    <div class="stats-grid-mini">
+      <div class="stat-mini-card mini-blue">
+        <div class="stat-mini-icon"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-mini-info">
+          <span class="stat-mini-number">{{ evaluations.length }}</span>
+          <span class="stat-mini-label">Total</span>
+        </div>
+      </div>
+
+      <div class="stat-mini-card mini-gray">
+        <div class="stat-mini-icon"><i class="fas fa-pen"></i></div>
+        <div class="stat-mini-info">
+          <span class="stat-mini-number">{{ getCountByStatus('BROUILLON') }}</span>
+          <span class="stat-mini-label">Brouillon</span>
+        </div>
+      </div>
+
+      <div class="stat-mini-card mini-green">
+        <div class="stat-mini-icon"><i class="fas fa-play"></i></div>
+        <div class="stat-mini-info">
+          <span class="stat-mini-number">{{ getCountByStatus('OUVERTE') }}</span>
+          <span class="stat-mini-label">Ouvertes</span>
+        </div>
+      </div>
+
+      <div class="stat-mini-card mini-orange">
+        <div class="stat-mini-icon"><i class="fas fa-pause"></i></div>
+        <div class="stat-mini-info">
+          <span class="stat-mini-number">{{ getCountByStatus('FERMEE') }}</span>
+          <span class="stat-mini-label">Fermées</span>
+        </div>
+      </div>
+
+      <div class="stat-mini-card mini-cyan">
+        <div class="stat-mini-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-mini-info">
+          <span class="stat-mini-number">{{ getCountByStatus('CLOTUREE') }}</span>
+          <span class="stat-mini-label">Clôturées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BARRE DE RECHERCHE ===== -->
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher une campagne par nom..."
+          [(ngModel)]="searchTerm">
+        <button *ngIf="searchTerm" class="clear-search-btn" (click)="searchTerm = ''" title="Effacer">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== TABLEAU ===== -->
+    <div class="atb-card table-card">
+      <div class="card-body p-0">
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="state-box">
+          <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="state-text">Chargement des campagnes...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!loading && filteredEvaluations.length === 0" class="state-box">
+          <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
+          <p class="state-text">Aucune campagne trouvée</p>
+          <span class="state-sub" *ngIf="searchTerm">Essayez un autre terme de recherche</span>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive" *ngIf="!loading && filteredEvaluations.length > 0">
+          <table class="table atb-table evaluation-table">
+            <thead>
+            <tr>
+              <th><i class="fas fa-tag"></i> Campagne</th>
+              <th><i class="fas fa-calendar-alt"></i> Début</th>
+              <th><i class="fas fa-calendar-alt"></i> Fin</th>
+              <th><i class="fas fa-circle"></i> Statut</th>
+              <th class="text-center"><i class="fas fa-cog"></i> Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let ev of filteredEvaluations">
+
+              <td>
+                <div class="campaign-cell">
+                  <div class="campaign-avatar">{{ getInitials(ev.nomEvaluation) }}</div>
+                  <span class="campaign-name">{{ ev.nomEvaluation }}</span>
+                </div>
+              </td>
+
+              <td>
+                <div class="date-cell">
+                  <i class="fas fa-calendar-day"></i>
+                  {{ ev.dateDebut | date:'dd/MM/yyyy' }}
+                  <span class="date-time">{{ ev.dateDebut | date:'HH:mm' }}</span>
+                </div>
+              </td>
+
+              <td>
+                <div class="date-cell">
+                  <i class="fas fa-calendar-day"></i>
+                  {{ ev.dateFin | date:'dd/MM/yyyy' }}
+                  <span class="date-time">{{ ev.dateFin | date:'HH:mm' }}</span>
+                </div>
+              </td>
+
+              <td>
+                  <span class="badge status-badge" [ngClass]="{
+                      'status-draft': ev.statut === 'BROUILLON',
+                      'status-open': ev.statut === 'OUVERTE',
+                      'status-closed': ev.statut === 'FERMEE',
+                      'status-finalized': ev.statut === 'CLOTUREE'
+                    }">
+                    <i class="fas" [ngClass]="getStatusIcon(ev.statut)"></i>
+                    {{ getStatusLabel(ev.statut) }}
+                  </span>
+              </td>
+
+              <td class="text-center">
+                <div class="action-buttons">
+                  <!-- Voir -->
+                  <a [routerLink]="['/evaluations', ev.id]" class="btn-action view" title="Voir les détails">
+                    <i class="fas fa-eye"></i>
+                  </a>
+
+                  <!-- Modifier (BROUILLON) -->
+                  <a *ngIf="ev.statut === 'BROUILLON'"
+                     [routerLink]="['/evaluations/edit', ev.id]"
+                     class="btn-action edit" title="Modifier">
+                    <i class="fas fa-pen"></i>
+                  </a>
+
+                  <!-- Questions -->
+                  <a [routerLink]="['/evaluations', ev.id, 'questions']" class="btn-action questions" title="Gérer les questions">
+                    <i class="fas fa-list-ul"></i>
+                  </a>
+
+                  <!-- Ouvrir (BROUILLON) -->
+                  <button *ngIf="ev.statut === 'BROUILLON'"
+                          class="btn-action open" title="Ouvrir la campagne"
+                          (click)="ouvrir(ev.id!)">
+                    <i class="fas fa-play"></i>
+                  </button>
+
+                  <!-- Fermer (OUVERTE) -->
+                  <button *ngIf="ev.statut === 'OUVERTE'"
+                          class="btn-action close" title="Fermer la campagne"
+                          (click)="fermer(ev.id!)">
+                    <i class="fas fa-pause"></i>
+                  </button>
+
+                  <!-- Clôturer (FERMEE) -->
+                  <button *ngIf="ev.statut === 'FERMEE'"
+                          class="btn-action finalize" title="Clôturer la campagne"
+                          (click)="cloturer(ev.id!)">
+                    <i class="fas fa-check-circle"></i>
+                  </button>
+
+                  <!-- Supprimer (BROUILLON) -->
+                  <button *ngIf="ev.statut === 'BROUILLON'"
+                          class="btn-action delete" title="Supprimer"
+                          (click)="deleteEvaluation(ev.id!)">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="table-footer" *ngIf="!loading && filteredEvaluations.length > 0">
+          <span>
+            <i class="fas fa-clipboard-list"></i>
+            {{ filteredEvaluations.length }} campagne(s) affichée(s)
+            <span *ngIf="searchTerm" class="text-muted">
+              ({{ evaluations.length }} au total)
+            </span>
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

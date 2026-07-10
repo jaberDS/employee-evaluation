@@ -1,0 +1,37 @@
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fa;
+  padding: 2rem;
+}
+.not-found-content {
+  text-align: center;
+  background: white;
+  padding: 4rem 3rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  max-width: 500px;
+}
+.icon {
+  font-size: 4rem;
+  color: #8b0000;
+  margin-bottom: 1rem;
+}
+.not-found-content h1 {
+  font-size: 5rem;
+  font-weight: 700;
+  color: #8b0000;
+  margin: 0;
+  line-height: 1;
+}
+.not-found-content h2 {
+  font-size: 1.5rem;
+  color: #1e1e2f;
+  margin: 0.5rem 0 0.5rem;
+}
+.not-found-content p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}

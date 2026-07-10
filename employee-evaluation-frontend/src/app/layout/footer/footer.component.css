@@ -1,0 +1,26 @@
+
+.atb-footer {
+  margin-left: 260px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 0 1.5rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.footer-version {
+  font-size: 0.7rem;
+  background: #f3f4f6;
+  padding: 2px 12px;
+  border-radius: 12px;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .atb-footer {
+    margin-left: 0;
+  }
+}

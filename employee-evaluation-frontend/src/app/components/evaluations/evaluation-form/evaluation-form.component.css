@@ -1,0 +1,156 @@
+.evaluation-form-wrapper {
+  padding: 1.5rem 0;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.evaluation-form-wrapper .container {
+  max-width: 1200px;
+}
+
+/* ===== EN-TÊTE ===== */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #8b0000, #6b0000);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.25);
+}
+
+.form-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e1e2f;
+  margin: 0;
+}
+.form-header .text-muted {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ===== CARTE ===== */
+.form-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+  border: none;
+}
+
+.form-card .card-body {
+  padding: 2rem 2.5rem;
+}
+
+/* ===== FORMULAIRES ===== */
+.form-control-lg {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  transition: all 0.2s;
+}
+.form-control-lg:focus {
+  border-color: #8b0000;
+  box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.06);
+}
+
+.form-control-lg.is-invalid {
+  border-color: #dc3545;
+}
+.invalid-feedback {
+  font-size: 0.8rem;
+}
+
+label.fw-semibold {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+  margin-bottom: 0.3rem;
+}
+label i {
+  margin-right: 6px;
+}
+
+/* ===== ALERTE ===== */
+.alert-info {
+  background: rgba(13, 202, 240, 0.08);
+  border: 1px solid #b6e9f5;
+  color: #0c5460;
+  border-radius: 10px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.9rem;
+}
+.alert-info i {
+  margin-right: 8px;
+}
+
+/* ===== BOUTONS ===== */
+.btn-atb {
+  background: linear-gradient(135deg, #8b0000, #6b0000);
+  color: white;
+  border: none;
+  padding: 0.6rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.25);
+}
+.btn-atb:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.35);
+  color: white;
+}
+.btn-atb:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline-secondary {
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+.btn-outline-secondary:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .form-header h1 {
+    font-size: 1.3rem;
+  }
+  .header-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  .form-card .card-body {
+    padding: 1.5rem 1.2rem;
+  }
+  .btn-lg {
+    font-size: 0.9rem;
+    padding: 0.5rem 1.2rem;
+  }
+}

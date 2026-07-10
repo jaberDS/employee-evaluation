@@ -1,0 +1,54 @@
+<aside class="atb-sidebar">
+  <nav class="nav flex-column">
+    <!-- Navigation -->
+    <div class="nav-section">Navigation</div>
+
+    <a class="nav-link" routerLink="/dashboard/{{ authService.getRole()?.toLowerCase() }}" routerLinkActive="active">
+      <i class="fas fa-tachometer-alt"></i> Tableau de bord
+    </a>
+
+    <!-- Admin -->
+    <ng-container *ngIf="authService.getRole() === 'ADMIN'">
+      <a class="nav-link" routerLink="/employees" routerLinkActive="active">
+        <i class="fas fa-users"></i> Employés
+      </a>
+      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active">
+        <i class="fas fa-clipboard-list"></i> Campagnes
+      </a>
+    </ng-container>
+
+    <!-- N1 & N2 -->
+    <ng-container *ngIf="authService.getRole() === 'N1' || authService.getRole() === 'N2'">
+      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active">
+        <i class="fas fa-clipboard-list"></i> Campagnes
+      </a>
+    </ng-container>
+
+    <!-- N1 -->
+    <ng-container *ngIf="authService.getRole() === 'N1'">
+      <a class="nav-link" routerLink="/fiches/evaluate" routerLinkActive="active">
+        <i class="fas fa-pen-square"></i> Évaluer
+      </a>
+    </ng-container>
+
+    <!-- N2 -->
+    <ng-container *ngIf="authService.getRole() === 'N2'">
+      <a class="nav-link" routerLink="/fiches" routerLinkActive="active">
+        <i class="fas fa-check-double"></i> Valider
+      </a>
+    </ng-container>
+
+    <!-- Employee -->
+    <ng-container *ngIf="authService.getRole() === 'EMPLOYE'">
+      <a class="nav-link" routerLink="/fiches" routerLinkActive="active">
+        <i class="fas fa-file-alt"></i> Mes évaluations
+      </a>
+    </ng-container>
+
+    <!-- Compte -->
+    <div class="nav-section">Compte</div>
+    <a class="nav-link" routerLink="/profile" routerLinkActive="active">
+      <i class="fas fa-user-cog"></i> Profil
+    </a>
+  </nav>
+</aside>

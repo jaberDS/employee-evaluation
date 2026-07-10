@@ -1,0 +1,28 @@
+<header class="atb-header">
+  <div class="container-fluid h-100 d-flex align-items-center justify-content-between">
+    <!-- Brand -->
+    <a class="brand" routerLink="/dashboard">
+      <img src="/assets/atb-logo.png" alt="ATB" />
+      <span class="brand-text">ATB · Évaluations RH</span>
+    </a>
+
+    <!-- Menu droite -->
+    <div class="d-flex align-items-center gap-3">
+      <div class="user-info d-none d-md-flex align-items-center gap-2">
+        <i class="fas fa-user-circle text-white-50"></i>
+        <span class="text-white-50 user-name">
+          {{ authService.getUser()?.prenom }} {{ authService.getUser()?.nom }}
+        </span>
+        <span class="role-pill">{{ authService.getRole() }}</span>
+      </div>
+
+      <a routerLink="/profile" class="btn btn-outline-light btn-sm" title="Profil">
+        <i class="fas fa-user-cog"></i>
+      </a>
+
+      <button class="btn btn-outline-light btn-sm" (click)="logout()" title="Déconnexion">
+        <i class="fas fa-sign-out-alt"></i> <span class="d-none d-sm-inline">Déconnexion</span>
+      </button>
+    </div>
+  </div>
+</header>

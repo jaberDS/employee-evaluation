@@ -1,0 +1,85 @@
+<div class="evaluation-form-wrapper">
+  <div class="container">
+    <!-- ===== EN-TÊTE ===== -->
+    <div class="form-header">
+      <div class="header-left">
+        <div class="header-icon"><i class="fas fa-clipboard-plus"></i></div>
+        <div>
+          <h1>{{ isEdit ? 'Modifier la campagne' : 'Nouvelle campagne' }}</h1>
+          <p class="text-muted">
+            {{ isEdit ? 'Modifiez les informations de la campagne' : 'Créez une nouvelle campagne d\'évaluation' }}
+          </p>
+        </div>
+      </div>
+      <a routerLink="/evaluations" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour
+      </a>
+    </div>
+
+    <!-- ===== FORMULAIRE ===== -->
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="atb-card form-card">
+          <div class="card-body p-4">
+            <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()">
+              <!-- Nom -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-tag text-atb"></i> Nom de la campagne
+                </label>
+                <input type="text" class="form-control form-control-lg" formControlName="nomEvaluation"
+                       placeholder="Ex: Évaluation Annuelle 2026"
+                       [class.is-invalid]="submitted && f['nomEvaluation'].errors">
+                <div *ngIf="submitted && f['nomEvaluation'].errors" class="invalid-feedback">
+                  Le nom est obligatoire.
+                </div>
+              </div>
+
+              <!-- Dates -->
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    <i class="fas fa-calendar-day text-atb"></i> Date de début
+                  </label>
+                  <input type="datetime-local" class="form-control" formControlName="dateDebut"
+                         [class.is-invalid]="submitted && f['dateDebut'].errors">
+                  <div *ngIf="submitted && f['dateDebut'].errors" class="invalid-feedback">
+                    La date de début est obligatoire.
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    <i class="fas fa-calendar-day text-atb"></i> Date de fin
+                  </label>
+                  <input type="datetime-local" class="form-control" formControlName="dateFin"
+                         [class.is-invalid]="submitted && f['dateFin'].errors">
+                  <div *ngIf="submitted && f['dateFin'].errors" class="invalid-feedback">
+                    La date de fin est obligatoire.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info complémentaire -->
+              <div class="alert alert-info mt-3" role="alert">
+                <i class="fas fa-info-circle"></i>
+                Les questions pourront être ajoutées après la création de la campagne.
+              </div>
+
+              <!-- Boutons -->
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-atb btn-lg" [disabled]="loading">
+                  <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="fas fa-save"></i>
+                  {{ isEdit ? 'Modifier' : 'Créer' }}
+                </button>
+                <a routerLink="/evaluations" class="btn btn-outline-secondary btn-lg">
+                  <i class="fas fa-times"></i> Annuler
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

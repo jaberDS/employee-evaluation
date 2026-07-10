@@ -1,0 +1,272 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'ngx-toastr/toastr';
+
+/* ===== VARIABLES ATB ===== */
+:root {
+  --atb-primary: #8b0000;
+  --atb-primary-dark: #6b0000;
+  --atb-primary-light: #a52a2a;
+  --atb-secondary: #f5f7fa;
+  --atb-white: #ffffff;
+  --atb-gray: #6b7280;
+  --atb-gray-light: #e5e7eb;
+  --atb-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --atb-radius: 12px;
+}
+
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+  background: var(--atb-secondary);
+  color: #1e1e2f;
+}
+
+/* ===== HEADER ===== */
+.atb-header {
+  background: linear-gradient(135deg, var(--atb-primary) 0%, var(--atb-primary-dark) 100%);
+  box-shadow: 0 2px 15px rgba(139, 0, 0, 0.3);
+  padding: 0.8rem 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+.atb-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.atb-header .brand img {
+  height: 36px;
+}
+
+.atb-header .nav-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.atb-header .nav-link:hover {
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.atb-header .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+  transition: all 0.3s;
+}
+
+.atb-header .btn-outline-light:hover {
+  background: white;
+  color: var(--atb-primary);
+}
+
+/* ===== SIDEBAR ===== */
+.atb-sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: white;
+  border-right: 1px solid var(--atb-gray-light);
+  padding: 1.5rem 0;
+  overflow-y: auto;
+  z-index: 1020;
+  transition: all 0.3s;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.atb-sidebar .nav-link {
+  color: #4b5563;
+  padding: 0.7rem 1.8rem;
+  border-radius: 0;
+  border-left: 3px solid transparent;
+  transition: all 0.3s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.atb-sidebar .nav-link i {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+}
+
+.atb-sidebar .nav-link:hover {
+  background: rgba(139, 0, 0, 0.05);
+  border-left-color: var(--atb-primary);
+  color: var(--atb-primary);
+}
+
+.atb-sidebar .nav-link.active {
+  background: rgba(139, 0, 0, 0.08);
+  border-left-color: var(--atb-primary);
+  color: var(--atb-primary);
+  font-weight: 600;
+}
+
+.atb-sidebar .nav-section {
+  padding: 0.5rem 1.8rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--atb-gray);
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+/* ===== MAIN CONTENT ===== */
+.atb-main {
+  margin-left: 260px;
+  margin-top: 64px;
+  padding: 2rem;
+  min-height: calc(100vh - 64px - 56px);
+}
+
+/* ===== FOOTER GLOBAL (layout) ===== */
+.atb-footer {
+  margin-left: 260px;
+  background: white;
+  border-top: 1px solid var(--atb-gray-light);
+  padding: 0.8rem 2rem;
+  text-align: center;
+  color: var(--atb-gray);
+  font-size: 0.85rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== CARTES génériques ===== */
+.atb-card {
+  background: white;
+  border-radius: var(--atb-radius);
+  box-shadow: var(--atb-shadow);
+  border: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.atb-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.atb-card .card-header {
+  background: white;
+  border-bottom: 2px solid var(--atb-gray-light);
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--atb-radius) var(--atb-radius) 0 0;
+}
+
+/* ===== BOUTONS ===== */
+.btn-atb {
+  background: linear-gradient(135deg, var(--atb-primary) 0%, var(--atb-primary-dark) 100%);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.25);
+}
+
+.btn-atb:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.35);
+  color: white;
+}
+
+.btn-atb-outline {
+  background: transparent;
+  color: var(--atb-primary);
+  border: 2px solid var(--atb-primary);
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-atb-outline:hover {
+  background: var(--atb-primary);
+  color: white;
+}
+
+/* ===== TABLE ===== */
+.atb-table {
+  border-radius: var(--atb-radius);
+  overflow: hidden;
+}
+
+.atb-table thead {
+  background: var(--atb-secondary);
+}
+
+.atb-table thead th {
+  font-weight: 600;
+  color: #1e1e2f;
+  border-bottom: 2px solid var(--atb-gray-light);
+  padding: 0.8rem 1rem;
+}
+
+.atb-table tbody td {
+  padding: 0.8rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--atb-gray-light);
+}
+
+.atb-table tbody tr:hover {
+  background: rgba(139, 0, 0, 0.03);
+}
+
+/* ===== BADGES ===== */
+.badge-atb {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* ===== RESPONSIVE (layout global) ===== */
+@media (max-width: 768px) {
+  .atb-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--atb-gray-light);
+  }
+
+  .atb-main {
+    margin-left: 0;
+  }
+
+  .atb-footer {
+    margin-left: 0;
+  }
+
+  .atb-header {
+    padding: 0.8rem 1rem;
+  }
+}

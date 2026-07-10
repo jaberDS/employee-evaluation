@@ -1,0 +1,151 @@
+<div class="dashboard-wrapper">
+
+  <!-- ===== EN-TÊTE ===== -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div>
+        <h1>Tableau de bord Administrateur</h1>
+        <p class="welcome-text">
+          Bienvenue, <strong>{{ currentUser?.prenom }} {{ currentUser?.nom }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="header-date">
+        <i class="fas fa-calendar-alt"></i>
+        <span>{{ today | date:'EEEE d MMMM yyyy' }}</span>
+      </div>
+      <div class="user-chip">
+        <div class="avatar">{{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}</div>
+        <div class="user-chip-info">
+          <span class="user-chip-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</span>
+          <span class="role-badge">{{ currentUser?.role }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CARTES STATISTIQUES ===== -->
+  <div class="stats-grid">
+    <div class="stat-card stat-blue">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Employés</span>
+        <span class="stat-value">{{ stats.totalEmployees || 0 }}</span>
+        <span class="stat-sub"><i class="fas fa-check-circle"></i> {{ stats.activeEmployees || 0 }} actifs</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-green">
+      <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Campagnes</span>
+        <span class="stat-value">{{ stats.totalEvaluations || 0 }}</span>
+        <span class="stat-sub"><i class="fas fa-play-circle"></i> {{ stats.openEvaluations || 0 }} ouvertes</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-cyan">
+      <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Évaluations</span>
+        <span class="stat-value">{{ stats.completedEvaluations || 0 }}</span>
+        <span class="stat-sub"><i class="fas fa-clock"></i> {{ stats.pendingEvaluations || 0 }} en attente</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-orange">
+      <div class="stat-icon"><i class="fas fa-star"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Note moyenne</span>
+        <span class="stat-value">{{ stats.averageNote || 0 }}<small>/10</small></span>
+        <span class="stat-sub trend-up"><i class="fas fa-arrow-up"></i> +0.5 vs dernier</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONTENU PRINCIPAL ===== -->
+  <div class="row mt-4 g-4">
+
+    <!-- Actions rapides -->
+    <div class="col-lg-5">
+      <div class="card atb-card h-100">
+        <div class="card-header">
+          <h5><i class="fas fa-bolt"></i> Actions rapides</h5>
+        </div>
+        <div class="card-body">
+          <a routerLink="/employees/create" class="action-btn">
+            <div class="action-icon icon-blue"><i class="fas fa-user-plus"></i></div>
+            <div class="action-text">
+              <span class="action-title">Nouvel employé</span>
+              <span class="action-sub">Ajouter un membre à l'équipe</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </a>
+
+          <a routerLink="/evaluations/create" class="action-btn">
+            <div class="action-icon icon-green"><i class="fas fa-plus-circle"></i></div>
+            <div class="action-text">
+              <span class="action-title">Nouvelle campagne</span>
+              <span class="action-sub">Lancer une évaluation</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </a>
+
+          <a routerLink="/fiches" class="action-btn">
+            <div class="action-icon icon-cyan"><i class="fas fa-file-alt"></i></div>
+            <div class="action-text">
+              <span class="action-title">Voir les évaluations</span>
+              <span class="action-sub">Consulter les fiches</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </a>
+
+          <a routerLink="/employees" class="action-btn">
+            <div class="action-icon icon-orange"><i class="fas fa-users-cog"></i></div>
+            <div class="action-text">
+              <span class="action-title">Gérer les employés</span>
+              <span class="action-sub">Liste complète du personnel</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Résumé -->
+    <div class="col-lg-7">
+      <div class="card atb-card h-100">
+        <div class="card-header">
+          <h5><i class="fas fa-chart-pie"></i> Résumé général</h5>
+        </div>
+        <div class="card-body">
+          <div class="summary-row">
+            <div class="summary-label"><i class="fas fa-users summary-icon"></i> Total employés</div>
+            <div class="summary-value">{{ stats.totalEmployees || 0 }}</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label"><i class="fas fa-clipboard-list summary-icon"></i> Campagnes</div>
+            <div class="summary-value">{{ stats.totalEvaluations || 0 }}</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label"><i class="fas fa-check-double summary-icon"></i> Évaluations terminées</div>
+            <div class="summary-value">{{ stats.completedEvaluations || 0 }}</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label"><i class="fas fa-clock summary-icon"></i> En attente de validation</div>
+            <div class="summary-value">{{ stats.pendingEvaluations || 0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-footer">
+    &copy; {{ currentYear }} Arab Tunisian Bank – Tous droits réservés
+  </div>
+</div>
