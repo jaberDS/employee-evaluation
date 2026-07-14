@@ -54,6 +54,7 @@ public class Employe {
 
 
     @OneToMany(mappedBy = "employe", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<FicheEvaluation> fiches = new ArrayList<>();
     // À ajouter plus tard quand on créera FicheEvaluation
     // @OneToMany(mappedBy = "employe")

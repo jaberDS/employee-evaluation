@@ -114,7 +114,7 @@ export class AuthService {
     this.currentUserSubject.next(user);
   }
 
-  private clearSession(): void {
+  clearSession(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.refreshTokenKey);
     localStorage.removeItem(this.userKey);

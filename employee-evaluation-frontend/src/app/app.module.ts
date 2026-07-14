@@ -34,10 +34,13 @@ import { FicheListComponent } from './components/fiches/fiche-list/fiche-list.co
 import { FicheEvaluationComponent } from './components/fiches/fiche-evaluation/fiche-evaluation.component';
 import { FicheDetailComponent } from './components/fiches/fiche-detail/fiche-detail.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { LucideIconComponent } from './shared/lucide-icon/lucide-icon.component';
+import { ConfirmDialogComponent } from './shared/confirm/confirm-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    LucideIconComponent,
     LoginComponent, NotFoundComponent,
     HeaderComponent, SidebarComponent, FooterComponent,
     AdminDashboardComponent, N1DashboardComponent, N2DashboardComponent, EmployeeDashboardComponent,
@@ -45,7 +48,8 @@ import { ProfileComponent } from './components/profile/profile.component';
     EvaluationListComponent, EvaluationFormComponent, EvaluationDetailComponent,
     QuestionListComponent, QuestionFormComponent,
     FicheListComponent, FicheEvaluationComponent, FicheDetailComponent,
-    ProfileComponent
+    ProfileComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule, CommonModule,

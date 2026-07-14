@@ -1,19 +1,19 @@
-<!-- Header -->
-<app-header *ngIf="authService.isAuthenticated()"></app-header>
+<div class="atb-app-bg" *ngIf="authService.isAuthenticated()">
+  <app-header></app-header>
 
-<!-- Layout principal -->
-<div class="d-flex" *ngIf="authService.isAuthenticated()">
-  <!-- Sidebar -->
-  <app-sidebar></app-sidebar>
-
-  <!-- Contenu -->
-  <main class="atb-main">
-    <router-outlet></router-outlet>
-  </main>
+  <div class="atb-layout">
+    <app-sidebar></app-sidebar>
+    <div class="atb-content-col">
+      <main class="atb-main">
+        <router-outlet></router-outlet>
+      </main>
+      <app-footer></app-footer>
+    </div>
+  </div>
 </div>
 
-<!-- Footer -->
-<app-footer *ngIf="authService.isAuthenticated()"></app-footer>
+  <router-outlet *ngIf="!authService.isAuthenticated()"></router-outlet>
 
-<!-- Login (sans layout) -->
-<router-outlet *ngIf="!authService.isAuthenticated()"></router-outlet>
+  @if (confirmService.request$ | async) {
+    <app-confirm-dialog></app-confirm-dialog>
+  }

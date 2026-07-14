@@ -37,8 +37,10 @@ public class Evaluation {
 
     @OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("ordre ASC")
+    @Builder.Default
     private List<Question> questions = new ArrayList<>();
 
     @OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<FicheEvaluation> fiches = new ArrayList<>();
 }

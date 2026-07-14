@@ -1,151 +1,305 @@
 <div class="dashboard-wrapper">
 
-  <!-- ===== EN-TÊTE ===== -->
-  <div class="dashboard-header">
-    <div class="header-left">
-      <div class="header-icon">
-        <i class="fas fa-shield-halved"></i>
-      </div>
-      <div>
-        <h1>Tableau de bord Administrateur</h1>
-        <p class="welcome-text">
-          Bienvenue, <strong>{{ currentUser?.prenom }} {{ currentUser?.nom }}</strong>
+  <!-- ===== HERO CARD ===== -->
+  <section class="hero-card animate-fade-in" aria-label="Bienvenue">
+    <div class="hero-bg-pattern" aria-hidden="true"></div>
+    <div class="hero-circle hero-circle-1" aria-hidden="true"></div>
+    <div class="hero-circle hero-circle-2" aria-hidden="true"></div>
+    <div class="hero-circle hero-circle-3" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <app-lucide-icon name="sparkles" [size]="14"></app-lucide-icon>
+          <span>Tableau de bord Administrateur</span>
+        </div>
+        <h1 class="hero-title">
+          <span class="wave" aria-hidden="true">👋</span>
+          {{ greeting }}, {{ currentUser?.prenom }} !
+        </h1>
+        <p class="hero-date">
+          <app-lucide-icon name="calendar" [size]="16"></app-lucide-icon>
+          <span class="text-capitalize">{{ today | date:'EEEE d MMMM yyyy' }}</span>
         </p>
+        <p class="hero-summary">{{ quickSummary }}</p>
       </div>
-    </div>
 
-    <div class="header-right">
-      <div class="header-date">
-        <i class="fas fa-calendar-alt"></i>
-        <span>{{ today | date:'EEEE d MMMM yyyy' }}</span>
-      </div>
-      <div class="user-chip">
-        <div class="avatar">{{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}</div>
-        <div class="user-chip-info">
-          <span class="user-chip-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</span>
-          <span class="role-badge">{{ currentUser?.role }}</span>
+      <div class="hero-right">
+        <div class="hero-avatar-block">
+          <div class="hero-avatar pulse-glow">
+            {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+          </div>
+          <div class="hero-user-info">
+            <span class="hero-user-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</span>
+            <span class="hero-role-badge">{{ currentUser?.role }}</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ===== CARTES STATISTIQUES ===== -->
-  <div class="stats-grid">
-    <div class="stat-card stat-blue">
-      <div class="stat-icon"><i class="fas fa-users"></i></div>
-      <div class="stat-info">
+  <!-- ===== STATISTICS ===== -->
+  <section class="stats-grid" aria-label="Statistiques">
+
+    <article class="stat-card stat-employees animate-fade-in delay-1">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="users" [size]="26" ariaLabel="Employés"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
         <span class="stat-label">Employés</span>
-        <span class="stat-value">{{ stats.totalEmployees || 0 }}</span>
-        <span class="stat-sub"><i class="fas fa-check-circle"></i> {{ stats.activeEmployees || 0 }} actifs</span>
+        <span class="stat-value">{{ displayStats.totalEmployees }}</span>
+        <span class="stat-sub">
+          <app-lucide-icon name="check-circle" [size]="13"></app-lucide-icon>
+          {{ displayStats.activeEmployees }} actifs
+        </span>
+        <span class="stat-trend trend-up">
+          <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
+          +2 ce mois
+        </span>
       </div>
-    </div>
+    </article>
 
-    <div class="stat-card stat-green">
-      <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
-      <div class="stat-info">
+    <article class="stat-card stat-campaigns animate-fade-in delay-2">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="megaphone" [size]="26" ariaLabel="Campagnes"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
         <span class="stat-label">Campagnes</span>
-        <span class="stat-value">{{ stats.totalEvaluations || 0 }}</span>
-        <span class="stat-sub"><i class="fas fa-play-circle"></i> {{ stats.openEvaluations || 0 }} ouvertes</span>
+        <span class="stat-value">{{ displayStats.totalEvaluations }}</span>
+        <span class="stat-sub">
+          <app-lucide-icon name="activity" [size]="13"></app-lucide-icon>
+          {{ displayStats.openEvaluations }} ouvertes
+        </span>
+        <span class="stat-trend trend-neutral">En cours</span>
       </div>
-    </div>
+    </article>
 
-    <div class="stat-card stat-cyan">
-      <div class="stat-icon"><i class="fas fa-check-double"></i></div>
-      <div class="stat-info">
+    <article class="stat-card stat-evaluations animate-fade-in delay-3">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="clipboard-check" [size]="26" ariaLabel="Évaluations"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
         <span class="stat-label">Évaluations</span>
-        <span class="stat-value">{{ stats.completedEvaluations || 0 }}</span>
-        <span class="stat-sub"><i class="fas fa-clock"></i> {{ stats.pendingEvaluations || 0 }} en attente</span>
+        <span class="stat-value">{{ displayStats.completedEvaluations }}</span>
+        <span class="stat-sub">
+          <app-lucide-icon name="clock" [size]="13"></app-lucide-icon>
+          {{ displayStats.pendingEvaluations }} en attente
+        </span>
+        <span class="stat-trend trend-up">
+          <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
+          {{ evaluationProgress }}% complété
+        </span>
       </div>
-    </div>
+    </article>
 
-    <div class="stat-card stat-orange">
-      <div class="stat-icon"><i class="fas fa-star"></i></div>
-      <div class="stat-info">
+    <article class="stat-card stat-score animate-fade-in delay-4">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="star" [size]="26" ariaLabel="Note moyenne"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
         <span class="stat-label">Note moyenne</span>
-        <span class="stat-value">{{ stats.averageNote || 0 }}<small>/10</small></span>
-        <span class="stat-sub trend-up"><i class="fas fa-arrow-up"></i> +0.5 vs dernier</span>
+        <span class="stat-value">
+          {{ displayStats.averageNote }}<small>/10</small>
+        </span>
+        <span class="stat-sub">
+          <app-lucide-icon name="award" [size]="13"></app-lucide-icon>
+          Performance globale
+        </span>
+        <span class="stat-trend trend-up">
+          <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
+          +0.5 vs dernier
+        </span>
       </div>
-    </div>
-  </div>
+    </article>
+  </section>
 
-  <!-- ===== CONTENU PRINCIPAL ===== -->
-  <div class="row mt-4 g-4">
+  <!-- ===== MAIN GRID ===== -->
+  <div class="dashboard-grid">
 
-    <!-- Actions rapides -->
-    <div class="col-lg-5">
-      <div class="card atb-card h-100">
-        <div class="card-header">
-          <h5><i class="fas fa-bolt"></i> Actions rapides</h5>
+    <!-- Quick Actions -->
+    <section class="panel panel-actions animate-fade-in delay-2" aria-label="Actions rapides">
+      <header class="panel-header">
+        <app-lucide-icon name="zap" [size]="20"></app-lucide-icon>
+        <h2>Actions rapides</h2>
+      </header>
+      <div class="panel-body">
+        <a routerLink="/employees/create" class="action-card action-primary">
+          <div class="action-icon">
+            <app-lucide-icon name="user-plus" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Nouvel employé</span>
+            <span class="action-desc">Ajouter un membre à l'équipe</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+
+        <a routerLink="/evaluations/create" class="action-card action-success">
+          <div class="action-icon">
+            <app-lucide-icon name="rocket" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Nouvelle campagne</span>
+            <span class="action-desc">Lancer une évaluation</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+
+        <a routerLink="/fiches" class="action-card action-info">
+          <div class="action-icon">
+            <app-lucide-icon name="clipboard-list" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Voir les évaluations</span>
+            <span class="action-desc">Consulter les fiches</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+
+        <a routerLink="/employees" class="action-card action-warning">
+          <div class="action-icon">
+            <app-lucide-icon name="users" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Gérer les employés</span>
+            <span class="action-desc">Liste complète du personnel</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+      </div>
+    </section>
+
+    <!-- Analytics Summary -->
+    <section class="panel panel-analytics animate-fade-in delay-3" aria-label="Résumé général">
+      <header class="panel-header">
+        <app-lucide-icon name="bar-chart-3" [size]="20"></app-lucide-icon>
+        <h2>Résumé général</h2>
+      </header>
+      <div class="panel-body">
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="users" [size]="18"></app-lucide-icon>
+            <span>Total employés</span>
+          </div>
+          <div class="analytics-value">{{ stats.totalEmployees }}</div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="employeeProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill fill-primary" [style.width.%]="employeeProgress"></div>
+          </div>
+          <span class="progress-label">{{ employeeProgress }}% actifs</span>
         </div>
-        <div class="card-body">
-          <a routerLink="/employees/create" class="action-btn">
-            <div class="action-icon icon-blue"><i class="fas fa-user-plus"></i></div>
-            <div class="action-text">
-              <span class="action-title">Nouvel employé</span>
-              <span class="action-sub">Ajouter un membre à l'équipe</span>
-            </div>
-            <i class="fas fa-chevron-right action-arrow"></i>
-          </a>
 
-          <a routerLink="/evaluations/create" class="action-btn">
-            <div class="action-icon icon-green"><i class="fas fa-plus-circle"></i></div>
-            <div class="action-text">
-              <span class="action-title">Nouvelle campagne</span>
-              <span class="action-sub">Lancer une évaluation</span>
-            </div>
-            <i class="fas fa-chevron-right action-arrow"></i>
-          </a>
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="megaphone" [size]="18"></app-lucide-icon>
+            <span>Campagnes</span>
+          </div>
+          <div class="analytics-value">{{ stats.totalEvaluations }}</div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="campaignProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill fill-success" [style.width.%]="campaignProgress"></div>
+          </div>
+          <span class="progress-label">{{ stats.openEvaluations }} ouverte(s)</span>
+        </div>
 
-          <a routerLink="/fiches" class="action-btn">
-            <div class="action-icon icon-cyan"><i class="fas fa-file-alt"></i></div>
-            <div class="action-text">
-              <span class="action-title">Voir les évaluations</span>
-              <span class="action-sub">Consulter les fiches</span>
-            </div>
-            <i class="fas fa-chevron-right action-arrow"></i>
-          </a>
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="clipboard-check" [size]="18"></app-lucide-icon>
+            <span>Évaluations terminées</span>
+          </div>
+          <div class="analytics-value">{{ stats.completedEvaluations }}</div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="evaluationProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill fill-info" [style.width.%]="evaluationProgress"></div>
+          </div>
+          <span class="progress-label">{{ evaluationProgress }}% complétion</span>
+        </div>
 
-          <a routerLink="/employees" class="action-btn">
-            <div class="action-icon icon-orange"><i class="fas fa-users-cog"></i></div>
-            <div class="action-text">
-              <span class="action-title">Gérer les employés</span>
-              <span class="action-sub">Liste complète du personnel</span>
-            </div>
-            <i class="fas fa-chevron-right action-arrow"></i>
-          </a>
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="clock" [size]="18"></app-lucide-icon>
+            <span>En attente de validation</span>
+          </div>
+          <div class="analytics-value">
+            {{ stats.pendingEvaluations }}
+            <span class="badge-pending" *ngIf="stats.pendingEvaluations > 0">En attente</span>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Résumé -->
-    <div class="col-lg-7">
-      <div class="card atb-card h-100">
-        <div class="card-header">
-          <h5><i class="fas fa-chart-pie"></i> Résumé général</h5>
+    <!-- Circular Progress + Mini Chart -->
+    <section class="panel panel-performance animate-fade-in delay-4" aria-label="Performance">
+      <header class="panel-header">
+        <app-lucide-icon name="pie-chart" [size]="20"></app-lucide-icon>
+        <h2>Performance</h2>
+      </header>
+      <div class="panel-body performance-body">
+        <div class="circular-progress" role="img" [attr.aria-label]="'Taux de complétion ' + evaluationProgress + ' pourcent'">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
+            <circle
+              class="circle-fill"
+              cx="50" cy="50" r="42"
+              [style.stroke-dashoffset]="circularDashOffset">
+            </circle>
+          </svg>
+          <div class="circular-label">
+            <span class="circular-value">{{ evaluationProgress }}%</span>
+            <span class="circular-sub">Complétion</span>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="summary-row">
-            <div class="summary-label"><i class="fas fa-users summary-icon"></i> Total employés</div>
-            <div class="summary-value">{{ stats.totalEmployees || 0 }}</div>
+
+        <div class="mini-chart">
+          <div class="chart-bar" *ngFor="let h of [65, 80, 55, 90, 75, 85, 70]; let i = index"
+               [style.height.%]="h"
+               [style.animation-delay.ms]="i * 80">
           </div>
-          <div class="summary-row">
-            <div class="summary-label"><i class="fas fa-clipboard-list summary-icon"></i> Campagnes</div>
-            <div class="summary-value">{{ stats.totalEvaluations || 0 }}</div>
+        </div>
+        <p class="chart-caption">Évolution des scores — 7 derniers mois</p>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="panel panel-activity animate-fade-in delay-5" aria-label="Activité récente">
+      <header class="panel-header">
+        <app-lucide-icon name="activity" [size]="20"></app-lucide-icon>
+        <h2>Activité récente</h2>
+      </header>
+      <div class="panel-body">
+        <ul class="activity-list">
+          <li class="activity-item" *ngFor="let item of recentActivities">
+            <div class="activity-icon" [style.background]="item.color + '18'" [style.color]="item.color">
+              <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
+            </div>
+            <div class="activity-content">
+              <span class="activity-text">{{ item.text }}</span>
+              <span class="activity-time">{{ item.time }}</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Upcoming Campaign -->
+    <section class="panel panel-campaign animate-fade-in delay-5" aria-label="Prochaine campagne">
+      <header class="panel-header">
+        <app-lucide-icon name="calendar" [size]="20"></app-lucide-icon>
+        <h2>Prochaine campagne</h2>
+      </header>
+      <div class="panel-body campaign-body">
+        <div class="campaign-card">
+          <div class="campaign-icon">
+            <app-lucide-icon name="megaphone" [size]="24"></app-lucide-icon>
           </div>
-          <div class="summary-row">
-            <div class="summary-label"><i class="fas fa-check-double summary-icon"></i> Évaluations terminées</div>
-            <div class="summary-value">{{ stats.completedEvaluations || 0 }}</div>
-          </div>
-          <div class="summary-row">
-            <div class="summary-label"><i class="fas fa-clock summary-icon"></i> En attente de validation</div>
-            <div class="summary-value">{{ stats.pendingEvaluations || 0 }}</div>
+          <div>
+            <h3>Évaluation Q3 2026</h3>
+            <p>Ouverture prévue le 15 juillet 2026</p>
+            <div class="campaign-meta">
+              <span><app-lucide-icon name="users" [size]="14"></app-lucide-icon> 12 participants</span>
+              <span><app-lucide-icon name="clock" [size]="14"></app-lucide-icon> 30 jours</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <div class="dashboard-footer">
-    &copy; {{ currentYear }} Arab Tunisian Bank – Tous droits réservés
   </div>
 </div>

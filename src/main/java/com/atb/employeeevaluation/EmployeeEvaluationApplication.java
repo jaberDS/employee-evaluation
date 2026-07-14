@@ -19,19 +19,22 @@ public class EmployeeEvaluationApplication {
     @Bean
     public CommandLineRunner init(EmployeRepository employeRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            if (employeRepository.count() == 0) {
-                Employe admin = Employe.builder()
-                        .matricule("ADMIN001")
-                        .nom("Dupont")
-                        .prenom("Jean")
-                        .email("admin@banque.com")
-                        .motDePasse(passwordEncoder.encode("admin123"))
-                        .role(Role.ADMIN)
-                        .actif(true)
-                        .build();
-                employeRepository.save(admin);
-                System.out.println("✅ Admin créé : ADMIN001 / admin123");
-            }
+            Employe admin = employeRepository.findByMatricule("ADMIN001")
+                    .orElseGet(() -> Employe.builder()
+                            .matricule("ADMIN001")
+                            .email(employeRepository.existsByEmail("admin@banque.com")
+                                    ? "admin001@banque.com"
+                                    : "admin@banque.com")
+                            .build());
+
+            admin.setNom("Dupont");
+            admin.setPrenom("Jean");
+            admin.setMotDePasse(passwordEncoder.encode("admin123"));
+            admin.setRole(Role.ADMIN);
+            admin.setActif(true);
+
+            employeRepository.save(admin);
+            System.out.println("Admin disponible : ADMIN001 / admin123");
         };
     }
 }

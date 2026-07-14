@@ -15,34 +15,34 @@
 .profile-header h1 {
   font-size: 1.8rem;
   font-weight: 600;
-  color: #1e1e2f;
+  color: var(--atb-text);
 }
 .profile-header h1 i {
-  color: #8b0000;
+  color: var(--atb-primary);
   margin-right: 0.5rem;
 }
 .profile-header p {
-  color: #6b7280;
+  color: var(--atb-text-secondary);
   margin: 0;
 }
 
 /* ===== CARTE GÉNÉRIQUE ===== */
 .profile-card {
-  background: white;
+  background: var(--atb-card);
   border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f0f0f0;
+  box-shadow: var(--atb-shadow);
+  border: 1px solid var(--atb-border);
   overflow: hidden;
   transition: box-shadow 0.3s;
   height: 100%;
 }
 .profile-card:hover {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--atb-shadow-lg);
 }
 
 .card-header-custom {
   padding: 1.2rem 1.8rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--atb-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -54,13 +54,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  color: var(--atb-text);
 }
 .card-header-custom h5 i {
-  color: #8b0000;
+  color: var(--atb-primary);
 }
 .card-subtitle {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
   font-weight: 400;
 }
 
@@ -70,16 +71,16 @@
 
 .card-footer-custom {
   padding: 0.8rem 1.8rem;
-  background: #f9fafb;
-  border-top: 1px solid #f0f0f0;
+  background: var(--atb-bg);
+  border-top: 1px solid var(--atb-border);
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
 }
 
 /* ===== CARTE UTILISATEUR ===== */
 .user-card {
   text-align: center;
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  background: linear-gradient(145deg, var(--atb-card) 0%, var(--atb-bg) 100%);
 }
 .user-card-avatar {
   position: relative;
@@ -89,7 +90,7 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8b0000, #4a0000);
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
   color: white;
   font-size: 2.2rem;
   font-weight: 700;
@@ -98,7 +99,7 @@
   justify-content: center;
   margin: 0 auto;
   box-shadow: 0 8px 30px rgba(139, 0, 0, 0.25);
-  border: 4px solid white;
+  border: 4px solid var(--atb-card);
 }
 .status-badge {
   display: inline-flex;
@@ -109,15 +110,15 @@
   font-size: 0.7rem;
   font-weight: 600;
   margin-top: 0.5rem;
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--atb-success);
 }
 .status-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4caf50;
+  background: var(--atb-success);
   animation: pulse-dot 1.5s infinite;
 }
 @keyframes pulse-dot {
@@ -132,12 +133,12 @@
 .user-name {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1e1e2f;
+  color: var(--atb-text);
   margin: 0.3rem 0 0.2rem;
 }
 .user-role {
   display: inline-block;
-  background: #8b0000;
+  background: var(--atb-primary);
   color: white;
   font-size: 0.65rem;
   padding: 2px 14px;
@@ -152,16 +153,16 @@
   justify-content: center;
   gap: 1rem;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
 }
 .user-meta i {
-  color: #8b0000;
+  color: var(--atb-primary);
   margin-right: 4px;
 }
 .user-divider {
   width: 50px;
   height: 2px;
-  background: #e5e7eb;
+  background: var(--atb-border);
   margin: 1rem auto;
 }
 
@@ -178,50 +179,55 @@
   display: block;
   font-size: 1.6rem;
   font-weight: 700;
-  color: #1e1e2f;
+  color: var(--atb-text);
   line-height: 1.2;
 }
 .stat-number small {
   font-size: 1rem;
   font-weight: 400;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
 }
 .stat-label-mini {
   display: block;
   font-size: 0.65rem;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* ===== FORMULAIRE ===== */
 .profile-form .input-group-text {
-  background: #f3f4f6;
+  background: var(--atb-bg);
   border-right: none;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
   min-width: 38px;
   justify-content: center;
+  border-color: var(--atb-border);
 }
 .profile-form .form-control {
   border-left: none;
+  background: var(--atb-card);
+  color: var(--atb-text);
+  border-color: var(--atb-border);
 }
 .profile-form .form-control:focus {
-  border-color: #8b0000;
+  border-color: var(--atb-primary);
   box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.08);
 }
 .profile-form .form-control:read-only {
-  background: #f9fafb;
+  background: var(--atb-bg);
+  color: var(--atb-text-secondary);
 }
 .profile-form label {
   font-weight: 500;
   font-size: 0.85rem;
-  color: #374151;
+  color: var(--atb-text);
 }
 
 .profile-actions {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--atb-border);
 }
 
 /* ===== SECURITE ===== */
@@ -232,7 +238,7 @@
 }
 .security-icon {
   font-size: 1.4rem;
-  color: #8b0000;
+  color: var(--atb-primary);
   width: 40px;
   height: 40px;
   background: rgba(139, 0, 0, 0.06);
@@ -244,11 +250,11 @@
 .security-label {
   display: block;
   font-weight: 600;
-  color: #1e1e2f;
+  color: var(--atb-text);
 }
 .security-desc {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--atb-text-secondary);
 }
 
 /* ===== RESPONSIVE ===== */

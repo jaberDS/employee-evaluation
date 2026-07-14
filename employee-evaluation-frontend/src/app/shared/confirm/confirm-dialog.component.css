@@ -1,18 +1,12 @@
 :host {
-  display: block;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1030;
-  height: var(--atb-header-height);
+  display: contents;
 }
 
-/* ===== LOGOUT CONFIRMATION MODAL ===== */
-.logout-overlay {
+/* ===== CONFIRM MODAL ===== */
+.confirm-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: 3000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -22,10 +16,10 @@
   -webkit-backdrop-filter: blur(6px) saturate(120%);
 }
 
-.logout-modal {
+.confirm-modal {
   position: relative;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   padding: 2.25rem 2rem 1.75rem;
   border-radius: 24px;
   background: var(--atb-card);
@@ -37,28 +31,27 @@
   text-align: center;
 }
 
-/* Premium subtle pattern background */
-.logout-modal-pattern {
+.confirm-modal-pattern {
   position: absolute;
   inset: 0;
   z-index: 0;
   opacity: 0.5;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 0%, rgba(198, 40, 40, 0.10), transparent 45%),
+    radial-gradient(circle at 18% 0%, rgba(198, 40, 40, 0.10), transparent 45%),
     radial-gradient(circle at 100% 100%, rgba(139, 0, 0, 0.10), transparent 45%),
     url("data:image/svg+xml,%3Csvg width='36' height='36' viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238B0000' fill-opacity='0.04'%3E%3Cpath d='M0 36L36 0H18L0 18M36 36V18L18 36'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-.logout-modal-icon,
-.logout-modal-title,
-.logout-modal-text,
-.logout-modal-actions {
+.confirm-icon,
+.confirm-title,
+.confirm-message,
+.confirm-actions {
   position: relative;
   z-index: 1;
 }
 
-.logout-modal-icon {
+.confirm-icon {
   width: 64px;
   height: 64px;
   margin: 0 auto 1.1rem;
@@ -71,7 +64,11 @@
   box-shadow: 0 12px 28px rgba(139, 0, 0, 0.35);
 }
 
-.logout-modal-title {
+.confirm-modal.confirm-primary .confirm-icon {
+  background: linear-gradient(135deg, var(--atb-primary) 0%, var(--atb-accent) 100%);
+}
+
+.confirm-title {
   margin: 0 0 0.6rem;
   font-size: 1.2rem;
   font-weight: 800;
@@ -79,62 +76,81 @@
   color: var(--atb-text);
 }
 
-.logout-modal-text {
+.confirm-message {
   margin: 0 0 1.6rem;
   font-size: 0.9rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--atb-text-secondary);
 }
 
-.logout-modal-actions {
+.confirm-actions {
   display: flex;
   gap: 0.75rem;
 }
 
-.logout-btn {
+.confirm-btn {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
+  min-height: 44px;
   padding: 0.7rem 1rem;
   border-radius: 14px;
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
-.logout-btn:active {
+.confirm-btn:active:not(:disabled) {
   transform: translateY(1px) scale(0.99);
 }
 
-.logout-btn-cancel {
+.confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.confirm-btn-cancel {
   background: transparent;
   border-color: var(--atb-border);
   color: var(--atb-text-secondary);
 }
 
-.logout-btn-cancel:hover {
+.confirm-btn-cancel:hover:not(:disabled) {
   background: var(--atb-bg);
   color: var(--atb-text);
   border-color: var(--atb-text-secondary);
 }
 
-.logout-btn-confirm {
-  background: linear-gradient(135deg, var(--atb-primary) 0%, var(--atb-accent) 100%);
+.confirm-btn-confirm {
   color: #fff;
+  background: linear-gradient(135deg, var(--atb-primary) 0%, var(--atb-accent) 100%);
   box-shadow: 0 10px 24px rgba(139, 0, 0, 0.3);
 }
 
-.logout-btn-confirm:hover {
+.confirm-btn-confirm:hover:not(:disabled) {
   box-shadow: 0 14px 30px rgba(139, 0, 0, 0.42);
   transform: translateY(-2px);
 }
 
+.confirm-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  animation: confirm-spin 0.7s linear infinite;
+}
+
+@keyframes confirm-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 480px) {
-  .logout-modal-actions {
+  .confirm-actions {
     flex-direction: column-reverse;
   }
 }

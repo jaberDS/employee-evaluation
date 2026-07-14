@@ -1,54 +1,81 @@
-<aside class="atb-sidebar">
+<aside class="atb-sidebar" role="navigation" aria-label="Navigation principale">
   <nav class="nav flex-column">
-    <!-- Navigation -->
+
     <div class="nav-section">Navigation</div>
 
-    <a class="nav-link" routerLink="/dashboard/{{ authService.getRole()?.toLowerCase() }}" routerLinkActive="active">
-      <i class="fas fa-tachometer-alt"></i> Tableau de bord
+    <a
+      class="nav-link"
+      routerLink="/dashboard/{{ authService.getRole()?.toLowerCase() }}"
+      routerLinkActive="active"
+      aria-label="Tableau de bord">
+      <app-lucide-icon name="layout-dashboard" [size]="20" className="nav-icon"></app-lucide-icon>
+      <span>Tableau de bord</span>
     </a>
 
     <!-- Admin -->
     <ng-container *ngIf="authService.getRole() === 'ADMIN'">
-      <a class="nav-link" routerLink="/employees" routerLinkActive="active">
-        <i class="fas fa-users"></i> Employés
+      <a class="nav-link" routerLink="/employees" routerLinkActive="active" aria-label="Employés">
+        <app-lucide-icon name="users" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Employés</span>
       </a>
-      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active">
-        <i class="fas fa-clipboard-list"></i> Campagnes
+      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active" aria-label="Campagnes">
+        <app-lucide-icon name="megaphone" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Campagnes</span>
       </a>
     </ng-container>
 
     <!-- N1 & N2 -->
     <ng-container *ngIf="authService.getRole() === 'N1' || authService.getRole() === 'N2'">
-      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active">
-        <i class="fas fa-clipboard-list"></i> Campagnes
+      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active" aria-label="Campagnes">
+        <app-lucide-icon name="megaphone" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Campagnes</span>
       </a>
     </ng-container>
 
     <!-- N1 -->
     <ng-container *ngIf="authService.getRole() === 'N1'">
-      <a class="nav-link" routerLink="/fiches/evaluate" routerLinkActive="active">
-        <i class="fas fa-pen-square"></i> Évaluer
+      <a class="nav-link" routerLink="/fiches/evaluate" routerLinkActive="active" aria-label="Évaluer">
+        <app-lucide-icon name="pen-square" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Évaluer</span>
       </a>
     </ng-container>
 
     <!-- N2 -->
     <ng-container *ngIf="authService.getRole() === 'N2'">
-      <a class="nav-link" routerLink="/fiches" routerLinkActive="active">
-        <i class="fas fa-check-double"></i> Valider
+      <a class="nav-link" routerLink="/fiches" routerLinkActive="active" aria-label="Valider">
+        <app-lucide-icon name="check-double" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Valider</span>
       </a>
     </ng-container>
 
     <!-- Employee -->
     <ng-container *ngIf="authService.getRole() === 'EMPLOYE'">
-      <a class="nav-link" routerLink="/fiches" routerLinkActive="active">
-        <i class="fas fa-file-alt"></i> Mes évaluations
+      <a class="nav-link" routerLink="/fiches" routerLinkActive="active" aria-label="Mes évaluations">
+        <app-lucide-icon name="file-text" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Mes évaluations</span>
       </a>
     </ng-container>
 
     <!-- Compte -->
     <div class="nav-section">Compte</div>
-    <a class="nav-link" routerLink="/profile" routerLinkActive="active">
-      <i class="fas fa-user-cog"></i> Profil
+
+    <a class="nav-link" routerLink="/profile" routerLinkActive="active" aria-label="Profil">
+      <app-lucide-icon name="user-circle" [size]="20" className="nav-icon"></app-lucide-icon>
+      <span>Profil</span>
     </a>
+
+    <a class="nav-link" routerLink="/profile" routerLinkActive="active" aria-label="Paramètres">
+      <app-lucide-icon name="settings" [size]="20" className="nav-icon"></app-lucide-icon>
+      <span>Paramètres</span>
+    </a>
+
+    <button
+      class="nav-link logout-link border-0 bg-transparent w-100 text-start"
+      (click)="logout()"
+      aria-label="Se déconnecter">
+      <app-lucide-icon name="log-out" [size]="20" className="nav-icon"></app-lucide-icon>
+      <span>Déconnexion</span>
+    </button>
+
   </nav>
 </aside>
