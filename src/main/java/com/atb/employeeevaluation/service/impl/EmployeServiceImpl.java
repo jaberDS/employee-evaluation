@@ -25,6 +25,9 @@ public class EmployeServiceImpl implements EmployeService {
 
     @Override
     public EmployeDTO createEmploye(EmployeDTO dto) {
+        if (dto.getMotDePasse() == null || dto.getMotDePasse().isBlank()) {
+            throw new RuntimeException("Le mot de passe est obligatoire");
+        }
         if (employeRepository.existsByMatricule(dto.getMatricule())) {
             throw new RuntimeException("Matricule déjà existant");
         }

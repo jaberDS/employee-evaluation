@@ -49,6 +49,9 @@ export class EmployeeFormComponent implements OnInit {
       if (params['id']) {
         this.isEdit = true;
         this.employeeId = +params['id'];
+        // In edit mode, password is not required — clear its validators
+        this.employeeForm.get('motDePasse')?.clearValidators();
+        this.employeeForm.get('motDePasse')?.updateValueAndValidity();
         this.employeeService.getById(this.employeeId).subscribe({
           next: data => this.employeeForm.patchValue(data),
           error: () => this.toastr.error('Erreur de chargement')

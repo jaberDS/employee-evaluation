@@ -2,23 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Evaluation, Question } from '../models/evaluation.model';
 
-export interface Evaluation {
-  id?: number;
-  nomEvaluation: string;
-  dateDebut: string;
-  dateFin: string;
-  statut?: string;
-  questions?: Question[];
-}
-
-export interface Question {
-  id?: number;
-  libelle: string;
-  noteMax: number;
-  ordre: number;
-  evaluationId?: number;
-}
+export { Evaluation, Question } from '../models/evaluation.model';
 
 @Injectable({
   providedIn: 'root'
@@ -67,6 +53,10 @@ export class EvaluationService {
     return this.http.get<Question[]>(`${this.apiUrl}/${evaluationId}/questions`);
   }
 
+  getQuestionById(questionId: number): Observable<Question> {
+    return this.http.get<Question>(`${this.apiUrl}/questions/${questionId}`);
+  }
+
   addQuestion(evaluationId: number, question: Question): Observable<Question> {
     return this.http.post<Question>(`${this.apiUrl}/${evaluationId}/questions`, question);
   }
@@ -77,5 +67,9 @@ export class EvaluationService {
 
   deleteQuestion(questionId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/questions/${questionId}`);
+  }
+
+  toggleActif(questionId: number): Observable<Question> {
+    return this.http.patch<Question>(`${this.apiUrl}/questions/${questionId}/toggle-actif`, {});
   }
 }

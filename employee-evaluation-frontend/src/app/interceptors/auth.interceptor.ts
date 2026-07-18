@@ -23,7 +23,9 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 && !authReq.url.includes('/auth/login')) {
+        // Only attempt token refresh for real auth failures (401 on non-login endpoints).
+        // 403 = business rule violation (not an auth issue) — pass through directly.
+        if (error.status === 401 && !authReq.url.includes('/auth/')) {
           return this.handle401Error(authReq, next);
         }
         return throwError(() => error);

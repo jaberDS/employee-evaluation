@@ -93,4 +93,14 @@ public class EvaluationController {
     public ResponseEntity<List<QuestionDTO>> getQuestions(@PathVariable Long evaluationId) {
         return ResponseEntity.ok(evaluationService.getQuestionsByEvaluation(evaluationId));
     }
+
+    @GetMapping("/questions/{questionId}")
+    public ResponseEntity<QuestionDTO> getQuestionById(@PathVariable Long questionId) {
+        return ResponseEntity.ok(evaluationService.getQuestionById(questionId));
+    }
+
+    @PatchMapping("/questions/{questionId}/toggle-actif")
+    public ResponseEntity<QuestionDTO> toggleActif(@PathVariable Long questionId) {
+        return ResponseEntity.ok(evaluationService.toggleActif(questionId));
+    }
 }

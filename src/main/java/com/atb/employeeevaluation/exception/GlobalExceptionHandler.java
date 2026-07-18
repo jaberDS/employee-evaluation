@@ -37,12 +37,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedOperationException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizedOperation(UnauthorizedOperationException ex) {
         ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .error("Unauthorized")
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("Forbidden")
                 .message(ex.getMessage())
                 .timestamp(System.currentTimeMillis())
                 .build();
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(IllegalStateException.class)

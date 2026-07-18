@@ -108,13 +108,6 @@ public class EvaluationServiceImpl implements EvaluationService {
             );
         }
 
-        // Vérifier que la date de début est atteinte
-        if (LocalDateTime.now().isBefore(evaluation.getDateDebut())) {
-            throw new UnauthorizedOperationException(
-                    "La date de début n'est pas encore atteinte. Date de début: " + evaluation.getDateDebut()
-            );
-        }
-
         // Vérifier qu'il y a des questions
         if (evaluation.getQuestions().isEmpty()) {
             throw new UnauthorizedOperationException(
@@ -158,6 +151,8 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     // ===================== Gestion des questions =====================
 
+    private static final int MAX_QUESTIONS = 10;
+
     @Override
     public QuestionDTO addQuestion(Long evaluationId, QuestionDTO questionDTO) {
         Evaluation evaluation = getEntityById(evaluationId);
@@ -169,10 +164,25 @@ public class EvaluationServiceImpl implements EvaluationService {
             );
         }
 
+        // Vérifier la limite de 10 questions
+        long questionCount = questionRepository.countByEvaluationId(evaluationId);
+        if (questionCount >= MAX_QUESTIONS) {
+            throw new UnauthorizedOperationException(
+                    "Cette campagne a atteint la limite maximale de " + MAX_QUESTIONS + " questions."
+            );
+        }
+
+        // Vérifier l'unicité de l'ordre
+        if (questionRepository.existsByEvaluationIdAndOrdre(evaluationId, questionDTO.getOrdre())) {
+            throw new RuntimeException(
+                    "Une question avec l'ordre " + questionDTO.getOrdre() + " existe déjà dans cette campagne."
+            );
+        }
+
         Question question = questionMapper.toEntity(questionDTO);
         question.setEvaluation(evaluation);
 
-        // Déterminer l'ordre si non fourni
+        // Calculer l'ordre automatiquement si non fourni ou 0
         if (question.getOrdre() == null || question.getOrdre() == 0) {
             int maxOrdre = evaluation.getQuestions().stream()
                     .mapToInt(Question::getOrdre)
@@ -197,9 +207,25 @@ public class EvaluationServiceImpl implements EvaluationService {
             );
         }
 
+        Long evaluationId = question.getEvaluation().getId();
+
+        // Vérifier unicité de l'ordre (ignorer la question elle-même)
+        if (!question.getOrdre().equals(questionDTO.getOrdre()) &&
+            questionRepository.existsByEvaluationIdAndOrdreAndIdNot(evaluationId, questionDTO.getOrdre(), questionId)) {
+            throw new RuntimeException(
+                    "Une question avec l'ordre " + questionDTO.getOrdre() + " existe déjà dans cette campagne."
+            );
+        }
+
         question.setLibelle(questionDTO.getLibelle());
-        question.setNoteMax(questionDTO.getNoteMax());
+        question.setDescription(questionDTO.getDescription());
+        question.setNoteMax(questionDTO.getNoteMax() != null ? questionDTO.getNoteMax() : question.getNoteMax());
         question.setOrdre(questionDTO.getOrdre());
+        question.setTypeQuestion(questionDTO.getTypeQuestion() != null ? questionDTO.getTypeQuestion() : question.getTypeQuestion());
+        question.setObligatoire(questionDTO.getObligatoire() != null ? questionDTO.getObligatoire() : question.getObligatoire());
+        if (questionDTO.getActif() != null) {
+            question.setActif(questionDTO.getActif());
+        }
 
         question = questionRepository.save(question);
         return questionMapper.toDto(question);
@@ -221,9 +247,27 @@ public class EvaluationServiceImpl implements EvaluationService {
     }
 
     @Override
+    public QuestionDTO toggleActif(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question non trouvée avec id: " + questionId));
+
+        question.setActif(!question.getActif());
+        question = questionRepository.save(question);
+        return questionMapper.toDto(question);
+    }
+
+    @Override
+    public QuestionDTO getQuestionById(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question non trouvée avec id: " + questionId));
+        return questionMapper.toDto(question);
+    }
+
+    @Override
     public List<QuestionDTO> getQuestionsByEvaluation(Long evaluationId) {
-        Evaluation evaluation = getEntityById(evaluationId);
-        return evaluation.getQuestions().stream()
+        getEntityById(evaluationId); // validate evaluation exists
+        return questionRepository.findByEvaluationIdOrderByOrdreAsc(evaluationId)
+                .stream()
                 .map(questionMapper::toDto)
                 .collect(Collectors.toList());
     }

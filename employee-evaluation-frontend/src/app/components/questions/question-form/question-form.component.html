@@ -1,2 +1,211 @@
-<h2>form</h2>
-<p>En construction...</p>
+<div class="emp-form-wrapper">
+
+  <!-- Background SVG pattern -->
+  <svg class="emp-bg-pattern" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id="q-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.07"/>
+      </pattern>
+      <linearGradient id="q-grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#8B0000;stop-opacity:0.05"/>
+        <stop offset="100%" style="stop-color:#C62828;stop-opacity:0.02"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#q-dots)"/>
+    <circle cx="150" cy="100" r="200" fill="url(#q-grad1)"/>
+    <circle cx="650" cy="450" r="250" fill="url(#q-grad1)"/>
+  </svg>
+
+  <div class="emp-form-container">
+
+    <!-- Page header -->
+    <div class="emp-form-page-header" [@fadeSlideIn]>
+      <div class="emp-header-left">
+        <div class="emp-header-icon-box">
+          <app-lucide-icon [name]="isEdit ? 'pen-square' : 'list-plus'" [size]="26"></app-lucide-icon>
+        </div>
+        <div>
+          <h1 class="emp-page-title">{{ isEdit ? 'Modifier la question' : 'Nouvelle question' }}</h1>
+          <p class="emp-page-subtitle" *ngIf="evaluation">
+            Campagne : <strong>{{ evaluation.nomEvaluation }}</strong>
+          </p>
+          <p class="emp-page-subtitle" *ngIf="!evaluation">
+            {{ isEdit ? 'Modifiez les informations de la question' : 'Ajoutez une question à la campagne' }}
+          </p>
+        </div>
+      </div>
+      <a [routerLink]="backUrl" class="emp-btn-back">
+        <app-lucide-icon name="arrow-left" [size]="18"></app-lucide-icon>
+        <span>Retour</span>
+      </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="emp-form-card" [@fadeSlideIn]>
+      <div class="emp-card-accent-line"></div>
+
+      <form [formGroup]="questionForm" (ngSubmit)="onSubmit()" class="emp-form-body" autocomplete="off">
+
+        <!-- ── Type selector (full width, card-based) ─────────────────── -->
+        <div class="q-type-section">
+          <label class="q-section-label">
+            <app-lucide-icon name="layers" [size]="15"></app-lucide-icon>
+            Type de question <span class="q-required-star">*</span>
+          </label>
+          <div class="q-type-grid">
+            <label *ngFor="let opt of typeOptions"
+                   class="q-type-card"
+                   [class.q-type-card-selected]="questionForm.get('typeQuestion')?.value === opt.value">
+              <input type="radio" formControlName="typeQuestion" [value]="opt.value" class="q-type-radio">
+              <div class="q-type-icon">
+                <app-lucide-icon [name]="opt.icon" [size]="22"></app-lucide-icon>
+              </div>
+              <div class="q-type-info">
+                <span class="q-type-name">{{ opt.label }}</span>
+                <span class="q-type-desc">{{ opt.desc }}</span>
+              </div>
+              <div class="q-type-check">
+                <app-lucide-icon name="check-circle" [size]="14"></app-lucide-icon>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="emp-form-grid">
+
+          <!-- Libellé (full width) -->
+          <div class="emp-field-group emp-field-full"
+               [class.emp-field-error]="submitted && questionForm.get('libelle')?.errors"
+               [class.emp-field-success]="submitted && !questionForm.get('libelle')?.errors && questionForm.get('libelle')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="help-circle" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="text" id="q-libelle" formControlName="libelle"
+                     placeholder=" " class="emp-input">
+              <label for="q-libelle" class="emp-float-label">Libellé de la question <span class="q-required-star">*</span></label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && questionForm.get('libelle')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="questionForm.get('libelle')?.errors?.['required']">Le libellé est obligatoire</span>
+              <span *ngIf="questionForm.get('libelle')?.errors?.['maxlength']">Maximum 500 caractères</span>
+            </div>
+          </div>
+
+          <!-- Description (full width, textarea) -->
+          <div class="emp-field-group emp-field-full">
+            <div class="emp-input-wrap emp-textarea-wrap">
+              <span class="emp-input-icon emp-input-icon-top">
+                <app-lucide-icon name="align-left" [size]="18"></app-lucide-icon>
+              </span>
+              <textarea id="q-description" formControlName="description"
+                        placeholder=" " class="emp-input emp-textarea" rows="3"></textarea>
+              <label for="q-description" class="emp-float-label emp-float-label-select">Description (optionnelle)</label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && questionForm.get('description')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="questionForm.get('description')?.errors?.['maxlength']">Maximum 1000 caractères</span>
+            </div>
+          </div>
+
+          <!-- Ordre -->
+          <div class="emp-field-group"
+               [class.emp-field-error]="submitted && questionForm.get('ordre')?.errors"
+               [class.emp-field-success]="submitted && !questionForm.get('ordre')?.errors && questionForm.get('ordre')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="hash" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="number" id="q-ordre" formControlName="ordre"
+                     min="1" max="10" placeholder=" " class="emp-input">
+              <label for="q-ordre" class="emp-float-label">Ordre d'affichage (1-10) <span class="q-required-star">*</span></label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && questionForm.get('ordre')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="questionForm.get('ordre')?.errors?.['required']">L'ordre est obligatoire</span>
+              <span *ngIf="questionForm.get('ordre')?.errors?.['min']">L'ordre doit être au moins 1</span>
+              <span *ngIf="questionForm.get('ordre')?.errors?.['max']">L'ordre ne peut pas dépasser 10</span>
+            </div>
+          </div>
+
+          <!-- Note max (only for NOTE type) -->
+          <div class="emp-field-group" *ngIf="showNoteMax"
+               [class.emp-field-error]="submitted && questionForm.get('noteMax')?.errors"
+               [class.emp-field-success]="submitted && !questionForm.get('noteMax')?.errors && questionForm.get('noteMax')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="star" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="number" id="q-noteMax" formControlName="noteMax"
+                     min="1" max="10" placeholder=" " class="emp-input">
+              <label for="q-noteMax" class="emp-float-label">Note maximale (1-10) <span class="q-required-star">*</span></label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && questionForm.get('noteMax')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="questionForm.get('noteMax')?.errors?.['required']">La note maximale est obligatoire</span>
+              <span *ngIf="questionForm.get('noteMax')?.errors?.['min']">La note doit être au moins 1</span>
+              <span *ngIf="questionForm.get('noteMax')?.errors?.['max']">La note ne peut pas dépasser 10</span>
+            </div>
+          </div>
+
+          <!-- Obligatoire toggle -->
+          <div class="emp-field-group emp-field-toggle">
+            <div class="emp-toggle-wrap">
+              <label class="emp-toggle">
+                <input type="checkbox" formControlName="obligatoire">
+                <span class="emp-toggle-slider emp-toggle-slider-primary"></span>
+              </label>
+              <div class="emp-toggle-info">
+                <span class="emp-toggle-label">Réponse obligatoire</span>
+                <span class="emp-toggle-status" [class.emp-status-active]="questionForm.get('obligatoire')?.value">
+                  {{ questionForm.get('obligatoire')?.value ? '● Oui — la réponse est requise' : '● Non — la réponse est optionnelle' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actif toggle (edit mode only) -->
+          <div class="emp-field-group emp-field-toggle" *ngIf="isEdit">
+            <div class="emp-toggle-wrap">
+              <label class="emp-toggle">
+                <input type="checkbox" formControlName="actif">
+                <span class="emp-toggle-slider"></span>
+              </label>
+              <div class="emp-toggle-info">
+                <span class="emp-toggle-label">Statut de la question</span>
+                <span class="emp-toggle-status" [class.emp-status-active]="questionForm.get('actif')?.value">
+                  {{ questionForm.get('actif')?.value ? '● Active' : '● Inactive' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="emp-form-actions">
+          <button type="submit" class="emp-btn-primary" [disabled]="loading" (click)="createRipple($event)">
+            <span class="emp-btn-content" *ngIf="!loading">
+              <app-lucide-icon [name]="isEdit ? 'save' : 'plus-circle'" [size]="18"></app-lucide-icon>
+              {{ isEdit ? 'Enregistrer les modifications' : 'Créer la question' }}
+            </span>
+            <span class="emp-btn-loading" *ngIf="loading">
+              <span class="emp-spinner"></span>
+              Traitement...
+            </span>
+          </button>
+          <a [routerLink]="backUrl" class="emp-btn-secondary">
+            <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+            Annuler
+          </a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

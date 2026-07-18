@@ -181,8 +181,13 @@
                 <a *ngIf="ev.statut === 'BROUILLON'" [routerLink]="['/evaluations/edit', ev.id]" class="btn-icon-action btn-icon-edit" title="Modifier" aria-label="Modifier">
                   <app-lucide-icon name="pen" [size]="16"></app-lucide-icon>
                 </a>
-                <a [routerLink]="['/evaluations', ev.id, 'questions']" class="btn-icon-action btn-icon-list" title="Gérer les questions" aria-label="Questions">
-                  <app-lucide-icon name="list" [size]="16"></app-lucide-icon>
+                <a [routerLink]="['/evaluations', ev.id, 'questions']"
+                   class="btn-icon-action"
+                   [ngClass]="isQuestionsFull(ev) ? 'btn-icon-questions-full' : 'btn-icon-list'"
+                   [title]="isQuestionsFull(ev) ? 'Questions complètes (10/10)' : 'Gérer les questions (' + getQuestionCount(ev) + '/10)'"
+                   aria-label="Questions">
+                  <app-lucide-icon [name]="isQuestionsFull(ev) ? 'check-square' : 'list'" [size]="16"></app-lucide-icon>
+                  <span class="q-count-badge" *ngIf="getQuestionCount(ev) > 0">{{ getQuestionCount(ev) }}</span>
                 </a>
                 <button *ngIf="ev.statut === 'BROUILLON'" class="btn-icon-action btn-icon-open" (click)="ouvrir(ev.id!)" title="Ouvrir la campagne" aria-label="Ouvrir">
                   <app-lucide-icon name="play" [size]="16"></app-lucide-icon>

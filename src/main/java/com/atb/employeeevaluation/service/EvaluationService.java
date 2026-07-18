@@ -23,4 +23,6 @@ public interface EvaluationService {
     QuestionDTO updateQuestion(Long questionId, QuestionDTO questionDTO);
     void removeQuestion(Long questionId);
     List<QuestionDTO> getQuestionsByEvaluation(Long evaluationId);
+    QuestionDTO toggleActif(Long questionId);
+    QuestionDTO getQuestionById(Long questionId);
 }

@@ -13,7 +13,7 @@ public class EmployeDTO {
     @NotBlank private String nom;
     @NotBlank private String prenom;
     @Email @NotBlank private String email;
-    @NotBlank private String motDePasse;
+    private String motDePasse;
     @NotNull private Role role;
     private Long n1Id;
     private Long n2Id;
