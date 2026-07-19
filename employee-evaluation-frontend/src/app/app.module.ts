@@ -37,6 +37,11 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { LucideIconComponent } from './shared/lucide-icon/lucide-icon.component';
 import { ConfirmDialogComponent } from './shared/confirm/confirm-dialog.component';
 
+// N1 feature components
+import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evaluer-employes.component';
+import { N1FicheEvaluationComponent } from './components/n1/fiche-evaluation/fiche-evaluation.component';
+import { N1HistoriqueComponent } from './components/n1/historique/historique.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -49,7 +54,11 @@ import { ConfirmDialogComponent } from './shared/confirm/confirm-dialog.componen
     QuestionListComponent, QuestionFormComponent,
     FicheListComponent, FicheEvaluationComponent, FicheDetailComponent,
     ProfileComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    // N1 feature components
+    EvaluerEmployesComponent,
+    N1FicheEvaluationComponent,
+    N1HistoriqueComponent
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule, CommonModule,

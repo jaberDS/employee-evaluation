@@ -2,7 +2,9 @@ package com.atb.employeeevaluation.config;
 
 import com.atb.employeeevaluation.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -64,7 +66,9 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
 
                         // ==================== ADMIN ====================
-                        // ✅ ACCÈS COMPLET À /api/employes/** POUR ADMIN UNIQUEMENT
+                        // N+1 peut consulter uniquement ses subordonnés directs
+                        .requestMatchers(HttpMethod.GET, "/api/employes/role/**").hasAnyRole("ADMIN", "N1", "N2")
+                        .requestMatchers(HttpMethod.GET, "/api/employes/sous-n1/**").hasAnyRole("ADMIN", "N1")
                         .requestMatchers("/api/employes/**").hasRole("ADMIN")
 
                         // ==================== ADMIN, N1, N2 ====================

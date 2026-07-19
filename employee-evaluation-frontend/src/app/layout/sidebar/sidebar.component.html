@@ -24,8 +24,8 @@
       </a>
     </ng-container>
 
-    <!-- N1 & N2 -->
-    <ng-container *ngIf="authService.getRole() === 'N1' || authService.getRole() === 'N2'">
+    <!-- N1 & N2 — Campagnes (N2 only, N1 uses dedicated eval pages) -->
+    <ng-container *ngIf="authService.getRole() === 'N2'">
       <a class="nav-link" routerLink="/evaluations" routerLinkActive="active" aria-label="Campagnes">
         <app-lucide-icon name="megaphone" [size]="20" className="nav-icon"></app-lucide-icon>
         <span>Campagnes</span>
@@ -34,9 +34,13 @@
 
     <!-- N1 -->
     <ng-container *ngIf="authService.getRole() === 'N1'">
-      <a class="nav-link" routerLink="/fiches/evaluate" routerLinkActive="active" aria-label="Évaluer">
+      <a class="nav-link" routerLink="/n1/evaluer" routerLinkActive="active" aria-label="Évaluer les employés">
         <app-lucide-icon name="pen-square" [size]="20" className="nav-icon"></app-lucide-icon>
-        <span>Évaluer</span>
+        <span>Évaluer les employés</span>
+      </a>
+      <a class="nav-link" routerLink="/n1/historique" routerLinkActive="active" aria-label="Historique des évaluations">
+        <app-lucide-icon name="clock" [size]="20" className="nav-icon"></app-lucide-icon>
+        <span>Historique</span>
       </a>
     </ng-container>
 

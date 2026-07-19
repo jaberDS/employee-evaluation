@@ -1,11 +1,13 @@
 package com.atb.employeeevaluation.controller;
 
 import com.atb.employeeevaluation.dto.EmployeDTO;
+import com.atb.employeeevaluation.enums.Role;
 import com.atb.employeeevaluation.service.EmployeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +42,25 @@ public class EmployeController {
     @GetMapping
     public ResponseEntity<List<EmployeDTO>> getAll() {
         return ResponseEntity.ok(employeService.getAllEmployes());
+    }
+
+    /** Retourne les employés selon leur rôle */
+    @GetMapping("/role/{role}")
+    public ResponseEntity<List<EmployeDTO>> getByRole(@PathVariable Role role) {
+        return ResponseEntity.ok(employeService.getEmployesByRole(role));
+    }
+
+    /** Retourne les employés dont n1_id = n1Id (subordonnés directs du N+1) */
+    @GetMapping("/sous-n1/{n1Id}")
+    public ResponseEntity<List<EmployeDTO>> getSousN1(@PathVariable Long n1Id, Authentication authentication) {
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_N1".equals(a.getAuthority()))) {
+            EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
+            if (!n1Id.equals(current.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+        return ResponseEntity.ok(employeService.getEmployesByN1(n1Id));
     }
 
     @DeleteMapping("/{id}")

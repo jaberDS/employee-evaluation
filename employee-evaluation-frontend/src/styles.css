@@ -2017,3 +2017,351 @@ input:checked + .emp-toggle-slider-primary {
 [data-theme="dark"] .enterprise-page .btn-icon-questions-full {
   box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
 }
+
+/* =================================================================
+   N1 SHARED STYLES — dashboard, cards, buttons
+   ================================================================= */
+
+/* ── Shared N1 buttons ─────────────────────────────────────────────── */
+.btn-n1-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.75rem 1.5rem; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #8B0000, #C62828);
+  color: white; font-size: 0.9rem; font-weight: 700; font-family: inherit;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 4px 18px rgba(139,0,0,0.28);
+  transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+  position: relative; overflow: hidden;
+}
+.btn-n1-primary:hover:not(:disabled) {
+  transform: translateY(-2px); box-shadow: 0 8px 28px rgba(139,0,0,0.38);
+  background: linear-gradient(135deg, #A30000, #E53935); color: white;
+}
+.btn-n1-primary:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.btn-n1-outline {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.72rem 1.4rem; border-radius: 14px;
+  border: 2px solid var(--atb-primary); background: transparent;
+  color: var(--atb-primary); font-size: 0.88rem; font-weight: 700; font-family: inherit;
+  cursor: pointer; text-decoration: none;
+  transition: all 0.25s ease;
+}
+.btn-n1-outline:hover:not(:disabled) {
+  background: rgba(139,0,0,0.06); transform: translateY(-1px);
+}
+.btn-n1-outline:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-n1-success {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.75rem 1.5rem; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #16A34A, #22C55E);
+  color: white; font-size: 0.9rem; font-weight: 700; font-family: inherit;
+  cursor: default; box-shadow: 0 4px 18px rgba(22,163,74,0.25);
+}
+
+.btn-n1-ghost {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.72rem 1.4rem; border-radius: 14px;
+  border: 1.5px solid var(--atb-border); background: transparent;
+  color: var(--atb-text-secondary); font-size: 0.88rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; text-decoration: none; transition: all 0.2s ease;
+}
+.btn-n1-ghost:hover { border-color: var(--atb-primary); color: var(--atb-primary); }
+
+.btn-n1-text {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: none; border: none; padding: 0.4rem 0.6rem;
+  color: var(--atb-primary); font-size: 0.84rem; font-weight: 700; cursor: pointer;
+  text-decoration: none; border-radius: 8px; transition: all 0.2s ease;
+}
+.btn-n1-text:hover { background: rgba(139,0,0,0.06); }
+
+/* ── N1 Dashboard ──────────────────────────────────────────────────── */
+.n1-dash { padding-bottom: 3rem; }
+
+/* Hero */
+.n1-hero {
+  position: relative; overflow: hidden;
+  border-radius: var(--atb-radius); margin-bottom: 1.75rem;
+  background: linear-gradient(135deg, #8B0000 0%, #5A0000 60%, #3D0000 100%);
+  color: white;
+}
+.n1-hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.07) 0%, transparent 50%),
+    radial-gradient(circle at 10% 80%, rgba(198,40,40,0.25) 0%, transparent 45%);
+}
+.n1-hero-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2.25rem 2.5rem; gap: 2rem; flex-wrap: wrap;
+}
+.n1-greeting-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.28rem 0.8rem; border-radius: 20px;
+  background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9);
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+  margin-bottom: 0.75rem;
+}
+.n1-hero-title {
+  font-size: 1.75rem; font-weight: 800; margin: 0 0 0.5rem;
+  letter-spacing: -0.4px; line-height: 1.2;
+}
+.n1-hero-sub { font-size: 0.95rem; color: rgba(255,255,255,0.8); margin: 0 0 1.5rem; }
+.n1-hero-all-done { color: rgba(255,255,255,0.95) !important; font-size: 1rem !important; }
+.n1-hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+/* Ring progress */
+.n1-hero-visual { flex-shrink: 0; }
+.n1-progress-ring {
+  position: relative; width: 130px; height: 130px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 10; }
+.ring-fill {
+  fill: none; stroke: white; stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.23,1,0.32,1);
+}
+.ring-label {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-pct { font-size: 1.6rem; font-weight: 800; color: white; line-height: 1; }
+.ring-sub { font-size: 0.62rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Stat cards */
+.n1-stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1rem; margin-bottom: 1.75rem;
+}
+.n1-stat-card {
+  position: relative; overflow: hidden;
+  border-radius: var(--atb-radius); padding: 1.5rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem;
+  color: white; box-shadow: var(--atb-shadow);
+  animation: fadeSlideUp 0.5s ease-out both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+.n1-stat-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: var(--atb-shadow-lg); }
+.n1-stat-campaigns { background: linear-gradient(135deg, #8B0000, #C62828); }
+.n1-stat-pending   { background: linear-gradient(135deg, #D97706, #F59E0B); }
+.n1-stat-done      { background: linear-gradient(135deg, #15803D, #22C55E); }
+.n1-stat-progress  { background: linear-gradient(135deg, #1D4ED8, #3B82F6); }
+.nsc-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.nsc-body { flex: 1; min-width: 0; }
+.nsc-value { display: block; font-size: 1.9rem; font-weight: 800; line-height: 1; }
+.nsc-unit  { font-size: 1.1rem; }
+.nsc-label { display: block; font-size: 0.76rem; opacity: 0.85; margin-top: 3px; font-weight: 500; }
+.nsc-glow  {
+  position: absolute; bottom: -20px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  pointer-events: none;
+}
+
+/* Section header */
+.n1-section { margin-bottom: 2.25rem; }
+.n1-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.n1-section-title {
+  display: flex; align-items: center; gap: 0.6rem;
+  color: var(--atb-text);
+}
+.n1-section-title h2 { font-size: 1.05rem; font-weight: 800; margin: 0; }
+.n1-count-pill {
+  padding: 0.18rem 0.65rem; border-radius: 20px;
+  background: rgba(139,0,0,0.08); color: var(--atb-primary);
+  font-size: 0.75rem; font-weight: 700;
+}
+
+/* Campaign cards */
+.n1-campaigns-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 1.25rem;
+}
+.n1-campaign-card {
+  position: relative; overflow: hidden;
+  background: var(--atb-card); border: 1.5px solid var(--atb-border);
+  border-radius: var(--atb-radius); padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeSlideUp 0.5s ease-out both;
+}
+.n1-campaign-card:hover {
+  transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+}
+.n1-campaign-complete { border-color: rgba(22,163,74,0.35); }
+.ncc-accent {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #8B0000, #C62828, #E53935, #C62828, #8B0000);
+  background-size: 200% 100%; animation: shimmerAccent 3s ease-in-out infinite;
+}
+.n1-campaign-complete .ncc-accent { background: linear-gradient(90deg, #16A34A, #22C55E); animation: none; }
+@keyframes shimmerAccent { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+.ncc-header { display: flex; align-items: flex-start; gap: 0.85rem; padding-top: 0.5rem; }
+.ncc-avatar {
+  width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1rem; font-weight: 800;
+}
+.ncc-avatar-0 { background: linear-gradient(135deg,#8B0000,#C62828); }
+.ncc-avatar-1 { background: linear-gradient(135deg,#1D4ED8,#3B82F6); }
+.ncc-avatar-2 { background: linear-gradient(135deg,#15803D,#22C55E); }
+.ncc-avatar-3 { background: linear-gradient(135deg,#D97706,#F59E0B); }
+.ncc-meta { flex: 1; min-width: 0; }
+.ncc-name { font-size: 0.95rem; font-weight: 700; color: var(--atb-text); margin: 0 0 0.4rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge-campaign-open {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.2rem 0.65rem; border-radius: 20px;
+  background: rgba(22,163,74,0.1); color: var(--atb-success);
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ncc-complete-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.7rem; border-radius: 20px;
+  background: rgba(22,163,74,0.12); color: var(--atb-success);
+  font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+}
+
+.ncc-dates {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  font-size: 0.78rem; color: var(--atb-text-secondary);
+}
+.ncc-date-item { display: inline-flex; align-items: center; gap: 0.3rem; }
+.ncc-date-sep  { color: var(--atb-border); }
+.ncc-remaining {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.18rem 0.6rem; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 700;
+}
+.remaining-normal  { background: rgba(2,132,199,0.08);  color: var(--atb-info); }
+.remaining-warning { background: rgba(245,158,11,0.1);  color: var(--atb-warning); }
+.remaining-urgent  { background: rgba(220,53,69,0.1);   color: #dc3545; }
+
+.ncc-progress-section { display: flex; flex-direction: column; gap: 4px; }
+.ncc-progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.75rem; color: var(--atb-text-secondary);
+}
+.ncc-progress-val { font-weight: 600; }
+.ncc-progress-track { height: 8px; background: var(--atb-bg); border-radius: 50px; overflow: hidden; }
+.ncc-progress-fill {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, #8B0000, #C62828);
+  transition: width 0.9s cubic-bezier(0.23,1,0.32,1);
+}
+.ncc-progress-fill.fill-complete { background: linear-gradient(90deg, #16A34A, #22C55E); }
+.ncc-progress-pct { font-size: 0.72rem; font-weight: 700; color: var(--atb-text-secondary); align-self: flex-end; }
+
+.ncc-info-row {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; color: var(--atb-text-secondary);
+}
+.ncc-actions .ncc-btn-full { width: 100%; padding: 0.75rem; }
+
+/* Team quick overview */
+.n1-team-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 0.85rem;
+}
+.n1-team-card {
+  display: flex; align-items: center; gap: 0.85rem;
+  background: var(--atb-card); border: 1.5px solid var(--atb-border);
+  border-radius: var(--atb-radius-sm); padding: 1rem 1.1rem;
+  transition: all 0.25s ease; animation: fadeSlideUp 0.4s ease-out both;
+}
+.n1-team-card:hover { border-color: var(--atb-primary); box-shadow: 0 4px 16px rgba(139,0,0,0.08); }
+.ntc-avatar {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  color: white; font-size: 0.88rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.ntc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ntc-name { font-size: 0.88rem; font-weight: 700; color: var(--atb-text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ntc-role { font-size: 0.72rem; color: var(--atb-text-secondary); }
+.ntc-badge {
+  padding: 0.2rem 0.6rem; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; white-space: nowrap;
+}
+.ntc-done     { background: rgba(22,163,74,0.1);  color: var(--atb-success); }
+.ntc-progress { background: rgba(245,158,11,0.1); color: var(--atb-warning); }
+.ntc-pending  { background: rgba(107,114,128,0.1); color: var(--atb-text-secondary); }
+
+/* Empty state */
+.n1-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 4rem 2rem; text-align: center;
+  background: var(--atb-card); border: 1.5px dashed var(--atb-border);
+  border-radius: var(--atb-radius);
+}
+.n1-empty-icon {
+  width: 80px; height: 80px; border-radius: 24px;
+  background: var(--atb-bg); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.25rem; color: var(--atb-text-secondary);
+}
+.n1-empty h3 { font-size: 1.05rem; font-weight: 700; color: var(--atb-text); margin: 0 0 0.5rem; }
+.n1-empty p  { font-size: 0.88rem; color: var(--atb-text-secondary); margin: 0; max-width: 340px; }
+
+/* Dashboard skeleton */
+.n1-skeleton { display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem 0; }
+.skel-hero  { height: 220px; border-radius: var(--atb-radius); }
+.skel-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+.skel-card  { height: 100px; border-radius: var(--atb-radius); }
+.skel-campaigns { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
+.skel-campaign-card { height: 260px; border-radius: var(--atb-radius); }
+.skel-hero, .skel-card, .skel-campaign-card {
+  background: linear-gradient(90deg, var(--atb-border) 25%, var(--atb-bg) 50%, var(--atb-border) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Extra utility */
+.stat-icon-info { background: rgba(2,132,199,0.1); color: var(--atb-info); }
+
+/* ── Responsive N1 ──────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .n1-stats-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 768px) {
+  .n1-hero-inner { flex-direction: column; padding: 1.5rem; }
+  .n1-hero-visual { display: none; }
+  .n1-hero-title { font-size: 1.35rem; }
+  .n1-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .n1-campaigns-grid { grid-template-columns: 1fr; }
+  .n1-team-grid { grid-template-columns: 1fr; }
+  .skel-stats { grid-template-columns: 1fr 1fr; }
+  .skel-campaigns { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .n1-stats-grid { grid-template-columns: 1fr; }
+  .n1-hero-actions { flex-direction: column; }
+  .btn-n1-primary, .btn-n1-outline { width: 100%; justify-content: center; }
+}
+
+/* ── Dark mode N1 ───────────────────────────────────────────────────── */
+[data-theme="dark"] .n1-campaign-card { background: var(--atb-card); border-color: var(--atb-border); }
+[data-theme="dark"] .n1-campaign-card:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.35); }
+[data-theme="dark"] .n1-team-card { background: var(--atb-card); border-color: var(--atb-border); }
+[data-theme="dark"] .n1-team-card:hover { border-color: #e57373; box-shadow: 0 4px 16px rgba(229,115,115,0.08); }
+[data-theme="dark"] .n1-empty { background: var(--atb-card); border-color: var(--atb-border); }
+[data-theme="dark"] .n1-count-pill { background: rgba(229,115,115,0.08); color: #e57373; }
+[data-theme="dark"] .badge-campaign-open { background: rgba(74,222,128,0.08); color: #86efac; }
+[data-theme="dark"] .btn-n1-outline { border-color: #e57373; color: #e57373; }
+[data-theme="dark"] .btn-n1-outline:hover { background: rgba(229,115,115,0.06); }
+[data-theme="dark"] .btn-n1-text { color: #e57373; }
+[data-theme="dark"] .btn-n1-text:hover { background: rgba(229,115,115,0.06); }

@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.service.impl;
 
 import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.entity.Employe;
+import com.atb.employeeevaluation.enums.Role;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.mapper.EmployeMapper;
 import com.atb.employeeevaluation.repository.EmployeRepository;
@@ -69,6 +70,20 @@ public class EmployeServiceImpl implements EmployeService {
     @Override
     public List<EmployeDTO> getAllEmployes() {
         return employeRepository.findAll().stream()
+                .map(employeMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EmployeDTO> getEmployesByRole(Role role) {
+        return employeRepository.findByRole(role).stream()
+                .map(employeMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EmployeDTO> getEmployesByN1(Long n1Id) {
+        return employeRepository.findByN1Id(n1Id).stream()
                 .map(employeMapper::toDto)
                 .collect(Collectors.toList());
     }

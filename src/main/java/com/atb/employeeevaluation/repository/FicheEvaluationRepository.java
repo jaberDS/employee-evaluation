@@ -19,4 +19,7 @@ public interface FicheEvaluationRepository extends JpaRepository<FicheEvaluation
     List<FicheEvaluation> findByEvaluationIdAndStatut(Long evaluationId, StatutFiche statut);
 
     boolean existsByEmployeIdAndEvaluationId(Long employeId, Long evaluationId);
+
+    /** Toutes les fiches des employés rattachés à un N+1 donné */
+    List<FicheEvaluation> findByEmployeN1Id(Long n1Id);
 }

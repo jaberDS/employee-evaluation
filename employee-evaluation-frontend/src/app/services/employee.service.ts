@@ -48,6 +48,15 @@ export class EmployeeService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  getByRole(role: string): Observable<Employee[]> {
+    return this.http.get<Employee[]>(`${this.apiUrl}/role/${role}`);
+  }
+
+  /** Returns employees whose N1 is the given manager */
+  getSousN1(n1Id: number): Observable<Employee[]> {
+    return this.http.get<Employee[]>(`${this.apiUrl}/sous-n1/${n1Id}`);
+  }
+
   assignHierarchy(id: number, n1Id?: number | null, n2Id?: number | null): Observable<void> {
     let url = `${this.apiUrl}/${id}/hierarchie?`;
     if (n1Id) url += `n1Id=${n1Id}&`;

@@ -2,9 +2,12 @@ package com.atb.employeeevaluation.service.impl;
 
 import com.atb.employeeevaluation.dto.AuthRequest;
 import com.atb.employeeevaluation.dto.AuthResponse;
+import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.dto.RefreshTokenRequest;
 import com.atb.employeeevaluation.entity.Employe;
+import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
+import com.atb.employeeevaluation.mapper.EmployeMapper;
 import com.atb.employeeevaluation.repository.EmployeRepository;
 import com.atb.employeeevaluation.security.JwtUtil;
 import com.atb.employeeevaluation.service.AuthService;
@@ -28,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final EmployeRepository employeRepository;
+    private final EmployeMapper employeMapper;
 
     // Blacklist des tokens (en mémoire - pour démo)
     // En production, utiliser Redis ou une base de données
@@ -51,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Connexion réussie pour: {}", employe.getMatricule());
 
         return new AuthResponse(
+                employe.getId(),
                 token,
                 refreshToken,
                 employe.getMatricule(),
@@ -80,10 +85,10 @@ public class AuthServiceImpl implements AuthService {
         String newToken = jwtUtil.generateToken(username);
         String newRefreshToken = jwtUtil.generateRefreshToken(username);
 
-        // Invalider l'ancien refresh token
         tokenBlacklist.add(refreshToken);
 
         return new AuthResponse(
+                employe.getId(),
                 newToken,
                 newRefreshToken,
                 employe.getMatricule(),
@@ -110,9 +115,15 @@ public class AuthServiceImpl implements AuthService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedOperationException("Utilisateur non authentifié");
         }
-
         String matricule = authentication.getName();
         return employeRepository.findByMatricule(matricule)
                 .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+    }
+
+    @Override
+    public EmployeDTO getEmployeByMatricule(String matricule) {
+        Employe employe = employeRepository.findByMatricule(matricule)
+                .orElseThrow(() -> new ResourceNotFoundException("Employé non trouvé: " + matricule));
+        return employeMapper.toDto(employe);
     }
 }

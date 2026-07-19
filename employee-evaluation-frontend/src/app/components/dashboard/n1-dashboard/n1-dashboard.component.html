@@ -1,2 +1,260 @@
-<h1>N+1</h1>
-<p>Bienvenue sur votre tableau de bord.</p>
+<div class="n1-dash enterprise-page">
+
+  <!-- ── Loading skeleton ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="n1-skeleton">
+    <div class="skel-hero"></div>
+    <div class="skel-stats">
+      <div class="skel-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+    <div class="skel-campaigns">
+      <div class="skel-campaign-card" *ngFor="let i of [1,2]"></div>
+    </div>
+  </div>
+
+  <!-- ── Main content ──────────────────────────────────────────────────── -->
+  <div *ngIf="!loading" class="n1-content">
+
+    <!-- ── Hero greeting ──────────────────────────────────────────────── -->
+    <div class="n1-hero">
+      <div class="n1-hero-bg"></div>
+      <div class="n1-hero-inner">
+        <div class="n1-hero-text">
+          <div class="n1-greeting-badge">
+            <app-lucide-icon name="zap" [size]="14"></app-lucide-icon>
+            Manager N+1
+          </div>
+          <h1 class="n1-hero-title">
+            {{ greeting }}, {{ currentUser?.prenom }} {{ currentUser?.nom }} 👋
+          </h1>
+          <p class="n1-hero-sub" *ngIf="pendingCount > 0">
+            Vous avez <strong>{{ pendingCount }} évaluation{{ pendingCount > 1 ? 's' : '' }} en attente</strong>
+            sur {{ openCampaigns.length }} campagne{{ openCampaigns.length > 1 ? 's' : '' }} ouverte{{ openCampaigns.length > 1 ? 's' : '' }}.
+          </p>
+          <p class="n1-hero-sub n1-hero-all-done" *ngIf="pendingCount === 0 && !loading">
+            🎉 Toutes vos évaluations sont terminées !
+          </p>
+          <div class="n1-hero-actions">
+            <a routerLink="/n1/evaluer" class="btn-n1-primary">
+              <app-lucide-icon name="pen-square" [size]="18"></app-lucide-icon>
+              Évaluer les employés
+            </a>
+            <button class="btn-n1-outline" (click)="goToHistory()">
+              <app-lucide-icon name="clock" [size]="16"></app-lucide-icon>
+              Historique
+            </button>
+          </div>
+        </div>
+        <div class="n1-hero-visual">
+          <div class="n1-progress-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="50" class="ring-track"/>
+              <circle cx="60" cy="60" r="50" class="ring-fill"
+                [style.stroke-dasharray]="314"
+                [style.stroke-dashoffset]="314 - (314 * display.progress / 100)"/>
+            </svg>
+            <div class="ring-label">
+              <span class="ring-pct">{{ display.progress }}%</span>
+              <span class="ring-sub">progression</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Stat cards ─────────────────────────────────────────────────── -->
+    <div class="n1-stats-grid">
+
+      <div class="n1-stat-card n1-stat-campaigns" style="animation-delay:0.05s">
+        <div class="nsc-icon">
+          <app-lucide-icon name="megaphone" [size]="24"></app-lucide-icon>
+        </div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.campaigns }}</span>
+          <span class="nsc-label">Campagnes ouvertes</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+      <div class="n1-stat-card n1-stat-pending" style="animation-delay:0.1s">
+        <div class="nsc-icon">
+          <app-lucide-icon name="users" [size]="24"></app-lucide-icon>
+        </div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.toEvaluate }}</span>
+          <span class="nsc-label">Employés à évaluer</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+      <div class="n1-stat-card n1-stat-done" style="animation-delay:0.15s">
+        <div class="nsc-icon">
+          <app-lucide-icon name="check-circle" [size]="24"></app-lucide-icon>
+        </div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.done }}</span>
+          <span class="nsc-label">Évaluations terminées</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+      <div class="n1-stat-card n1-stat-progress" style="animation-delay:0.2s">
+        <div class="nsc-icon">
+          <app-lucide-icon name="trending-up" [size]="24"></app-lucide-icon>
+        </div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.progress }}<span class="nsc-unit">%</span></span>
+          <span class="nsc-label">Taux de progression</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+    </div>
+
+    <!-- ── Open campaigns ─────────────────────────────────────────────── -->
+    <section class="n1-section">
+      <div class="n1-section-header">
+        <div class="n1-section-title">
+          <app-lucide-icon name="megaphone" [size]="20"></app-lucide-icon>
+          <h2>Campagnes ouvertes</h2>
+          <span class="n1-count-pill">{{ openCampaigns.length }}</span>
+        </div>
+        <a routerLink="/n1/evaluer" class="btn-n1-text">
+          Voir toutes
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </a>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="openCampaigns.length === 0" class="n1-empty">
+        <div class="n1-empty-icon">
+          <app-lucide-icon name="megaphone" [size]="44"></app-lucide-icon>
+        </div>
+        <h3>Aucune campagne ouverte actuellement</h3>
+        <p>Vous serez notifié dès qu'une nouvelle campagne sera disponible.</p>
+      </div>
+
+      <!-- Campaign cards grid -->
+      <div class="n1-campaigns-grid" *ngIf="openCampaigns.length > 0">
+        <div class="n1-campaign-card"
+             *ngFor="let ev of openCampaigns; trackBy: trackById; let i = index"
+             [style.animation-delay.ms]="i * 80"
+             [class.n1-campaign-complete]="isAllDone(ev)">
+
+          <!-- Card top accent -->
+          <div class="ncc-accent"></div>
+
+          <!-- Header -->
+          <div class="ncc-header">
+            <div class="ncc-avatar" [ngClass]="'ncc-avatar-' + (i % 4)">
+              {{ getInitials(ev.nomEvaluation, '') }}
+            </div>
+            <div class="ncc-meta">
+              <h3 class="ncc-name">{{ ev.nomEvaluation }}</h3>
+              <span class="badge-campaign-open">
+                <span class="badge-dot"></span>
+                Ouverte
+              </span>
+            </div>
+            <div class="ncc-complete-badge" *ngIf="isAllDone(ev)">
+              <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+              Terminée
+            </div>
+          </div>
+
+          <!-- Date range + remaining days -->
+          <div class="ncc-dates">
+            <div class="ncc-date-item">
+              <app-lucide-icon name="calendar" [size]="13"></app-lucide-icon>
+              Du {{ formatDate(ev.dateDebut) }}
+            </div>
+            <div class="ncc-date-sep">→</div>
+            <div class="ncc-date-item">
+              <app-lucide-icon name="calendar" [size]="13"></app-lucide-icon>
+              {{ formatDate(ev.dateFin) }}
+            </div>
+            <div class="ncc-remaining" [ngClass]="'remaining-' + getRemainingClass(getRemainingDays(ev.dateFin))">
+              <app-lucide-icon name="clock" [size]="12"></app-lucide-icon>
+              {{ getRemainingDays(ev.dateFin) }} j. restants
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="ncc-progress-section">
+            <div class="ncc-progress-label">
+              <span>Progression</span>
+              <span class="ncc-progress-val">
+                {{ getCampaignDone(ev) }}/{{ myEmployees.length }} employés
+              </span>
+            </div>
+            <div class="ncc-progress-track">
+              <div class="ncc-progress-fill"
+                   [style.width.%]="getCampaignProgress(ev)"
+                   [class.fill-complete]="isAllDone(ev)">
+              </div>
+            </div>
+            <span class="ncc-progress-pct">{{ getCampaignProgress(ev) }}%</span>
+          </div>
+
+          <!-- Employees count -->
+          <div class="ncc-info-row">
+            <app-lucide-icon name="users" [size]="14"></app-lucide-icon>
+            <span>{{ myEmployees.length }} employé{{ myEmployees.length > 1 ? 's' : '' }} à évaluer</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="ncc-actions">
+            <button class="btn-n1-primary ncc-btn-full"
+                    *ngIf="!isAllDone(ev)"
+                    (click)="evaluateCampaign(ev)">
+              <app-lucide-icon
+                [name]="getCampaignDone(ev) > 0 ? 'play' : 'pen-square'"
+                [size]="16">
+              </app-lucide-icon>
+              {{ getCampaignDone(ev) > 0 ? 'Continuer' : 'Commencer les évaluations' }}
+            </button>
+            <button class="btn-n1-success ncc-btn-full" *ngIf="isAllDone(ev)" disabled>
+              <app-lucide-icon name="check-circle" [size]="16"></app-lucide-icon>
+              Toutes les évaluations sont complètes
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── My team quick overview ──────────────────────────────────────── -->
+    <section class="n1-section" *ngIf="myEmployees.length > 0">
+      <div class="n1-section-header">
+        <div class="n1-section-title">
+          <app-lucide-icon name="users" [size]="20"></app-lucide-icon>
+          <h2>Mon équipe</h2>
+          <span class="n1-count-pill">{{ myEmployees.length }}</span>
+        </div>
+        <a routerLink="/n1/evaluer" class="btn-n1-text">
+          Évaluer
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </a>
+      </div>
+
+      <div class="n1-team-grid">
+        <div class="n1-team-card"
+             *ngFor="let emp of myEmployees; trackBy: trackById; let i = index"
+             [style.animation-delay.ms]="i * 60">
+          <div class="ntc-avatar">{{ getInitials(emp.prenom, emp.nom) }}</div>
+          <div class="ntc-info">
+            <span class="ntc-name">{{ emp.prenom }} {{ emp.nom }}</span>
+            <span class="ntc-role">{{ emp.role }}</span>
+          </div>
+          <div class="ntc-status">
+            <span class="ntc-badge"
+                  [ngClass]="getFicheStatusForEmployee(emp) === 'Terminé' ? 'ntc-done'
+                            : getFicheStatusForEmployee(emp) === 'En cours' ? 'ntc-progress'
+                            : 'ntc-pending'">
+              {{ getFicheStatusForEmployee(emp) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

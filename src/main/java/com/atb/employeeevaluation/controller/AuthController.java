@@ -42,10 +42,19 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(Authentication authentication) {
+        String matricule = authentication.getName();
+        // Fetch full employee record so the frontend gets the real database ID
+        com.atb.employeeevaluation.dto.EmployeDTO employe =
+                authService.getEmployeByMatricule(matricule);
+
         Map<String, Object> response = new HashMap<>();
-        response.put("username", authentication.getName());
-        response.put("authorities", authentication.getAuthorities());
-        response.put("authenticated", authentication.isAuthenticated());
+        response.put("id",        employe.getId());
+        response.put("matricule", employe.getMatricule());
+        response.put("nom",       employe.getNom());
+        response.put("prenom",    employe.getPrenom());
+        response.put("email",     employe.getEmail());
+        response.put("role",      employe.getRole().toString());
+        response.put("actif",     employe.getActif());
         return ResponseEntity.ok(response);
     }
 }

@@ -11,14 +11,14 @@ export interface FicheEvaluation {
   evaluationId: number;
   evaluationNom: string;
   dateCreation: string;
-  reponsesN1: { [key: number]: number };
-  noteN1: number;
-  commentaireN1: string;
+  reponsesN1: { [key: number]: number } | null;
+  noteN1: number | null;
+  commentaireN1: string | null;
   decisionN2: string | null;
   commentaireN2: string | null;
   decisionEmploye: string | null;
   noteFinale: number | null;
-  statut: string;
+  statut: string; // EN_ATTENTE | EN_COURS_N1 | EN_ATTENTE_N2 | A_REVISER | EN_ATTENTE_EMPLOYE | CLOTUREE
 }
 
 export interface EvaluationN1Request {
@@ -33,30 +33,24 @@ export interface ValidationN2Request {
   commentaire: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class FicheService {
   private apiUrl = `${environment.apiUrl}/fiches`;
 
   constructor(private http: HttpClient) {}
 
-  // ============ EVALUATION N+1 ============
   evaluerParN1(request: EvaluationN1Request): Observable<FicheEvaluation> {
     return this.http.post<FicheEvaluation>(`${this.apiUrl}/evaluer`, request);
   }
 
-  // ============ VALIDATION N+2 ============
   validerParN2(ficheId: number, request: ValidationN2Request): Observable<FicheEvaluation> {
     return this.http.patch<FicheEvaluation>(`${this.apiUrl}/${ficheId}/n2`, request);
   }
 
-  // ============ VALIDATION EMPLOYÉ ============
   validerParEmploye(ficheId: number, accepte: boolean): Observable<FicheEvaluation> {
     return this.http.patch<FicheEvaluation>(`${this.apiUrl}/${ficheId}/employe?accepte=${accepte}`, {});
   }
 
-  // ============ CONSULTATION ============
   getById(id: number): Observable<FicheEvaluation> {
     return this.http.get<FicheEvaluation>(`${this.apiUrl}/${id}`);
   }
@@ -71,5 +65,10 @@ export class FicheService {
 
   getByStatut(statut: string): Observable<FicheEvaluation[]> {
     return this.http.get<FicheEvaluation[]>(`${this.apiUrl}/statut/${statut}`);
+  }
+
+  /** Get all fiches for the employees managed by this N+1 */
+  getByN1(n1Id: number): Observable<FicheEvaluation[]> {
+    return this.http.get<FicheEvaluation[]>(`${this.apiUrl}/n1/${n1Id}`);
   }
 }

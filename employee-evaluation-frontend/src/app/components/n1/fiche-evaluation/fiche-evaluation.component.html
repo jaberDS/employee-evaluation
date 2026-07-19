@@ -1,0 +1,210 @@
+<div class="n1-eval-form-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="n1-form-skeleton">
+    <div class="skel-hero"></div>
+    <div class="skel-progress-bar"></div>
+    <div *ngFor="let i of [1,2,3]" class="skel-question"></div>
+  </div>
+
+  <!-- ── Success screen ────────────────────────────────────────────────── -->
+  <div *ngIf="showSuccess" class="n1-success-screen">
+    <div class="n1-success-card">
+      <div class="n1-success-anim">
+        <div class="success-ring"></div>
+        <div class="success-icon">
+          <app-lucide-icon name="check-circle" [size]="52"></app-lucide-icon>
+        </div>
+      </div>
+      <h2>Évaluation soumise avec succès !</h2>
+      <p>L'évaluation de <strong>{{ employee?.prenom }} {{ employee?.nom }}</strong>
+         a été transmise pour validation N+2.</p>
+      <div class="n1-success-actions">
+        <button class="btn-n1-primary" (click)="goBack()">
+          <app-lucide-icon name="arrow-left" [size]="16"></app-lucide-icon>
+          Continuer les évaluations
+        </button>
+        <button class="btn-n1-outline" (click)="goToHistory()">
+          <app-lucide-icon name="clock" [size]="16"></app-lucide-icon>
+          Voir l'historique
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main form ─────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !showSuccess" class="n1-form-wrap">
+
+    <!-- Sticky header -->
+    <div class="n1-form-header">
+      <button class="n1-back-btn" (click)="goBack()">
+        <app-lucide-icon name="arrow-left" [size]="18"></app-lucide-icon>
+      </button>
+
+      <div class="n1-form-header-info">
+        <div class="n1-form-emp-avatar">
+          {{ getInitials(employee?.prenom ?? '', employee?.nom ?? '') }}
+        </div>
+        <div class="n1-form-title-wrap">
+          <h2>{{ employee?.prenom }} {{ employee?.nom }}</h2>
+          <span>{{ campaign?.nomEvaluation }}</span>
+        </div>
+      </div>
+
+      <div class="n1-form-header-right">
+        <div class="n1-autosave" *ngIf="autoSaveLabel">
+          <app-lucide-icon name="save" [size]="13"></app-lucide-icon>
+          {{ autoSaveLabel }}
+        </div>
+        <div class="n1-form-counter">
+          {{ answeredCount }} / {{ questions.length }} réponses
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="n1-form-progress-wrap">
+      <div class="n1-form-progress-track">
+        <div class="n1-form-progress-fill"
+             [style.width.%]="progressPct"
+             [class.progress-complete]="progressPct === 100">
+        </div>
+      </div>
+      <span class="n1-form-progress-label">{{ progressPct }}%</span>
+    </div>
+
+    <!-- Questions -->
+    <div class="n1-questions-list">
+      <div *ngFor="let q of questions; let i = index"
+           class="n1-q-card"
+           [id]="'q-' + q.id"
+           [class.n1-q-unanswered]="isUnanswered(q)"
+           [class.n1-q-answered]="answers[q.id!] !== undefined && answers[q.id!] !== ''"
+           [style.animation-delay.ms]="i * 50">
+
+        <!-- Question header -->
+        <div class="n1-q-header">
+          <div class="n1-q-num">{{ i + 1 }}</div>
+          <div class="n1-q-type-badge" [ngClass]="'qtype-' + q.typeQuestion.toLowerCase()">
+            <app-lucide-icon [name]="getTypeIcon(q.typeQuestion)" [size]="12"></app-lucide-icon>
+            {{ getTypeLabel(q.typeQuestion) }}
+          </div>
+          <span *ngIf="q.obligatoire" class="n1-q-required">Obligatoire</span>
+        </div>
+
+        <!-- Question text -->
+        <p class="n1-q-text">{{ q.libelle }}</p>
+        <p class="n1-q-desc" *ngIf="q.description">{{ q.description }}</p>
+
+        <!-- Validation error -->
+        <div class="n1-q-error" *ngIf="isUnanswered(q)">
+          <app-lucide-icon name="alert-triangle" [size]="14"></app-lucide-icon>
+          Cette question est obligatoire
+        </div>
+
+        <!-- ── NOTE (professional score scale) ─────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'NOTE'" class="n1-rating-wrap">
+          <div class="n1-score-toolbar">
+            <div class="n1-score-copy">
+              <span class="n1-score-kicker">Score</span>
+              <span class="n1-score-help">Sélectionnez une note de 1 à {{ q.noteMax }}</span>
+            </div>
+            <div class="n1-rating-label" [class.has-value]="getRatingValue(q.id!) > 0">
+              <span class="n1-rating-val">{{ getRatingValue(q.id!) || '-' }}</span>
+              <span>/ {{ q.noteMax }}</span>
+            </div>
+          </div>
+
+          <div class="n1-score-scale" role="radiogroup" [attr.aria-label]="'Note pour ' + q.libelle">
+            <button *ngFor="let score of ratingSteps(q.noteMax)"
+                    class="n1-score-btn"
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="getRatingValue(q.id!) === score"
+                    [class.active]="getRatingValue(q.id!) === score"
+                    [class.selected-range]="getRatingValue(q.id!) >= score"
+                    (click)="setAnswer(q.id!, score)">
+              {{ score }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ── OUI / NON ───────────────────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'OUI_NON'" class="n1-oui-non-wrap">
+          <button type="button"
+                  class="n1-yn-btn"
+                  [class.n1-yn-yes]="getOuiNonValue(q.id!) === true"
+                  (click)="setAnswer(q.id!, true)">
+            <app-lucide-icon name="check-circle" [size]="20"></app-lucide-icon>
+            Oui
+          </button>
+          <button type="button"
+                  class="n1-yn-btn"
+                  [class.n1-yn-no]="getOuiNonValue(q.id!) === false"
+                  (click)="setAnswer(q.id!, false)">
+            <app-lucide-icon name="x" [size]="20"></app-lucide-icon>
+            Non
+          </button>
+        </div>
+
+        <!-- ── TEXTE ───────────────────────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'TEXTE'" class="n1-text-wrap">
+          <input type="text"
+                 class="n1-text-input"
+                 placeholder="Votre réponse..."
+                 [value]="getTextValue(q.id!)"
+                 (input)="setAnswer(q.id!, $any($event.target).value)"
+                 [attr.aria-label]="q.libelle"/>
+        </div>
+
+        <!-- ── COMMENTAIRE ─────────────────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'COMMENTAIRE'" class="n1-comment-wrap">
+          <textarea class="n1-comment-textarea"
+                    rows="4"
+                    placeholder="Votre commentaire..."
+                    [value]="getTextValue(q.id!)"
+                    (input)="setAnswer(q.id!, $any($event.target).value)"
+                    [attr.aria-label]="q.libelle">
+          </textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Global comment -->
+    <div class="n1-global-comment">
+      <label class="n1-comment-label">
+        <app-lucide-icon name="message-square" [size]="16"></app-lucide-icon>
+        Commentaire général (optionnel)
+      </label>
+      <textarea class="n1-comment-textarea"
+                rows="4"
+                placeholder="Ajoutez un commentaire général sur cette évaluation..."
+                [(ngModel)]="commentaire">
+      </textarea>
+    </div>
+
+    <!-- Action bar -->
+    <div class="n1-form-actions">
+      <button class="btn-n1-ghost" (click)="goBack()">
+        <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+        Annuler
+      </button>
+      <button class="btn-n1-outline" (click)="saveDraft()" [disabled]="submitting">
+        <app-lucide-icon name="save" [size]="16"></app-lucide-icon>
+        Sauvegarder brouillon
+      </button>
+      <button class="btn-n1-primary" (click)="submitEvaluation()" [disabled]="submitting">
+        <span *ngIf="!submitting" class="btn-inner">
+          <app-lucide-icon name="check-circle" [size]="17"></app-lucide-icon>
+          Soumettre l'évaluation
+        </span>
+        <span *ngIf="submitting" class="btn-inner">
+          <span class="n1-spinner"></span>
+          Soumission en cours...
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>

@@ -36,6 +36,11 @@ import { FicheListComponent } from './components/fiches/fiche-list/fiche-list.co
 import { FicheEvaluationComponent } from './components/fiches/fiche-evaluation/fiche-evaluation.component';
 import { FicheDetailComponent } from './components/fiches/fiche-detail/fiche-detail.component';
 
+// N1 feature components
+import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evaluer-employes.component';
+import { N1FicheEvaluationComponent } from './components/n1/fiche-evaluation/fiche-evaluation.component';
+import { N1HistoriqueComponent } from './components/n1/historique/historique.component';
+
 // Profil
 import { ProfileComponent } from './components/profile/profile.component';
 
@@ -118,6 +123,25 @@ const routes: Routes = [
       { path: '', component: FicheListComponent },
       { path: 'evaluate', component: FicheEvaluationComponent },
       { path: ':id', component: FicheDetailComponent }
+    ]
+  },
+
+  // ========== N1 — ESPACE MANAGER ==========
+  {
+    path: 'n1',
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['N1'] },
+    children: [
+      // Évaluer les employés (liste) — optionnel :campaignId pour pré-sélectionner
+      { path: 'evaluer',                              component: EvaluerEmployesComponent },
+      { path: 'evaluer/:campaignId',                  component: EvaluerEmployesComponent },
+      // Formulaire de questionnaire pour un employé donné
+      { path: 'evaluer/:campaignId/employe/:employeeId', component: N1FicheEvaluationComponent },
+      // Historique des évaluations soumises
+      { path: 'historique',                           component: N1HistoriqueComponent },
+      { path: 'historique/:ficheId',                  component: N1HistoriqueComponent },
+      // Redirection par défaut
+      { path: '', redirectTo: 'evaluer', pathMatch: 'full' }
     ]
   },
 

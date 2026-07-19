@@ -10,6 +10,7 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
+  id: number;
   token: string;
   refreshToken: string;
   matricule: string;
@@ -53,6 +54,16 @@ export class AuthService {
       try {
         const user = JSON.parse(userJson);
         this.currentUserSubject.next(user);
+        // If the stored user has no real ID (legacy session), refresh it
+        if (!user.id || user.id === 0) {
+          this.http.get<User>(`${this.apiUrl}/me`).subscribe({
+            next: (fresh) => {
+              localStorage.setItem(this.userKey, JSON.stringify(fresh));
+              this.currentUserSubject.next(fresh);
+            },
+            error: () => {} // token expired — auth guard will redirect to login
+          });
+        }
       } catch (e) {
         this.clearSession();
       }
@@ -102,13 +113,13 @@ export class AuthService {
     localStorage.setItem(this.tokenKey, authResponse.token);
     localStorage.setItem(this.refreshTokenKey, authResponse.refreshToken);
     const user: User = {
-      id: 0,
+      id:        authResponse.id,          // real DB id from login response
       matricule: authResponse.matricule,
-      nom: authResponse.nom,
-      prenom: authResponse.prenom,
-      email: '',
-      role: authResponse.role,
-      actif: true
+      nom:       authResponse.nom,
+      prenom:    authResponse.prenom,
+      email:     '',
+      role:      authResponse.role,
+      actif:     true
     };
     localStorage.setItem(this.userKey, JSON.stringify(user));
     this.currentUserSubject.next(user);
