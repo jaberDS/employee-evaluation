@@ -47,13 +47,14 @@
                 <app-lucide-icon name="badge" [size]="18"></app-lucide-icon>
               </span>
               <input type="text" id="emp-matricule" formControlName="matricule" [readonly]="isEdit"
-                     placeholder=" " class="emp-input" [class.emp-readonly]="isEdit">
+                     placeholder=" " class="emp-input" [class.emp-readonly]="isEdit" maxlength="5">
               <label for="emp-matricule" class="emp-float-label">Matricule</label>
               <span class="emp-focus-line"></span>
             </div>
             <div class="emp-field-feedback" *ngIf="submitted && employeeForm.get('matricule')?.errors">
               <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
-              Le matricule est obligatoire
+              <span *ngIf="employeeForm.get('matricule')?.errors?.['required']">Le matricule est obligatoire</span>
+              <span *ngIf="employeeForm.get('matricule')?.errors?.['pattern']">Le matricule doit contenir exactement 5 chiffres</span>
             </div>
           </div>
 
@@ -139,6 +140,46 @@
                 <option value="EMPLOYE">👤 Employé</option>
               </select>
               <label for="emp-role" class="emp-float-label emp-float-label-select">Rôle</label>
+              <span class="emp-select-chevron">
+                <app-lucide-icon name="chevron-down" [size]="16"></app-lucide-icon>
+              </span>
+              <span class="emp-focus-line"></span>
+            </div>
+          </div>
+
+          <!-- N+1 -->
+          <div class="emp-field-group">
+            <div class="emp-input-wrap emp-select-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="users" [size]="18"></app-lucide-icon>
+              </span>
+              <select id="emp-n1" formControlName="n1Id" class="emp-input emp-select">
+                <option [ngValue]="null">-- Aucun N+1 --</option>
+                <option *ngFor="let emp of n1Candidates" [ngValue]="emp.id">
+                  {{ emp.nom }} {{ emp.prenom }} ({{ emp.matricule }})
+                </option>
+              </select>
+              <label for="emp-n1" class="emp-float-label emp-float-label-select">Responsable N+1</label>
+              <span class="emp-select-chevron">
+                <app-lucide-icon name="chevron-down" [size]="16"></app-lucide-icon>
+              </span>
+              <span class="emp-focus-line"></span>
+            </div>
+          </div>
+
+          <!-- N+2 -->
+          <div class="emp-field-group">
+            <div class="emp-input-wrap emp-select-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="users" [size]="18"></app-lucide-icon>
+              </span>
+              <select id="emp-n2" formControlName="n2Id" class="emp-input emp-select">
+                <option [ngValue]="null">-- Aucun N+2 --</option>
+                <option *ngFor="let emp of n2Candidates" [ngValue]="emp.id">
+                  {{ emp.nom }} {{ emp.prenom }} ({{ emp.matricule }})
+                </option>
+              </select>
+              <label for="emp-n2" class="emp-float-label emp-float-label-select">Responsable N+2</label>
               <span class="emp-select-chevron">
                 <app-lucide-icon name="chevron-down" [size]="16"></app-lucide-icon>
               </span>

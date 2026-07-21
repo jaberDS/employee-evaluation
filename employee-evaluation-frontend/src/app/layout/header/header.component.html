@@ -48,10 +48,57 @@
       </button>
 
       <!-- Notifications -->
-      <button class="header-icon-btn" aria-label="Notifications (3 non lues)">
-        <app-lucide-icon name="bell" [size]="18" className="bell-icon"></app-lucide-icon>
-        <span class="notif-badge" *ngIf="notificationCount > 0" aria-hidden="true"></span>
-      </button>
+      <div class="notif-wrapper" (click)="$event.stopPropagation()">
+        <button
+          class="header-icon-btn"
+          (click)="toggleNotifications($event)"
+          [attr.aria-label]="'Notifications (' + notificationCount + ' récentes)'"
+          [attr.aria-expanded]="showNotifications">
+          <app-lucide-icon name="bell" [size]="18" className="bell-icon"></app-lucide-icon>
+          <span class="notif-badge" *ngIf="notificationCount > 0" aria-hidden="true">{{ notificationCount }}</span>
+        </button>
+
+        <div class="notif-dropdown" *ngIf="showNotifications" @dropdownPop role="menu" aria-label="Activité récente">
+          <div class="notif-header">
+            <div class="notif-header-title">
+              <app-lucide-icon name="activity" [size]="16"></app-lucide-icon>
+              <span>Activité récente</span>
+            </div>
+            <span class="notif-count-pill" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+          </div>
+
+          <div class="notif-body" [@listStagger]="notifications.length">
+            <div class="notif-loading" *ngIf="loadingNotifications">
+              <span class="notif-spinner"></span>
+            </div>
+
+            <ng-container *ngIf="!loadingNotifications">
+              <div class="notif-item" *ngFor="let item of notifications" role="menuitem">
+                <div class="notif-item-icon" [style.background]="item.color + '18'" [style.color]="item.color">
+                  <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
+                </div>
+                <div class="notif-item-content">
+                  <span class="notif-item-text">{{ item.text }}</span>
+                  <span class="notif-item-time">{{ item.time }}</span>
+                </div>
+              </div>
+
+              <div class="notif-empty" *ngIf="notifications.length === 0">
+                <app-lucide-icon name="bell" [size]="28"></app-lucide-icon>
+                <p>Aucune activité pour le moment</p>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="notif-footer" *ngIf="isAdmin && notifications.length > 0">
+            <button type="button" class="notif-clear-btn" (click)="clearAllNotifications($event)" [disabled]="clearingNotifications">
+              <span class="notif-spinner notif-spinner-sm" *ngIf="clearingNotifications"></span>
+              <app-lucide-icon *ngIf="!clearingNotifications" name="trash-2" [size]="15"></app-lucide-icon>
+              <span>Effacer tout l'historique</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- User -->
       <a routerLink="/profile" class="header-user-block text-decoration-none" aria-label="Mon profil">

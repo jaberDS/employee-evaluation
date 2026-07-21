@@ -3,9 +3,11 @@ package com.atb.employeeevaluation.service.impl;
 import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.entity.Employe;
 import com.atb.employeeevaluation.enums.Role;
+import com.atb.employeeevaluation.enums.TypeActivite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.mapper.EmployeMapper;
 import com.atb.employeeevaluation.repository.EmployeRepository;
+import com.atb.employeeevaluation.service.ActiviteLogService;
 import com.atb.employeeevaluation.service.EmployeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +25,7 @@ public class EmployeServiceImpl implements EmployeService {
     private final EmployeRepository employeRepository;
     private final EmployeMapper employeMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ActiviteLogService activiteLogService;
 
     @Override
     public EmployeDTO createEmploye(EmployeDTO dto) {
@@ -37,7 +40,15 @@ public class EmployeServiceImpl implements EmployeService {
         }
         Employe employe = employeMapper.toEntity(dto);
         employe.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
+        if (dto.getN1Id() != null) {
+            employe.setN1(findEntityById(dto.getN1Id()));
+        }
+        if (dto.getN2Id() != null) {
+            employe.setN2(findEntityById(dto.getN2Id()));
+        }
         employe = employeRepository.save(employe);
+        activiteLogService.log(TypeActivite.EMPLOYE_CREE,
+                "Nouvel employé ajouté — " + employe.getPrenom() + " " + employe.getNom());
         return employeMapper.toDto(employe);
     }
 
@@ -52,7 +63,20 @@ public class EmployeServiceImpl implements EmployeService {
         if (dto.getMotDePasse() != null && !dto.getMotDePasse().isEmpty()) {
             existant.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
         }
-        return employeMapper.toDto(employeRepository.save(existant));
+        if (dto.getN1Id() != null) {
+            existant.setN1(findEntityById(dto.getN1Id()));
+        } else {
+            existant.setN1(null);
+        }
+        if (dto.getN2Id() != null) {
+            existant.setN2(findEntityById(dto.getN2Id()));
+        } else {
+            existant.setN2(null);
+        }
+        Employe saved = employeRepository.save(existant);
+        activiteLogService.log(TypeActivite.EMPLOYE_MODIFIE,
+                "Employé modifié — " + saved.getPrenom() + " " + saved.getNom());
+        return employeMapper.toDto(saved);
     }
 
     @Override
@@ -90,10 +114,11 @@ public class EmployeServiceImpl implements EmployeService {
 
     @Override
     public void deleteEmploye(Long id) {
-        if (!employeRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Employé non trouvé avec id: " + id);
-        }
+        Employe employe = findEntityById(id);
+        String nomComplet = employe.getPrenom() + " " + employe.getNom();
         employeRepository.deleteById(id);
+        activiteLogService.log(TypeActivite.EMPLOYE_SUPPRIME,
+                "Employé supprimé — " + nomComplet);
     }
 
     @Override

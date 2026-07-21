@@ -36,9 +36,9 @@ public class FicheEvaluationMapper {
         // Convertir le JSON en Map
         if (entity.getReponsesN1() != null) {
             try {
-                Map<Long, Integer> reponses = objectMapper.readValue(
+                Map<Long, Double> reponses = objectMapper.readValue(
                         entity.getReponsesN1(),
-                        new TypeReference<Map<Long, Integer>>() {}
+                        new TypeReference<Map<Long, Double>>() {}
                 );
                 dto.setReponsesN1(reponses);
             } catch (Exception e) {

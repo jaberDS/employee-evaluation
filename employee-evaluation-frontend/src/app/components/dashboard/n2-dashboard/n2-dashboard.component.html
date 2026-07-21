@@ -1,2 +1,205 @@
-<h1>N+2</h1>
-<p>Bienvenue sur votre tableau de bord.</p>
+<div class="n2-dash enterprise-page">
+
+  <!-- ── Loading skeleton ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="n2-skeleton">
+    <div class="skel-hero"></div>
+    <div class="skel-stats">
+      <div class="skel-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+    <div class="skel-list">
+      <div class="skel-row" *ngFor="let i of [1,2]" style="height:220px"></div>
+    </div>
+  </div>
+
+  <!-- ── Main content ──────────────────────────────────────────────────── -->
+  <div *ngIf="!loading" class="n2-content">
+
+    <!-- ── Hero ────────────────────────────────────────────��─────────────── -->
+    <div class="n2-hero">
+      <div class="n2-hero-bg"></div>
+      <div class="n2-hero-inner">
+        <div class="n2-hero-text">
+          <div class="n2-greeting-badge">
+            <app-lucide-icon name="shield" [size]="14"></app-lucide-icon>
+            Validateur N+2
+          </div>
+          <h1 class="n2-hero-title">
+            {{ greeting }}, {{ currentUser?.prenom }} {{ currentUser?.nom }} 👋
+          </h1>
+          <p class="n2-hero-sub" *ngIf="pendingCount > 0">
+            Vous avez <strong>{{ pendingCount }} évaluation{{ pendingCount > 1 ? 's' : '' }} à valider</strong>.
+          </p>
+          <p class="n2-hero-sub n2-hero-all-done" *ngIf="pendingCount === 0">
+            🎉 Aucune évaluation en attente de validation.
+          </p>
+          <div class="n2-hero-actions">
+            <a class="btn-n2-primary" routerLink="/n2/valider">
+              <app-lucide-icon name="check-double" [size]="18"></app-lucide-icon>
+              Valider les évaluations
+            </a>
+          </div>
+        </div>
+        <div class="n2-hero-visual">
+          <div class="n2-progress-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="50" class="ring-track"/>
+              <circle cx="60" cy="60" r="50" class="ring-fill"
+                [style.stroke-dasharray]="314"
+                [style.stroke-dashoffset]="314 - (314 * avgProgressPercent / 100)"/>
+            </svg>
+            <div class="ring-label">
+              <span class="ring-pct">{{ display.avgNote }}</span>
+              <span class="ring-sub">/ 10 moyenne</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Stat cards ─────────────────────────────────────────────────── -->
+    <div class="n2-stats-grid">
+
+      <div class="n2-stat-card n2-stat-avg" style="animation-delay:0.05s">
+        <div class="nsc-icon"><app-lucide-icon name="star" [size]="24"></app-lucide-icon></div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.avgNote }}<span class="nsc-unit">/10</span></span>
+          <span class="nsc-label">Note moyenne globale</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+      <div class="n2-stat-card n2-stat-total" style="animation-delay:0.1s">
+        <div class="nsc-icon"><app-lucide-icon name="clipboard-check" [size]="24"></app-lucide-icon></div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.evaluated }}</span>
+          <span class="nsc-label">Employés évalués</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+      <div class="n2-stat-card n2-stat-accepted" style="animation-delay:0.15s">
+        <div class="nsc-icon"><app-lucide-icon name="trending-up" [size]="24"></app-lucide-icon></div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ display.best }}<span class="nsc-unit">/10</span></span>
+          <span class="nsc-label">Meilleure note</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+      <div class="n2-stat-card n2-stat-pending" style="animation-delay:0.2s">
+        <div class="nsc-icon"><app-lucide-icon name="clock" [size]="24"></app-lucide-icon></div>
+        <div class="nsc-body">
+          <span class="nsc-value">{{ pendingCount }}</span>
+          <span class="nsc-label">À valider</span>
+        </div>
+        <div class="nsc-glow"></div>
+      </div>
+
+    </div>
+
+    <!-- ── Note statistics ────────────────────────────────────────────── -->
+    <div class="n2-stats-row">
+
+      <!-- Distribution chart -->
+      <section class="n2-panel">
+        <div class="n2-section-header">
+          <div class="n2-section-title">
+            <app-lucide-icon name="bar-chart-3" [size]="20"></app-lucide-icon>
+            <h2>Répartition des notes</h2>
+          </div>
+        </div>
+
+        <div *ngIf="evaluatedCount === 0" class="n2-empty n2-empty-inline">
+          <div class="n2-empty-icon">
+            <app-lucide-icon name="bar-chart-3" [size]="36"></app-lucide-icon>
+          </div>
+          <h3>Aucune note pour le moment</h3>
+          <p>Les statistiques apparaîtront dès que les N+1 auront évalué les employés.</p>
+        </div>
+
+        <div *ngIf="evaluatedCount > 0" class="n2-chart">
+          <div class="n2-chart-bars">
+            <div class="n2-chart-col" *ngFor="let b of buckets; trackBy: trackById">
+              <div class="n2-chart-count">{{ b.count }}</div>
+              <div class="n2-chart-bar-track">
+                <div class="n2-chart-bar"
+                     [style.height.%]="bucketBarHeight(b)"
+                     [style.background]="b.color"></div>
+              </div>
+              <div class="n2-chart-label" [style.color]="b.color">{{ b.label }}</div>
+              <div class="n2-chart-range">{{ b.min }}–{{ b.max === 10 ? 10 : b.max }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary stats -->
+      <section class="n2-panel n2-panel-summary" *ngIf="evaluatedCount > 0">
+        <div class="n2-section-header">
+          <div class="n2-section-title">
+            <app-lucide-icon name="activity" [size]="20"></app-lucide-icon>
+            <h2>Synthèse</h2>
+          </div>
+        </div>
+
+        <div class="n2-summary-list">
+          <div class="n2-summary-item">
+            <span class="nsi-label">Note moyenne</span>
+            <span class="nsi-value note-good">{{ avgNote }}/10</span>
+          </div>
+          <div class="n2-summary-item">
+            <span class="nsi-label">Meilleure note</span>
+            <span class="nsi-value note-good">{{ bestNote }}/10</span>
+          </div>
+          <div class="n2-summary-item">
+            <span class="nsi-label">Note la plus basse</span>
+            <span class="nsi-value" [ngClass]="noteClass(worstNote)">{{ worstNote }}/10</span>
+          </div>
+          <div class="n2-summary-item">
+            <span class="nsi-label">Employés évalués</span>
+            <span class="nsi-value">{{ evaluatedCount }}</span>
+          </div>
+        </div>
+
+        <div class="n2-summary-bars">
+          <div class="n2-sbar" *ngFor="let b of buckets; trackBy: trackById">
+            <div class="n2-sbar-head">
+              <span class="n2-sbar-dot" [style.background]="b.color"></span>
+              <span class="n2-sbar-name">{{ b.label }}</span>
+              <span class="n2-sbar-pct">{{ bucketPercent(b) }}%</span>
+            </div>
+            <div class="n2-sbar-track">
+              <div class="n2-sbar-fill" [style.width.%]="bucketPercent(b)" [style.background]="b.color"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Top rated employees ────────────────────────────────────────── -->
+    <section class="n2-section" *ngIf="topRated.length > 0">
+      <div class="n2-section-header">
+        <div class="n2-section-title">
+          <app-lucide-icon name="award" [size]="20"></app-lucide-icon>
+          <h2>Meilleures évaluations</h2>
+          <span class="n2-count-pill">{{ topRated.length }}</span>
+        </div>
+      </div>
+
+      <div class="n2-history-list">
+        <div class="n2-history-row"
+             *ngFor="let f of topRated; trackBy: trackById; let i = index"
+             [style.animation-delay.ms]="i * 60">
+          <div class="nhr-rank" [class.nhr-rank-top]="i === 0">#{{ i + 1 }}</div>
+          <div class="nhr-avatar">{{ getInitials(f.employePrenom, f.employeNom) }}</div>
+          <div class="nhr-info">
+            <span class="nhr-name">{{ f.employePrenom }} {{ f.employeNom }}</span>
+            <span class="nhr-campaign">{{ f.evaluationNom }}</span>
+          </div>
+          <div class="nhr-note" [ngClass]="noteClass(f.noteN1)">{{ f.noteN1 }}/10</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

@@ -102,9 +102,15 @@
               </span>
             </td>
             <td class="text-center">
-              <button class="btn-icon-action btn-icon-view" (click)="openDetail(f)" title="Voir les détails">
-                <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
-              </button>
+              <div class="hist-action-group">
+                <button class="btn-icon-action btn-icon-revise" *ngIf="canRevise(f)"
+                        (click)="reviseFiche(f)" title="Modifier l'évaluation (à réviser)">
+                  <app-lucide-icon name="pen-square" [size]="16"></app-lucide-icon>
+                </button>
+                <button class="btn-icon-action btn-icon-view" (click)="openDetail(f)" title="Voir les détails">
+                  <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -225,6 +231,12 @@
       <button class="hist-detail-secondary" type="button" (click)="closeDetail()">
         <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
         Fermer
+      </button>
+      <button class="hist-detail-revise" type="button"
+              *ngIf="canRevise(selectedFiche)"
+              (click)="reviseFiche(selectedFiche)">
+        <app-lucide-icon name="pen-square" [size]="16"></app-lucide-icon>
+        Modifier l'évaluation
       </button>
     </footer>
   </section>

@@ -5,12 +5,14 @@ import com.atb.employeeevaluation.dto.QuestionDTO;
 import com.atb.employeeevaluation.entity.Evaluation;
 import com.atb.employeeevaluation.entity.Question;
 import com.atb.employeeevaluation.enums.StatutCampagne;
+import com.atb.employeeevaluation.enums.TypeActivite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
 import com.atb.employeeevaluation.mapper.EvaluationMapper;
 import com.atb.employeeevaluation.mapper.QuestionMapper;
 import com.atb.employeeevaluation.repository.EvaluationRepository;
 import com.atb.employeeevaluation.repository.QuestionRepository;
+import com.atb.employeeevaluation.service.ActiviteLogService;
 import com.atb.employeeevaluation.service.EvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class EvaluationServiceImpl implements EvaluationService {
     private final QuestionRepository questionRepository;
     private final EvaluationMapper evaluationMapper;
     private final QuestionMapper questionMapper;
+    private final ActiviteLogService activiteLogService;
 
     // ===================== CRUD Evaluation =====================
 
@@ -42,6 +45,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         Evaluation evaluation = evaluationMapper.toEntity(dto);
         evaluation.setStatut(StatutCampagne.BROUILLON);
         evaluation = evaluationRepository.save(evaluation);
+        activiteLogService.log(TypeActivite.CAMPAGNE_CREEE,
+                "Nouvelle campagne créée — " + evaluation.getNomEvaluation());
         return evaluationMapper.toDto(evaluation);
     }
 
@@ -117,6 +122,8 @@ public class EvaluationServiceImpl implements EvaluationService {
 
         evaluation.setStatut(StatutCampagne.OUVERTE);
         evaluationRepository.save(evaluation);
+        activiteLogService.log(TypeActivite.CAMPAGNE_OUVERTE,
+                "Campagne lancée — " + evaluation.getNomEvaluation());
     }
 
     @Override
@@ -132,6 +139,8 @@ public class EvaluationServiceImpl implements EvaluationService {
 
         evaluation.setStatut(StatutCampagne.FERMEE);
         evaluationRepository.save(evaluation);
+        activiteLogService.log(TypeActivite.CAMPAGNE_FERMEE,
+                "Campagne fermée — " + evaluation.getNomEvaluation());
     }
 
     @Override
@@ -147,6 +156,8 @@ public class EvaluationServiceImpl implements EvaluationService {
 
         evaluation.setStatut(StatutCampagne.CLOTUREE);
         evaluationRepository.save(evaluation);
+        activiteLogService.log(TypeActivite.CAMPAGNE_CLOTUREE,
+                "Campagne clôturée — " + evaluation.getNomEvaluation());
     }
 
     // ===================== Gestion des questions =====================

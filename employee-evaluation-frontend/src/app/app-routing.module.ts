@@ -41,6 +41,9 @@ import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evalu
 import { N1FicheEvaluationComponent } from './components/n1/fiche-evaluation/fiche-evaluation.component';
 import { N1HistoriqueComponent } from './components/n1/historique/historique.component';
 
+// N2 feature components
+import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.component';
+
 // Profil
 import { ProfileComponent } from './components/profile/profile.component';
 
@@ -142,6 +145,17 @@ const routes: Routes = [
       { path: 'historique/:ficheId',                  component: N1HistoriqueComponent },
       // Redirection par défaut
       { path: '', redirectTo: 'evaluer', pathMatch: 'full' }
+    ]
+  },
+
+  // ========== N2 — VALIDATION ==========
+  {
+    path: 'n2',
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['N2'] },
+    children: [
+      { path: 'valider', component: N2ValiderComponent },
+      { path: '', redirectTo: 'valider', pathMatch: 'full' }
     ]
   },
 

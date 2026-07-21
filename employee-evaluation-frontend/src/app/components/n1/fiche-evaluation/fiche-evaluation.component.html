@@ -107,7 +107,7 @@
           <div class="n1-score-toolbar">
             <div class="n1-score-copy">
               <span class="n1-score-kicker">Score</span>
-              <span class="n1-score-help">Sélectionnez une note de 1 à {{ q.noteMax }}</span>
+              <span class="n1-score-help">Saisissez une note de 0 à {{ q.noteMax }}</span>
             </div>
             <div class="n1-rating-label" [class.has-value]="getRatingValue(q.id!) > 0">
               <span class="n1-rating-val">{{ getRatingValue(q.id!) || '-' }}</span>
@@ -115,17 +115,17 @@
             </div>
           </div>
 
-          <div class="n1-score-scale" role="radiogroup" [attr.aria-label]="'Note pour ' + q.libelle">
-            <button *ngFor="let score of ratingSteps(q.noteMax)"
-                    class="n1-score-btn"
-                    type="button"
-                    role="radio"
-                    [attr.aria-checked]="getRatingValue(q.id!) === score"
-                    [class.active]="getRatingValue(q.id!) === score"
-                    [class.selected-range]="getRatingValue(q.id!) >= score"
-                    (click)="setAnswer(q.id!, score)">
-              {{ score }}
-            </button>
+          <div class="n1-score-precise">
+            <input
+              [id]="'note-' + q.id"
+              type="text"
+              class="n1-score-input"
+              inputmode="decimal"
+              [attr.aria-label]="'Note pour ' + q.libelle"
+              placeholder="Entrez une note (ex. 7.25)"
+              [value]="scoreInputs[q.id!] || ''"
+              (input)="setScore(q.id!, $event, q.noteMax)" />
+            <span class="n1-score-input-suffix">/ {{ q.noteMax }}</span>
           </div>
         </div>
 

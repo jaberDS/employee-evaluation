@@ -14,7 +14,7 @@ public class EvaluationN1Request {
     private Long evaluationId;
 
     @NotNull(message = "Les réponses sont obligatoires")
-    private Map<Long, Integer> reponses;  // Question ID -> Note
+    private Map<Long, Double> reponses;  // Question ID -> Note
 
     private String commentaire;
 }

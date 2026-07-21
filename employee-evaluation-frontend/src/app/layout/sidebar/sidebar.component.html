@@ -24,14 +24,6 @@
       </a>
     </ng-container>
 
-    <!-- N1 & N2 — Campagnes (N2 only, N1 uses dedicated eval pages) -->
-    <ng-container *ngIf="authService.getRole() === 'N2'">
-      <a class="nav-link" routerLink="/evaluations" routerLinkActive="active" aria-label="Campagnes">
-        <app-lucide-icon name="megaphone" [size]="20" className="nav-icon"></app-lucide-icon>
-        <span>Campagnes</span>
-      </a>
-    </ng-container>
-
     <!-- N1 -->
     <ng-container *ngIf="authService.getRole() === 'N1'">
       <a class="nav-link" routerLink="/n1/evaluer" routerLinkActive="active" aria-label="Évaluer les employés">
@@ -46,7 +38,7 @@
 
     <!-- N2 -->
     <ng-container *ngIf="authService.getRole() === 'N2'">
-      <a class="nav-link" routerLink="/fiches" routerLinkActive="active" aria-label="Valider">
+      <a class="nav-link" routerLink="/n2/valider" routerLinkActive="active" aria-label="Valider">
         <app-lucide-icon name="check-double" [size]="20" className="nav-icon"></app-lucide-icon>
         <span>Valider</span>
       </a>

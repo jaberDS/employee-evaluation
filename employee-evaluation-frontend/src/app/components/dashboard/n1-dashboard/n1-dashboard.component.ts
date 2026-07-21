@@ -121,6 +121,12 @@ export class N1DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.myFiches.filter(f => f.noteN1 !== null).length;
   }
 
+  /** Fiches évaluées uniquement pour les campagnes actuellement ouvertes. */
+  get doneCountOpen(): number {
+    const openIds = new Set(this.openCampaigns.map(c => c.id));
+    return this.myFiches.filter(f => f.noteN1 !== null && openIds.has(f.evaluationId)).length;
+  }
+
   get totalToEvaluate(): number {
     return this.openCampaigns.length * this.myEmployees.length;
   }
@@ -128,7 +134,8 @@ export class N1DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   get progressPercent(): number {
     const total = this.totalToEvaluate;
     if (!total) return 0;
-    return Math.round((this.doneCount / total) * 100);
+    const pct = Math.round((this.doneCountOpen / total) * 100);
+    return Math.min(100, Math.max(0, pct));
   }
 
   getCampaignProgress(campaign: Evaluation): number {

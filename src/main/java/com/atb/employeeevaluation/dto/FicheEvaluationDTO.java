@@ -16,7 +16,7 @@ public class FicheEvaluationDTO {
     private Long evaluationId;
     private String evaluationNom;
     private LocalDateTime dateCreation;
-    private Map<Long, Integer> reponsesN1;  // Question ID -> Note
+    private Map<Long, Double> reponsesN1;  // Question ID -> Note
     private Double noteN1;
     private String commentaireN1;
     private Decision decisionN2;

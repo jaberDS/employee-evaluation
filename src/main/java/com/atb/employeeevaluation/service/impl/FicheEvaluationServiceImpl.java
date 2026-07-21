@@ -9,6 +9,7 @@ import com.atb.employeeevaluation.entity.FicheEvaluation;
 import com.atb.employeeevaluation.entity.Question;
 import com.atb.employeeevaluation.enums.Decision;
 import com.atb.employeeevaluation.enums.StatutFiche;
+import com.atb.employeeevaluation.enums.TypeActivite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
 import com.atb.employeeevaluation.mapper.FicheEvaluationMapper;
@@ -16,6 +17,7 @@ import com.atb.employeeevaluation.repository.EmployeRepository;
 import com.atb.employeeevaluation.repository.EvaluationRepository;
 import com.atb.employeeevaluation.repository.FicheEvaluationRepository;
 import com.atb.employeeevaluation.repository.QuestionRepository;
+import com.atb.employeeevaluation.service.ActiviteLogService;
 import com.atb.employeeevaluation.service.FicheEvaluationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
     private final QuestionRepository questionRepository;
     private final FicheEvaluationMapper ficheMapper;
     private final ObjectMapper objectMapper;
+    private final ActiviteLogService activiteLogService;
 
     @Override
     public FicheEvaluationDTO evaluerParN1(EvaluationN1Request request) {
@@ -77,7 +80,7 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
         }
 
         // 6. Valider les réponses
-        Map<Long, Integer> reponses = request.getReponses();
+        Map<Long, Double> reponses = request.getReponses();
         List<Question> questions = questionRepository.findByEvaluationIdOrderByOrdreAsc(
                 request.getEvaluationId()
         );
@@ -89,8 +92,8 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
                         "Question " + q.getId() + " (" + q.getLibelle() + ") non répondue"
                 );
             }
-            Integer note = reponses.get(q.getId());
-            if (note < 0 || note > q.getNoteMax()) {
+            Double note = reponses.get(q.getId());
+            if (note == null || note < 0 || note > q.getNoteMax()) {
                 throw new UnauthorizedOperationException(
                         "Note invalide pour la question " + q.getId() + ". Note max: " + q.getNoteMax()
                 );
@@ -98,7 +101,7 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
         }
 
         // 7. Calculer la note N1 (moyenne)
-        double total = reponses.values().stream().mapToInt(Integer::intValue).sum();
+        double total = reponses.values().stream().mapToDouble(Double::doubleValue).sum();
         double noteN1 = Math.round((total / (double) questions.size()) * 100.0) / 100.0;
 
         // 8. Sauvegarder les réponses en JSON
@@ -115,6 +118,9 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
 
         fiche = ficheRepository.save(fiche);
         log.info("Évaluation N+1 terminée. Fiche ID: {}, Note: {}", fiche.getId(), noteN1);
+        activiteLogService.log(TypeActivite.FICHE_EVALUEE_N1,
+                "Évaluation N+1 saisie pour " + employe.getPrenom() + " " + employe.getNom()
+                        + " (note: " + noteN1 + ")");
 
         return ficheMapper.toDto(fiche);
     }
@@ -140,10 +146,16 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
             // Si N+2 accepte, passer à l'employé
             fiche.setStatut(StatutFiche.EN_ATTENTE_EMPLOYE);
             log.info("N+2 a ACCEPTÉ la fiche {}", ficheId);
+            activiteLogService.log(TypeActivite.FICHE_VALIDEE_N2,
+                    "Évaluation validée par N+2 pour "
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
         } else {
             // Si N+2 refuse, passage en révision
             fiche.setStatut(StatutFiche.A_REVISER);
             log.info("N+2 a REFUSÉ la fiche {}", ficheId);
+            activiteLogService.log(TypeActivite.FICHE_REFUSEE_N2,
+                    "Évaluation refusée par N+2 pour "
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
         }
 
         fiche = ficheRepository.save(fiche);
@@ -171,10 +183,16 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
             fiche.setStatut(StatutFiche.CLOTUREE);
             fiche.setNoteFinale(fiche.getNoteN1());
             log.info("Employé a ACCEPTÉ - Fiche {} clôturée avec note {}", ficheId, fiche.getNoteN1());
+            activiteLogService.log(TypeActivite.FICHE_ACCEPTEE_EMPLOYE,
+                    "Évaluation acceptée et clôturée pour "
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
         } else {
             // Si l'employé refuse, passage en révision
             fiche.setStatut(StatutFiche.A_REVISER);
             log.info("Employé a REFUSÉ - Fiche {} en révision", ficheId);
+            activiteLogService.log(TypeActivite.FICHE_REFUSEE_EMPLOYE,
+                    "Évaluation refusée par l'employé "
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
         }
 
         fiche = ficheRepository.save(fiche);

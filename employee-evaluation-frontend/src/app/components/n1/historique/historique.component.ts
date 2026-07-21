@@ -91,6 +91,15 @@ export class N1HistoriqueComponent implements OnInit {
   openDetail(f: FicheEvaluation): void { this.selectedFiche = f; this.showDetail = true; }
   closeDetail(): void                  { this.showDetail = false; this.selectedFiche = null; }
 
+  /** Une fiche renvoyée en révision par le N+2 peut être re-modifiée par le N+1. */
+  canRevise(f: FicheEvaluation): boolean {
+    return f.statut === 'A_REVISER';
+  }
+
+  reviseFiche(f: FicheEvaluation): void {
+    this.router.navigate(['/n1/evaluer', f.evaluationId, 'employe', f.employeId]);
+  }
+
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.showDetail) this.closeDetail();

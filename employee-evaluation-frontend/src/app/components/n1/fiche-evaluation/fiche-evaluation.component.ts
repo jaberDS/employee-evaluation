@@ -33,6 +33,8 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
 
   // Answers map: questionId → answer value (number for NOTE, boolean for OUI_NON, string for text)
   answers: { [questionId: number]: any } = {};
+  // Raw text typed in NOTE inputs (preserves "7." while typing so decimals survive)
+  scoreInputs: { [questionId: number]: string } = {};
   commentaire = '';
 
   unansweredIds: number[] = [];
@@ -88,6 +90,7 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
           if (existing?.reponsesN1) {
             Object.entries(existing.reponsesN1).forEach(([k, v]) => {
               this.answers[+k] = v;
+              this.scoreInputs[+k] = String(v);
             });
           }
         });
@@ -125,16 +128,45 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
     return this.answers[questionId] ?? 0;
   }
 
+  /** Saisie d'une note décimale libre (ex. 7.25), bornée entre 0 et noteMax. */
+  setScore(questionId: number, event: Event, noteMax: number): void {
+    const input = event.target as HTMLInputElement;
+    // N'autorise que les chiffres et un seul séparateur décimal (. ou ,)
+    let raw = input.value.replace(/[^0-9.,]/g, '');
+    const firstSep = raw.search(/[.,]/);
+    if (firstSep !== -1) {
+      // Garde le premier séparateur, retire les suivants
+      raw = raw.slice(0, firstSep + 1) + raw.slice(firstSep + 1).replace(/[.,]/g, '');
+    }
+    if (raw !== input.value) {
+      input.value = raw; // reflète la version nettoyée
+    }
+    this.scoreInputs[questionId] = raw;
+
+    if (raw.trim() === '') {
+      delete this.answers[questionId];
+      return;
+    }
+    let value = parseFloat(raw.replace(',', '.'));
+    if (isNaN(value)) {
+      delete this.answers[questionId];
+      return;
+    }
+    const max = noteMax ?? 10;
+    if (value < 0) value = 0;
+    if (value > max) value = max;
+    // Arrondi à 2 décimales
+    value = Math.round(value * 100) / 100;
+    this.answers[questionId] = value;
+    this.unansweredIds = this.unansweredIds.filter(id => id !== questionId);
+  }
+
   getTextValue(questionId: number): string {
     return this.answers[questionId] ?? '';
   }
 
   getOuiNonValue(questionId: number): boolean | null {
     return this.answers[questionId] ?? null;
-  }
-
-  ratingSteps(noteMax: number): number[] {
-    return Array.from({ length: noteMax ?? 10 }, (_, i) => i + 1);
   }
 
   get answeredCount(): number {

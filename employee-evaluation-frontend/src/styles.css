@@ -243,19 +243,25 @@ body {
 
 .header-icon-btn .notif-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
+  top: 2px;
+  right: 2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
   background: var(--atb-accent);
-  border-radius: 50%;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  border-radius: 9px;
   border: 2px solid var(--atb-primary);
   animation: pulse-badge 2s ease-in-out infinite;
 }
 
 @keyframes pulse-badge {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.8; }
+  50% { transform: scale(1.12); opacity: 0.85; }
 }
 
 @keyframes bell-shake {
@@ -1697,6 +1703,8 @@ body {
 .emp-field-group:nth-child(5) { animation-delay: 0.3s; }
 .emp-field-group:nth-child(6) { animation-delay: 0.35s; }
 .emp-field-group:nth-child(7) { animation-delay: 0.4s; }
+.emp-field-group:nth-child(8) { animation-delay: 0.45s; }
+.emp-field-group:nth-child(9) { animation-delay: 0.5s; }
 
 @keyframes empFieldFadeIn {
   from { opacity: 0; transform: translateY(12px); }

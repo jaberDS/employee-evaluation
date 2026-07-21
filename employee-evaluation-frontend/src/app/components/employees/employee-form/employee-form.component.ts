@@ -25,6 +25,7 @@ export class EmployeeFormComponent implements OnInit {
   submitted = false;
   loading = false;
   showPassword = false;
+  employees: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -34,22 +35,28 @@ export class EmployeeFormComponent implements OnInit {
     private toastr: ToastrService
   ) {
     this.employeeForm = this.fb.group({
-      matricule: ['', Validators.required],
+      matricule: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       motDePasse: ['', this.isEdit ? [] : [Validators.required, Validators.minLength(4)]],
       role: ['EMPLOYE', Validators.required],
+      n1Id: [null],
+      n2Id: [null],
       actif: [true]
     });
   }
 
   ngOnInit() {
+    this.employeeService.getAll().subscribe({
+      next: data => this.employees = data,
+      error: () => this.toastr.error('Erreur de chargement des employés')
+    });
+
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.isEdit = true;
         this.employeeId = +params['id'];
-        // In edit mode, password is not required — clear its validators
         this.employeeForm.get('motDePasse')?.clearValidators();
         this.employeeForm.get('motDePasse')?.updateValueAndValidity();
         this.employeeService.getById(this.employeeId).subscribe({
@@ -58,6 +65,14 @@ export class EmployeeFormComponent implements OnInit {
         });
       }
     });
+  }
+
+  get n1Candidates() {
+    return this.employees.filter(e => e.id !== this.employeeId && e.role === 'N1');
+  }
+
+  get n2Candidates() {
+    return this.employees.filter(e => e.id !== this.employeeId && e.role === 'N2');
   }
 
   onSubmit() {

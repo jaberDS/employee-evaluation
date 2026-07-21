@@ -254,6 +254,42 @@
   animation: scoreSelect 0.22s ease-out;
 }
 
+/* ── Note précise (saisie décimale) ─────────────────────────────────────── */
+.n1-score-precise {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.n1-score-input {
+  flex: 1;
+  height: 52px;
+  padding: 0 1rem;
+  border: 1.5px solid var(--atb-border);
+  border-radius: 12px;
+  background: var(--atb-card);
+  color: var(--atb-text);
+  font-size: 1.05rem;
+  font-weight: 800;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.n1-score-input::placeholder {
+  font-weight: 500;
+  color: var(--atb-text-secondary);
+  opacity: 0.7;
+}
+.n1-score-input:focus {
+  outline: none;
+  border-color: var(--atb-primary);
+  box-shadow: 0 0 0 3px rgba(139,0,0,0.12);
+}
+.n1-score-input-suffix {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--atb-text-secondary);
+  white-space: nowrap;
+}
+
 /* ── Oui/Non ───────────────────────────────────────────────────────────── */
 .n1-oui-non-wrap { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
 .n1-yn-btn {

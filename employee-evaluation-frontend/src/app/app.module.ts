@@ -42,6 +42,9 @@ import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evalu
 import { N1FicheEvaluationComponent } from './components/n1/fiche-evaluation/fiche-evaluation.component';
 import { N1HistoriqueComponent } from './components/n1/historique/historique.component';
 
+// N2 feature components
+import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -58,7 +61,9 @@ import { N1HistoriqueComponent } from './components/n1/historique/historique.com
     // N1 feature components
     EvaluerEmployesComponent,
     N1FicheEvaluationComponent,
-    N1HistoriqueComponent
+    N1HistoriqueComponent,
+    // N2 feature components
+    N2ValiderComponent
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule, CommonModule,

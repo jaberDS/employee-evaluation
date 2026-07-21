@@ -54,7 +54,7 @@
         </span>
         <span class="stat-trend trend-up">
           <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
-          +2 ce mois
+          {{ employeeProgress }}% actifs
         </span>
       </div>
     </article>
@@ -70,7 +70,9 @@
           <app-lucide-icon name="activity" [size]="13"></app-lucide-icon>
           {{ displayStats.openEvaluations }} ouvertes
         </span>
-        <span class="stat-trend trend-neutral">En cours</span>
+        <span class="stat-trend" [class.trend-up]="displayStats.openEvaluations > 0" [class.trend-neutral]="displayStats.openEvaluations === 0">
+          {{ displayStats.openEvaluations > 0 ? 'En cours' : 'Aucune ouverte' }}
+        </span>
       </div>
     </article>
 
@@ -105,9 +107,9 @@
           <app-lucide-icon name="award" [size]="13"></app-lucide-icon>
           Performance globale
         </span>
-        <span class="stat-trend trend-up">
-          <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
-          +0.5 vs dernier
+        <span class="stat-trend" [class.trend-up]="displayStats.averageNote >= 5" [class.trend-neutral]="displayStats.averageNote < 5">
+          <app-lucide-icon name="star" [size]="13"></app-lucide-icon>
+          {{ displayStats.averageNote >= 7 ? 'Excellent' : displayStats.averageNote >= 5 ? 'Satisfaisant' : 'À améliorer' }}
         </span>
       </div>
     </article>
@@ -264,7 +266,7 @@
         <h2>Activité récente</h2>
       </header>
       <div class="panel-body">
-        <ul class="activity-list">
+        <ul class="activity-list" *ngIf="recentActivities.length > 0">
           <li class="activity-item" *ngFor="let item of recentActivities">
             <div class="activity-icon" [style.background]="item.color + '18'" [style.color]="item.color">
               <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
@@ -275,28 +277,36 @@
             </div>
           </li>
         </ul>
+        <div class="activity-empty" *ngIf="recentActivities.length === 0">
+          <app-lucide-icon name="activity" [size]="32"></app-lucide-icon>
+          <p>Aucune activité récente</p>
+        </div>
       </div>
     </section>
 
-    <!-- Upcoming Campaign -->
-    <section class="panel panel-campaign animate-fade-in delay-5" aria-label="Prochaine campagne">
+    <!-- Ongoing Campaign -->
+    <section class="panel panel-campaign animate-fade-in delay-5" aria-label="Campagne en cours">
       <header class="panel-header">
         <app-lucide-icon name="calendar" [size]="20"></app-lucide-icon>
-        <h2>Prochaine campagne</h2>
+        <h2>Campagne en cours</h2>
       </header>
       <div class="panel-body campaign-body">
-        <div class="campaign-card">
+        <div class="campaign-card" *ngIf="prochaineCampagne">
           <div class="campaign-icon">
             <app-lucide-icon name="megaphone" [size]="24"></app-lucide-icon>
           </div>
           <div>
-            <h3>Évaluation Q3 2026</h3>
-            <p>Ouverture prévue le 15 juillet 2026</p>
+            <h3>{{ prochaineCampagne.nom }}</h3>
+            <p *ngIf="prochaineCampagne.dateDebut">Démarrée le {{ prochaineCampagne.dateDebut | date:'d MMMM yyyy' }}</p>
             <div class="campaign-meta">
-              <span><app-lucide-icon name="users" [size]="14"></app-lucide-icon> 12 participants</span>
-              <span><app-lucide-icon name="clock" [size]="14"></app-lucide-icon> 30 jours</span>
+              <span *ngIf="prochaineCampagne.participants != null"><app-lucide-icon name="users" [size]="14"></app-lucide-icon> {{ prochaineCampagne.participants }} participants</span>
+              <span *ngIf="prochaineCampagne.dureeJours != null"><app-lucide-icon name="clock" [size]="14"></app-lucide-icon> {{ prochaineCampagne.dureeJours }} jours</span>
             </div>
           </div>
+        </div>
+        <div class="activity-empty" *ngIf="!prochaineCampagne">
+          <app-lucide-icon name="calendar" [size]="32"></app-lucide-icon>
+          <p>Aucune campagne en cours</p>
         </div>
       </div>
     </section>

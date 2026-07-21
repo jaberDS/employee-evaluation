@@ -1,5 +1,9 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { DashboardService, DashboardStats } from '../../../services/dashboard.service';
+import { ActiviteService } from '../../../services/activite.service';
+import { ActivityView, toActivityView } from '../../../shared/activity-view';
 
 interface DisplayStats {
   totalEmployees: number;
@@ -11,31 +15,25 @@ interface DisplayStats {
   averageNote: number;
 }
 
-interface RecentActivity {
-  icon: 'user-plus' | 'megaphone' | 'check-circle' | 'clipboard-check';
-  text: string;
-  time: string;
-  color: string;
-}
-
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
-export class AdminDashboardComponent implements OnInit, AfterViewInit {
-  currentUser: any = { prenom: 'Jean', nom: 'Dupont', role: 'ADMIN' };
+export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+  currentUser: any = null;
   today = new Date();
-  loading = false;
+  loading = true;
+  private activitiesSub?: Subscription;
 
   stats = {
-    totalEmployees: 12,
-    activeEmployees: 10,
-    totalEvaluations: 3,
-    openEvaluations: 1,
-    completedEvaluations: 8,
-    pendingEvaluations: 2,
-    averageNote: 7.5
+    totalEmployees: 0,
+    activeEmployees: 0,
+    totalEvaluations: 0,
+    openEvaluations: 0,
+    completedEvaluations: 0,
+    pendingEvaluations: 0,
+    averageNote: 0
   };
 
   displayStats: DisplayStats = {
@@ -48,14 +46,20 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     averageNote: 0
   };
 
-  recentActivities: RecentActivity[] = [
-    { icon: 'user-plus', text: 'Nouvel employé ajouté — Sarah Ben Ali', time: 'Il y a 2h', color: '#8B0000' },
-    { icon: 'megaphone', text: 'Campagne Q3 2026 lancée', time: 'Il y a 5h', color: '#16A34A' },
-    { icon: 'check-circle', text: '3 évaluations validées par N2', time: 'Hier', color: '#0284C7' },
-    { icon: 'clipboard-check', text: 'Rapport mensuel généré', time: 'Il y a 2j', color: '#F59E0B' }
-  ];
+  recentActivities: ActivityView[] = [];
 
-  constructor(private authService: AuthService) {}
+  prochaineCampagne: {
+    nom: string;
+    dateDebut?: string;
+    participants?: number;
+    dureeJours?: number;
+  } | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private dashboardService: DashboardService,
+    private activiteService: ActiviteService
+  ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
@@ -63,10 +67,53 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.currentUser = user;
       }
     });
+    // Reste synchronisé avec le flux partagé (ex: quand la cloche efface l'historique)
+    this.activitiesSub = this.activiteService.activities$.subscribe(activities => {
+      this.recentActivities = activities.slice(0, 8).map(toActivityView);
+    });
+    this.loadDashboard();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.animateCounters(), 150);
+  ngAfterViewInit(): void {}
+
+  ngOnDestroy(): void {
+    this.activitiesSub?.unsubscribe();
+  }
+
+  private loadDashboard(): void {
+    this.loading = true;
+    this.dashboardService.getStats().subscribe({
+      next: stats => {
+        this.applyStats(stats);
+        this.loading = false;
+        setTimeout(() => this.animateCounters(), 100);
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+    this.activiteService.refresh(8).subscribe();
+  }
+
+  private applyStats(s: DashboardStats): void {
+    this.stats = {
+      totalEmployees: s.totalEmployees,
+      activeEmployees: s.activeEmployees,
+      totalEvaluations: s.totalCampagnes,
+      openEvaluations: s.openCampagnes,
+      completedEvaluations: s.completedEvaluations,
+      pendingEvaluations: s.pendingEvaluations,
+      averageNote: s.averageNote
+    };
+
+    this.prochaineCampagne = s.prochaineCampagneNom
+      ? {
+          nom: s.prochaineCampagneNom,
+          dateDebut: s.prochaineCampagneDateDebut,
+          participants: s.prochaineCampagneParticipants,
+          dureeJours: s.prochaineCampagneDureeJours
+        }
+      : null;
   }
 
   get greeting(): string {
@@ -77,7 +124,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   }
 
   get quickSummary(): string {
-    return `${this.stats.activeEmployees} employés actifs · ${this.stats.openEvaluations} campagne ouverte · ${this.stats.pendingEvaluations} en attente`;
+    return `${this.stats.activeEmployees} employés actifs · ${this.stats.openEvaluations} campagne(s) ouverte(s) · ${this.stats.pendingEvaluations} en attente`;
   }
 
   get employeeProgress(): number {
