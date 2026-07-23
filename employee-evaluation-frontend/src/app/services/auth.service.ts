@@ -164,4 +164,8 @@ export class AuthService {
     if (userRole === 'ADMIN') return true;
     return roles.includes(userRole);
   }
+
+  changePassword(request: { currentPassword: string; newPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password`, request);
+  }
 }

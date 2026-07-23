@@ -16,7 +16,7 @@ public interface FicheEvaluationService {
     FicheEvaluationDTO validerParN2(Long ficheId, ValidationN2Request request);
 
     // Étape 3: Employé valide ou refuse son évaluation
-    FicheEvaluationDTO validerParEmploye(Long ficheId, boolean accepte);
+    FicheEvaluationDTO validerParEmploye(Long ficheId, boolean accepte, String commentaire);
 
     // Consultation
     FicheEvaluationDTO getFicheById(Long id);
@@ -27,4 +27,8 @@ public interface FicheEvaluationService {
 
     // Utilitaires
     void recalculerNoteFinale(Long ficheId);
+
+    // Suppression (uniquement fiches clôturées, campagne clôturée, N+2 et employé confirmatifs)
+    void deleteFiche(Long ficheId);
+    int deleteAllEligibleByN1(Long n1Id);
 }

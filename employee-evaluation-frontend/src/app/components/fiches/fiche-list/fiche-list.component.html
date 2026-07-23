@@ -1,2 +1,63 @@
-<h2>list</h2>
-<p>En construction...</p>
+<div class="fl-page enterprise-page">
+
+  <div class="fl-header">
+    <div class="fl-header-icon">
+      <app-lucide-icon name="file-text" [size]="26"></app-lucide-icon>
+    </div>
+    <div class="fl-header-text">
+      <h1>Mes évaluations</h1>
+      <p>Consultez vos évaluations et validez celles qui attendent votre décision.</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="fl-skeleton">
+    <div class="skel-row" *ngFor="let i of [1,2,3]"></div>
+  </div>
+
+  <div *ngIf="!loading">
+
+    <div *ngIf="fiches.length === 0" class="fl-empty">
+      <div class="fl-empty-icon">
+        <app-lucide-icon name="clipboard-list" [size]="44"></app-lucide-icon>
+      </div>
+      <h3>Aucune évaluation pour le moment</h3>
+      <p>Vos évaluations apparaîtront ici dès qu'un N+1 en aura saisi une pour vous.</p>
+    </div>
+
+    <div class="fl-grid" *ngIf="fiches.length > 0">
+      <a class="fl-card"
+         *ngFor="let f of fiches; trackBy: trackById; let i = index"
+         [routerLink]="['/fiches', f.id]"
+         [style.animation-delay.ms]="i * 60">
+
+        <div class="fl-card-accent" [ngClass]="statutMeta(f.statut).cssClass"></div>
+
+        <div class="fl-card-header">
+          <h3 class="fl-card-title">{{ f.evaluationNom }}</h3>
+          <span class="fl-badge" [ngClass]="statutMeta(f.statut).cssClass">
+            <span class="fl-badge-dot"></span>
+            {{ statutMeta(f.statut).label }}
+          </span>
+        </div>
+
+        <div class="fl-card-body">
+          <span class="fl-card-date">
+            <app-lucide-icon name="calendar" [size]="13"></app-lucide-icon>
+            {{ formatDate(f.dateCreation) }}
+          </span>
+          <span class="fl-card-note" *ngIf="f.statut === 'CLOTUREE'" [ngClass]="noteClass(f.noteFinale)">
+            {{ f.noteFinale }}/10
+          </span>
+          <span class="fl-card-note" *ngIf="f.statut !== 'CLOTUREE' && f.noteN1 !== null" [ngClass]="noteClass(f.noteN1)">
+            {{ f.noteN1 }}/10
+          </span>
+        </div>
+
+        <div class="fl-card-footer">
+          <span>Voir le détail</span>
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

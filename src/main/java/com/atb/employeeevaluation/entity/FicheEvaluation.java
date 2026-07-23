@@ -50,6 +50,9 @@ public class FicheEvaluation {
     @Enumerated(EnumType.STRING)
     private Decision decisionEmploye;
 
+    @Column(columnDefinition = "TEXT")
+    private String commentaireEmploye;
+
     private Double noteFinale;
 
     @Enumerated(EnumType.STRING)

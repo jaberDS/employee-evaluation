@@ -38,7 +38,7 @@ export class RoleGuard implements CanActivate {
       'ADMIN': '/dashboard/admin',
       'N1': '/dashboard/n1',
       'N2': '/dashboard/n2',
-      'EMPLOYE': '/dashboard/employee'
+      'EMPLOYE': '/dashboard/employe'
     };
     return dashboards[role] || '/dashboard';
   }

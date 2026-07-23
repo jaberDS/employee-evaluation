@@ -74,7 +74,7 @@ const routes: Routes = [
     data: { roles: ['ADMIN', 'N2'] }
   },
   {
-    path: 'dashboard/employee',
+    path: 'dashboard/employe',
     component: EmployeeDashboardComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['ADMIN', 'EMPLOYE'] }

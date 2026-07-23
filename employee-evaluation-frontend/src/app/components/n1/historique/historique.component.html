@@ -11,10 +11,16 @@
         <p>{{ fiches.length }} évaluation{{ fiches.length > 1 ? 's' : '' }} soumise{{ fiches.length > 1 ? 's' : '' }}</p>
       </div>
     </div>
-    <a routerLink="/dashboard/n1" class="n1-dashboard-link">
-      <app-lucide-icon name="layout-dashboard" [size]="16"></app-lucide-icon>
-      Tableau de bord
-    </a>
+    <div class="page-hero-actions">
+      <button class="btn-clear-history" *ngIf="eligibleForDeletion.length > 0" (click)="askDeleteAll()">
+        <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
+        Effacer l'historique ({{ eligibleForDeletion.length }})
+      </button>
+      <a routerLink="/dashboard/n1" class="n1-dashboard-link">
+        <app-lucide-icon name="layout-dashboard" [size]="16"></app-lucide-icon>
+        Tableau de bord
+      </a>
+    </div>
   </header>
 
   <!-- ── Filters ─────────────────────────────────────────────────────── -->
@@ -109,6 +115,10 @@
                 </button>
                 <button class="btn-icon-action btn-icon-view" (click)="openDetail(f)" title="Voir les détails">
                   <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
+                </button>
+                <button class="btn-icon-action btn-icon-delete" *ngIf="canDelete(f)"
+                        (click)="askDelete(f)" title="Supprimer de l'historique">
+                  <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
                 </button>
               </div>
             </td>
@@ -239,5 +249,33 @@
         Modifier l'évaluation
       </button>
     </footer>
+  </section>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="hist-detail-backdrop" *ngIf="confirmTarget" (click)="cancelDelete()" role="dialog" aria-modal="true">
+  <section class="hist-confirm-dialog" (click)="$event.stopPropagation()" aria-label="Confirmer la suppression">
+    <div class="hist-confirm-icon">
+      <app-lucide-icon name="trash-2" [size]="26"></app-lucide-icon>
+    </div>
+    <h3 class="hist-confirm-title">
+      {{ confirmTarget === 'ALL' ? 'Effacer l\'historique clôturé ?' : 'Supprimer cette évaluation ?' }}
+    </h3>
+    <p class="hist-confirm-sub" *ngIf="confirmTarget === 'ALL'">
+      {{ eligibleForDeletion.length }} évaluation(s) clôturée(s), avec campagne clôturée et validées par le N+2 et l'employé, seront supprimées définitivement.
+    </p>
+    <p class="hist-confirm-sub" *ngIf="confirmTarget !== 'ALL'">
+      Cette évaluation clôturée sera supprimée définitivement de l'historique. Cette action est irréversible.
+    </p>
+    <div class="hist-confirm-actions">
+      <button class="hist-detail-secondary" type="button" (click)="cancelDelete()" [disabled]="deleting">
+        Annuler
+      </button>
+      <button class="hist-confirm-delete" type="button" (click)="confirmDelete()" [disabled]="deleting">
+        <span class="hist-confirm-spinner" *ngIf="deleting"></span>
+        <app-lucide-icon *ngIf="!deleting" name="trash-2" [size]="16"></app-lucide-icon>
+        Supprimer
+      </button>
+    </div>
   </section>
 </div>

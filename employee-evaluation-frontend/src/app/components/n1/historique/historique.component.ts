@@ -24,6 +24,10 @@ export class N1HistoriqueComponent implements OnInit {
   selectedFiche: FicheEvaluation | null = null;
   showDetail = false;
 
+  // Delete confirmation modal
+  confirmTarget: FicheEvaluation | 'ALL' | null = null;
+  deleting = false;
+
   readonly STATUS_LABELS: Record<string, string> = {
     EN_ATTENTE:          'En attente',
     EN_COURS_N1:         'En cours',
@@ -100,9 +104,59 @@ export class N1HistoriqueComponent implements OnInit {
     this.router.navigate(['/n1/evaluer', f.evaluationId, 'employe', f.employeId]);
   }
 
+  /** Suppression autorisée uniquement si la campagne est clôturée et que le N+2 et l'employé ont tous deux confirmé. */
+  canDelete(f: FicheEvaluation): boolean {
+    return f.evaluationStatut === 'CLOTUREE'
+      && f.decisionN2 === 'ACCEPTEE'
+      && f.decisionEmploye === 'ACCEPTEE';
+  }
+
+  get eligibleForDeletion(): FicheEvaluation[] {
+    return this.fiches.filter(f => this.canDelete(f));
+  }
+
+  askDelete(f: FicheEvaluation): void { this.confirmTarget = f; }
+  askDeleteAll(): void { this.confirmTarget = 'ALL'; }
+  cancelDelete(): void { if (!this.deleting) this.confirmTarget = null; }
+
+  confirmDelete(): void {
+    if (!this.confirmTarget || !this.currentUser?.id) return;
+    this.deleting = true;
+
+    if (this.confirmTarget === 'ALL') {
+      this.ficheService.deleteAllEligibleByN1(this.currentUser.id).subscribe({
+        next: (count) => {
+          this.toastr.success(`${count} évaluation(s) supprimée(s) de l'historique`, 'Succès');
+          this.deleting = false;
+          this.confirmTarget = null;
+          this.loadFiches();
+        },
+        error: (err) => {
+          this.deleting = false;
+          this.toastr.error(err?.error?.message ?? 'Erreur lors de la suppression', 'Erreur');
+        }
+      });
+    } else {
+      const target = this.confirmTarget;
+      this.ficheService.delete(target.id).subscribe({
+        next: () => {
+          this.toastr.success('Évaluation supprimée de l\'historique', 'Succès');
+          this.deleting = false;
+          this.confirmTarget = null;
+          this.fiches = this.fiches.filter(f => f.id !== target.id);
+        },
+        error: (err) => {
+          this.deleting = false;
+          this.toastr.error(err?.error?.message ?? 'Erreur lors de la suppression', 'Erreur');
+        }
+      });
+    }
+  }
+
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.showDetail) this.closeDetail();
+    if (this.confirmTarget) this.cancelDelete();
   }
 
   getStatusLabel(s: string): string  { return this.STATUS_LABELS[s] ?? s; }

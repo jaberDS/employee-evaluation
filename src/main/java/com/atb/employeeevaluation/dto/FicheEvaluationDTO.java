@@ -1,6 +1,7 @@
 package com.atb.employeeevaluation.dto;
 
 import com.atb.employeeevaluation.enums.Decision;
+import com.atb.employeeevaluation.enums.StatutCampagne;
 import com.atb.employeeevaluation.enums.StatutFiche;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class FicheEvaluationDTO {
     private String employePrenom;
     private Long evaluationId;
     private String evaluationNom;
+    private StatutCampagne evaluationStatut;
     private LocalDateTime dateCreation;
     private Map<Long, Double> reponsesN1;  // Question ID -> Note
     private Double noteN1;
@@ -22,6 +24,7 @@ public class FicheEvaluationDTO {
     private Decision decisionN2;
     private String commentaireN2;
     private Decision decisionEmploye;
+    private String commentaireEmploye;
     private Double noteFinale;
     private StatutFiche statut;
 }

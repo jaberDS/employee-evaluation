@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.service.impl;
 
 import com.atb.employeeevaluation.dto.AuthRequest;
 import com.atb.employeeevaluation.dto.AuthResponse;
+import com.atb.employeeevaluation.dto.ChangePasswordRequest;
 import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.dto.RefreshTokenRequest;
 import com.atb.employeeevaluation.entity.Employe;
@@ -18,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -32,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final EmployeRepository employeRepository;
     private final EmployeMapper employeMapper;
+    private final PasswordEncoder passwordEncoder;
 
     // Blacklist des tokens (en mémoire - pour démo)
     // En production, utiliser Redis ou une base de données
@@ -125,5 +128,21 @@ public class AuthServiceImpl implements AuthService {
         Employe employe = employeRepository.findByMatricule(matricule)
                 .orElseThrow(() -> new ResourceNotFoundException("Employé non trouvé: " + matricule));
         return employeMapper.toDto(employe);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        Employe employe = getCurrentEmploye();
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), employe.getMotDePasse())) {
+            throw new UnauthorizedOperationException("Le mot de passe actuel est incorrect");
+        }
+        if (passwordEncoder.matches(request.getNewPassword(), employe.getMotDePasse())) {
+            throw new UnauthorizedOperationException("Le nouveau mot de passe doit différer de l'ancien");
+        }
+
+        employe.setMotDePasse(passwordEncoder.encode(request.getNewPassword()));
+        employeRepository.save(employe);
+        log.info("Mot de passe changé pour: {}", employe.getMatricule());
     }
 }

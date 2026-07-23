@@ -1,1 +1,382 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   EMPLOYEE DASHBOARD — premium enterprise styling
+   Consistent with the N+1 / N+2 dashboard design language.
+   ══════════════════════════════════════════════════════════════════════════ */
 
+.emp-dash {
+  padding: 1.75rem;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+@keyframes empFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══ HERO ═════════════════════════════════════════════════════════════════ */
+.emp-hero {
+  position: relative;
+  border-radius: var(--atb-radius);
+  overflow: hidden;
+  padding: 2.25rem 2.5rem;
+  margin-bottom: 1.75rem;
+  background: linear-gradient(135deg, var(--atb-primary) 0%, #5A0000 100%);
+  box-shadow: 0 18px 40px rgba(139, 0, 0, 0.28);
+  animation: empFadeUp 0.55s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.emp-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255,255,255,0.14), transparent 45%),
+    radial-gradient(circle at 15% 90%, rgba(198,40,40,0.35), transparent 40%);
+  pointer-events: none;
+}
+.emp-hero-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.emp-hero-text { color: #fff; }
+.emp-greeting-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.16);
+  backdrop-filter: blur(6px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+.emp-hero-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  margin: 0 0 0.6rem;
+  line-height: 1.15;
+}
+.emp-hero-sub {
+  font-size: 1rem;
+  opacity: 0.92;
+  margin: 0 0 1.4rem;
+}
+.emp-hero-sub strong { font-weight: 800; }
+.emp-hero-all-done { font-weight: 600; }
+.emp-hero-actions { display: flex; gap: 0.75rem; }
+
+.btn-emp-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.3rem;
+  border-radius: var(--atb-radius-sm);
+  background: #fff;
+  color: var(--atb-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.btn-emp-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0,0,0,0.22); }
+
+/* Progress ring */
+.emp-hero-visual { flex-shrink: 0; }
+.emp-progress-ring { position: relative; width: 130px; height: 130px; }
+.ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: rgba(255,255,255,0.18); stroke-width: 9; }
+.ring-fill {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.ring-pct { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.ring-sub { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; margin-top: 3px; }
+
+/* ══ STAT CARDS ═══════════════════════════════════════════════════════════ */
+.emp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+  margin-bottom: 1.9rem;
+}
+.emp-stat-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.4rem 1.5rem;
+  background: var(--atb-card);
+  border: 1px solid var(--atb-border);
+  border-radius: var(--atb-radius);
+  overflow: hidden;
+  animation: empFadeUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.emp-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+  border-color: transparent;
+}
+.esc-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.esc-body { display: flex; flex-direction: column; }
+.esc-value { font-size: 1.85rem; font-weight: 800; line-height: 1; color: var(--atb-text); }
+.esc-unit { font-size: 1rem; font-weight: 700; }
+.esc-label { font-size: 0.82rem; color: var(--atb-text-secondary); margin-top: 4px; font-weight: 500; }
+.esc-glow {
+  position: absolute;
+  right: -30px; top: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  opacity: 0.08;
+  pointer-events: none;
+}
+.emp-stat-avg       .esc-icon { background: linear-gradient(135deg, #0284C7, #0369A1); }
+.emp-stat-avg       .esc-glow { background: #0284C7; }
+.emp-stat-closed    .esc-icon { background: linear-gradient(135deg, var(--atb-success), #15803D); }
+.emp-stat-closed    .esc-glow { background: var(--atb-success); }
+.emp-stat-pending   .esc-icon { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.emp-stat-pending   .esc-glow { background: #F59E0B; }
+.emp-stat-campaigns .esc-icon { background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent)); }
+.emp-stat-campaigns .esc-glow { background: var(--atb-primary); }
+
+/* ══ SECTIONS ═════════════════════════════════════════════════════════════ */
+.emp-section { margin-bottom: 2rem; }
+.emp-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+}
+.emp-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--atb-primary);
+}
+.emp-section-title h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--atb-text);
+  margin: 0;
+}
+.emp-count-pill {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: rgba(139,0,0,0.1);
+  color: var(--atb-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ══ MANAGERS ═════════════════════════════════════════════════════════════ */
+.emp-managers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.1rem;
+}
+.emp-manager-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.4rem;
+  background: var(--atb-card);
+  border: 1px solid var(--atb-border);
+  border-radius: var(--atb-radius);
+  animation: empFadeUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.emc-avatar {
+  flex-shrink: 0;
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.emc-avatar-empty { background: var(--atb-bg); color: var(--atb-text-secondary); }
+.emc-info { display: flex; flex-direction: column; }
+.emc-role { font-size: 0.76rem; color: var(--atb-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.emc-name { font-size: 0.98rem; font-weight: 700; color: var(--atb-text); margin-top: 2px; }
+.emc-name-empty { color: var(--atb-text-secondary); font-weight: 500; font-style: italic; }
+
+/* ══ PENDING LIST ═════════════════════════════════════════════════════════ */
+.emp-pending-list {
+  background: var(--atb-card);
+  border: 1px solid var(--atb-border);
+  border-radius: var(--atb-radius);
+  overflow: hidden;
+}
+.emp-pending-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.95rem 1.25rem;
+  border-bottom: 1px solid var(--atb-border);
+  text-decoration: none;
+  color: inherit;
+  animation: empFadeUp 0.4s ease both;
+  transition: background 0.16s ease;
+}
+.emp-pending-row:last-child { border-bottom: none; }
+.emp-pending-row:hover { background: var(--atb-bg); }
+.epr-icon {
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245,158,11,0.14);
+  color: #D97706;
+}
+.epr-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.epr-name { font-size: 0.9rem; font-weight: 700; color: var(--atb-text); }
+.epr-date { font-size: 0.76rem; color: var(--atb-text-secondary); }
+.epr-note {
+  flex-shrink: 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.epr-arrow { color: var(--atb-text-secondary); flex-shrink: 0; }
+
+/* ══ HISTORY LIST ═════════════════════════════════════════════════════════ */
+.emp-history-list {
+  background: var(--atb-card);
+  border: 1px solid var(--atb-border);
+  border-radius: var(--atb-radius);
+  overflow: hidden;
+}
+.emp-history-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--atb-border);
+  text-decoration: none;
+  color: inherit;
+  animation: empFadeUp 0.4s ease both;
+  transition: background 0.16s ease;
+}
+.emp-history-row:last-child { border-bottom: none; }
+.emp-history-row:hover { background: var(--atb-bg); }
+.ehr-avatar {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(22,163,74,0.12);
+  color: var(--atb-success);
+}
+.ehr-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ehr-name { font-size: 0.9rem; font-weight: 700; color: var(--atb-text); }
+.ehr-date { font-size: 0.76rem; color: var(--atb-text-secondary); }
+.ehr-note {
+  flex-shrink: 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+/* Note color helpers (shared) */
+.note-good    { background: rgba(22,163,74,0.12); color: var(--atb-success); }
+.note-mid     { background: rgba(245,158,11,0.14); color: #D97706; }
+.note-low     { background: rgba(239,68,68,0.12); color: #DC2626; }
+.note-neutral { background: rgba(107,114,128,0.12); color: var(--atb-text-secondary); }
+
+/* ══ EMPTY STATE ══════════════════════════════════════════════════════════ */
+.emp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: var(--atb-card);
+  border: 1px dashed var(--atb-border);
+  border-radius: var(--atb-radius);
+}
+.emp-empty-inline { padding: 2.2rem 1rem; border: none; background: transparent; }
+.emp-empty-icon {
+  width: 64px; height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(22,163,74,0.1);
+  color: var(--atb-success);
+  margin-bottom: 1.1rem;
+}
+.emp-empty h3 { font-size: 1.15rem; font-weight: 800; color: var(--atb-text); margin: 0 0 0.4rem; }
+.emp-empty p { font-size: 0.9rem; color: var(--atb-text-secondary); margin: 0; max-width: 360px; }
+
+/* ══ SKELETON ═════════════════════════════════════════════════════════════ */
+.emp-skeleton { padding: 0.25rem; }
+.skel-hero, .skel-card, .skel-row {
+  background: linear-gradient(90deg, var(--atb-bg) 25%, var(--atb-border) 50%, var(--atb-bg) 75%);
+  background-size: 200% 100%;
+  animation: empShimmer 1.4s infinite;
+  border-radius: var(--atb-radius);
+}
+.skel-hero { height: 180px; margin-bottom: 1.75rem; }
+.skel-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; margin-bottom: 1.9rem; }
+.skel-card { height: 92px; }
+.skel-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.skel-row { height: 70px; }
+@keyframes empShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ══ RESPONSIVE ═══════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .emp-stats-grid, .skel-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 820px) {
+  .emp-hero-inner { flex-direction: column; align-items: flex-start; }
+  .emp-hero-visual { align-self: center; }
+  .emp-managers-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .emp-dash { padding: 1rem; }
+  .emp-hero { padding: 1.75rem 1.4rem; }
+  .emp-hero-title { font-size: 1.5rem; }
+  .emp-stats-grid, .skel-stats { grid-template-columns: 1fr; }
+}

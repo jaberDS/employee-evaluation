@@ -2,8 +2,10 @@ package com.atb.employeeevaluation.controller;
 
 import com.atb.employeeevaluation.dto.AuthRequest;
 import com.atb.employeeevaluation.dto.AuthResponse;
+import com.atb.employeeevaluation.dto.ChangePasswordRequest;
 import com.atb.employeeevaluation.dto.RefreshTokenRequest;
 import com.atb.employeeevaluation.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -55,6 +57,14 @@ public class AuthController {
         response.put("email",     employe.getEmail());
         response.put("role",      employe.getRole().toString());
         response.put("actif",     employe.getActif());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Mot de passe modifié avec succès");
         return ResponseEntity.ok(response);
     }
 }

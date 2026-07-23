@@ -10,6 +10,7 @@ export interface FicheEvaluation {
   employePrenom: string;
   evaluationId: number;
   evaluationNom: string;
+  evaluationStatut: string | null; // BROUILLON | OUVERTE | FERMEE | CLOTUREE
   dateCreation: string;
   reponsesN1: { [key: number]: number } | null;
   noteN1: number | null;
@@ -17,6 +18,7 @@ export interface FicheEvaluation {
   decisionN2: string | null;
   commentaireN2: string | null;
   decisionEmploye: string | null;
+  commentaireEmploye: string | null;
   noteFinale: number | null;
   statut: string; // EN_ATTENTE | EN_COURS_N1 | EN_ATTENTE_N2 | A_REVISER | EN_ATTENTE_EMPLOYE | CLOTUREE
 }
@@ -47,8 +49,10 @@ export class FicheService {
     return this.http.patch<FicheEvaluation>(`${this.apiUrl}/${ficheId}/n2`, request);
   }
 
-  validerParEmploye(ficheId: number, accepte: boolean): Observable<FicheEvaluation> {
-    return this.http.patch<FicheEvaluation>(`${this.apiUrl}/${ficheId}/employe?accepte=${accepte}`, {});
+  validerParEmploye(ficheId: number, accepte: boolean, commentaire?: string): Observable<FicheEvaluation> {
+    let url = `${this.apiUrl}/${ficheId}/employe?accepte=${accepte}`;
+    if (commentaire) url += `&commentaire=${encodeURIComponent(commentaire)}`;
+    return this.http.patch<FicheEvaluation>(url, {});
   }
 
   getById(id: number): Observable<FicheEvaluation> {
@@ -70,5 +74,15 @@ export class FicheService {
   /** Get all fiches for the employees managed by this N+1 */
   getByN1(n1Id: number): Observable<FicheEvaluation[]> {
     return this.http.get<FicheEvaluation[]>(`${this.apiUrl}/n1/${n1Id}`);
+  }
+
+  /** Supprime une fiche clôturée, campagne clôturée, validée par le N+2 et l'employé. */
+  delete(ficheId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${ficheId}`);
+  }
+
+  /** Supprime en masse toutes les fiches éligibles des subordonnés de ce N+1. Retourne le nombre supprimé. */
+  deleteAllEligibleByN1(n1Id: number): Observable<number> {
+    return this.http.delete<number>(`${this.apiUrl}/n1/${n1Id}`);
   }
 }

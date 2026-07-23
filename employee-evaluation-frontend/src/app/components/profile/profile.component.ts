@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/auth.model';
@@ -13,9 +13,21 @@ export class ProfileComponent implements OnInit {
   currentUser: User | null = null;
   editMode = false;
   lastLogin = new Date(); // À remplacer par une vraie valeur
+  showPasswordModal = false;
+  
+  showCurrentPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
 
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
+
+  // Password strength criteria checks
+  hasMinLength = false;
+  hasUppercase = false;
+  hasLowercase = false;
+  hasNumber = false;
+  hasSpecialChar = false;
 
   stats = {
     totalEvaluations: 0,
@@ -54,6 +66,33 @@ export class ProfileComponent implements OnInit {
       averageNote: 7.8,
       pendingEvaluations: 2
     };
+
+    // Watch new password changes for strength indicator
+    this.passwordForm.get('newPassword')?.valueChanges.subscribe(value => {
+      this.checkPasswordStrength(value || '');
+    });
+  }
+
+  checkPasswordStrength(password: string): void {
+    this.hasMinLength = password.length >= 8;
+    this.hasUppercase = /[A-Z]/.test(password);
+    this.hasLowercase = /[a-z]/.test(password);
+    this.hasNumber = /[0-9]/.test(password);
+    this.hasSpecialChar = /[^a-zA-Z0-9]/.test(password);
+  }
+
+  strongPasswordValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value || '';
+    const hasMinLength = value.length >= 8;
+    const hasUppercase = /[A-Z]/.test(value);
+    const hasLowercase = /[a-z]/.test(value);
+    const hasNumber = /[0-9]/.test(value);
+    const hasSpecialChar = /[^a-zA-Z0-9]/.test(value);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar) {
+      return { weakPassword: true };
+    }
+    return null;
   }
 
   initForms(): void {
@@ -68,7 +107,7 @@ export class ProfileComponent implements OnInit {
 
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(4)]],
+      newPassword: ['', [Validators.required, this.strongPasswordValidator.bind(this)]],
       confirmPassword: ['', Validators.required]
     }, { validator: this.passwordMatchValidator });
   }
@@ -90,23 +129,44 @@ export class ProfileComponent implements OnInit {
     this.editMode = false;
   }
 
+  openPasswordModal(): void {
+    this.showPasswordModal = true;
+  }
+
+  closePasswordModal(): void {
+    this.showPasswordModal = false;
+  }
+
   changePassword(): void {
     if (this.passwordForm.invalid) {
-      this.toastr.warning('Veuillez remplir tous les champs', 'Attention');
+      this.toastr.warning('Veuillez corriger les erreurs', 'Attention');
       return;
     }
     if (this.passwordForm.hasError('mismatch')) {
       this.toastr.error('Les mots de passe ne correspondent pas', 'Erreur');
       return;
     }
-    // Appel API pour changer le mot de passe
-    this.toastr.success('Mot de passe modifié avec succès', 'Succès');
-    this.passwordForm.reset();
-    // Fermer le modal
-    const modal = document.getElementById('changePasswordModal');
-    if (modal) {
-      const btn = modal.querySelector('[data-bs-dismiss="modal"]') as HTMLElement;
-      if (btn) btn.click();
-    }
+
+    const currentPassword = this.passwordForm.get('currentPassword')?.value;
+    const newPassword = this.passwordForm.get('newPassword')?.value;
+
+    this.authService.changePassword({ currentPassword, newPassword }).subscribe({
+      next: () => {
+        this.toastr.success('Mot de passe modifié avec succès', 'Succès');
+        this.passwordForm.reset();
+        // Reset strength indicators
+        this.hasMinLength = false;
+        this.hasUppercase = false;
+        this.hasLowercase = false;
+        this.hasNumber = false;
+        this.hasSpecialChar = false;
+        // Close modal
+        this.closePasswordModal();
+      },
+      error: (err) => {
+        const errorMsg = err?.error?.message || 'Erreur lors du changement de mot de passe';
+        this.toastr.error(errorMsg, 'Erreur');
+      }
+    });
   }
 }

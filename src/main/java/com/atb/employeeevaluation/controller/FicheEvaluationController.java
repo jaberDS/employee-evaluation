@@ -47,21 +47,43 @@ public class FicheEvaluationController {
     @PatchMapping("/{ficheId}/employe")
     public ResponseEntity<FicheEvaluationDTO> validerParEmploye(
             @PathVariable Long ficheId,
-            @RequestParam boolean accepte) {
-        return ResponseEntity.ok(ficheService.validerParEmploye(ficheId, accepte));
+            @RequestParam boolean accepte,
+            @RequestParam(required = false) String commentaire,
+            Authentication authentication) {
+        if (!isOwnerOrPrivileged(ficheService.getFicheById(ficheId).getEmployeId(), authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(ficheService.validerParEmploye(ficheId, accepte, commentaire));
     }
 
     // ===================== Consultation =====================
 
     @GetMapping("/{id}")
-    public ResponseEntity<FicheEvaluationDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(ficheService.getFicheById(id));
+    public ResponseEntity<FicheEvaluationDTO> getById(@PathVariable Long id, Authentication authentication) {
+        FicheEvaluationDTO fiche = ficheService.getFicheById(id);
+        if (!isOwnerOrPrivileged(fiche.getEmployeId(), authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(fiche);
     }
 
     @GetMapping("/employe/{employeId}")
     public ResponseEntity<List<FicheEvaluationDTO>> getByEmploye(
-            @PathVariable Long employeId) {
+            @PathVariable Long employeId, Authentication authentication) {
+        if (!isOwnerOrPrivileged(employeId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(ficheService.getFichesByEmploye(employeId));
+    }
+
+    /** Un EMPLOYE ne peut agir/consulter que ses propres fiches; les autres rôles authentifiés passent. */
+    private boolean isOwnerOrPrivileged(Long employeId, Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities().stream()
+                .noneMatch(a -> "ROLE_EMPLOYE".equals(a.getAuthority()))) {
+            return true;
+        }
+        EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
+        return employeId.equals(current.getId());
     }
 
     @GetMapping("/evaluation/{evaluationId}")
@@ -87,5 +109,41 @@ public class FicheEvaluationController {
             }
         }
         return ResponseEntity.ok(ficheService.getFichesByN1(n1Id));
+    }
+
+    // ===================== Suppression (fiches clôturées et confirmées) =====================
+
+    @DeleteMapping("/{ficheId}")
+    public ResponseEntity<Void> deleteFiche(@PathVariable Long ficheId, Authentication authentication) {
+        FicheEvaluationDTO fiche = ficheService.getFicheById(ficheId);
+        if (!isN1OwnerOrPrivileged(fiche.getEmployeId(), authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        ficheService.deleteFiche(ficheId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Supprime en masse toutes les fiches éligibles (clôturées, campagne clôturée, N+2 et employé confirmatifs). */
+    @DeleteMapping("/n1/{n1Id}")
+    public ResponseEntity<Integer> deleteAllEligibleByN1(@PathVariable Long n1Id, Authentication authentication) {
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_N1".equals(a.getAuthority()))) {
+            EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
+            if (!n1Id.equals(current.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+        return ResponseEntity.ok(ficheService.deleteAllEligibleByN1(n1Id));
+    }
+
+    /** Un N1 ne peut supprimer que les fiches de ses propres subordonnés; ADMIN passe toujours. */
+    private boolean isN1OwnerOrPrivileged(Long employeId, Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities().stream()
+                .noneMatch(a -> "ROLE_N1".equals(a.getAuthority()))) {
+            return true;
+        }
+        EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
+        EmployeDTO owner = employeService.getEmployeById(employeId);
+        return owner.getN1Id() != null && owner.getN1Id().equals(current.getId());
     }
 }

@@ -24,12 +24,14 @@ public class FicheEvaluationMapper {
         dto.setEmployePrenom(entity.getEmploye().getPrenom());
         dto.setEvaluationId(entity.getEvaluation().getId());
         dto.setEvaluationNom(entity.getEvaluation().getNomEvaluation());
+        dto.setEvaluationStatut(entity.getEvaluation().getStatut());
         dto.setDateCreation(entity.getDateCreation());
         dto.setNoteN1(entity.getNoteN1());
         dto.setCommentaireN1(entity.getCommentaireN1());
         dto.setDecisionN2(entity.getDecisionN2());
         dto.setCommentaireN2(entity.getCommentaireN2());
         dto.setDecisionEmploye(entity.getDecisionEmploye());
+        dto.setCommentaireEmploye(entity.getCommentaireEmploye());
         dto.setNoteFinale(entity.getNoteFinale());
         dto.setStatut(entity.getStatut());
 

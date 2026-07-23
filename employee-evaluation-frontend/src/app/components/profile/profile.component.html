@@ -135,7 +135,7 @@
               </div>
             </div>
           </div>
-          <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+          <button class="btn btn-outline-danger" (click)="openPasswordModal()">
             <i class="fas fa-key"></i> Changer le mot de passe
           </button>
         </div>
@@ -148,35 +148,114 @@
 </div>
 
 <!-- ===== MODAL CHANGER MOT DE PASSE ===== -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-key text-danger"></i> Changer le mot de passe</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div *ngIf="showPasswordModal" class="atb-modal-backdrop" (click)="closePasswordModal()"></div>
+<div *ngIf="showPasswordModal" class="atb-modal-container">
+  <div class="atb-modal">
+    <div class="atb-modal-header">
+      <div class="atb-modal-header-left">
+        <div class="atb-modal-icon-box">
+          <i class="fas fa-key"></i>
+        </div>
+        <div class="atb-modal-header-text">
+          <h5 class="atb-modal-title">Changer le mot de passe</h5>
+          <p class="atb-modal-subtitle">Protégez votre compte avec un mot de passe fort</p>
+        </div>
       </div>
-      <div class="modal-body">
-        <form [formGroup]="passwordForm">
-          <div class="mb-3">
-            <label class="form-label">Mot de passe actuel</label>
-            <input type="password" class="form-control" formControlName="currentPassword" placeholder="Entrez votre mot de passe actuel">
+      <button class="atb-modal-close" (click)="closePasswordModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="atb-modal-body">
+      <form [formGroup]="passwordForm" class="atb-password-form">
+        <!-- Current Password -->
+        <div class="atb-form-field">
+          <label class="atb-form-label">Mot de passe actuel</label>
+          <div class="atb-input-wrapper">
+            <i class="fas fa-lock atb-input-icon"></i>
+            <input [type]="showCurrentPassword ? 'text' : 'password'" class="atb-form-input" formControlName="currentPassword" placeholder="Entrez votre mot de passe actuel">
+            <button type="button" class="atb-toggle-password" (click)="showCurrentPassword = !showCurrentPassword" tabindex="-1">
+              <i [class]="showCurrentPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Nouveau mot de passe</label>
-            <input type="password" class="form-control" formControlName="newPassword" placeholder="Entrez votre nouveau mot de passe">
+        </div>
+
+        <!-- New Password -->
+        <div class="atb-form-field">
+          <label class="atb-form-label">Nouveau mot de passe</label>
+          <div class="atb-input-wrapper">
+            <i class="fas fa-lock atb-input-icon"></i>
+            <input [type]="showNewPassword ? 'text' : 'password'" class="atb-form-input" formControlName="newPassword" placeholder="Entrez votre nouveau mot de passe">
+            <button type="button" class="atb-toggle-password" (click)="showNewPassword = !showNewPassword" tabindex="-1">
+              <i [class]="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Confirmer le mot de passe</label>
-            <input type="password" class="form-control" formControlName="confirmPassword" placeholder="Confirmez votre nouveau mot de passe">
+          
+          <!-- Password strength -->
+          <div class="atb-password-strength mt-3">
+            <div class="atb-strength-bar">
+              <div class="atb-strength-fill" [ngClass]="{
+                'weak': !hasMinLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar,
+                'medium': (hasMinLength && hasUppercase && hasLowercase) && !(hasNumber && hasSpecialChar),
+                'strong': hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar
+              }"></div>
+            </div>
+            <div class="atb-strength-text" [ngClass]="{
+              'text-danger': !hasMinLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar,
+              'text-warning': (hasMinLength && hasUppercase && hasLowercase) && !(hasNumber && hasSpecialChar),
+              'text-success': hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar
+            }">
+              {{ hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar ? 'Mot de passe fort' : ((hasMinLength && hasUppercase && hasLowercase) ? 'Mot de passe moyen' : 'Mot de passe faible') }}
+            </div>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-danger" (click)="changePassword()">
-          <i class="fas fa-check"></i> Mettre à jour
-        </button>
-      </div>
+          
+          <!-- Password criteria -->
+          <div class="atb-password-criteria mt-3">
+            <div class="atb-criteria-item" [ngClass]="{ 'valid': hasMinLength }">
+              <i [class]="hasMinLength ? 'fas fa-check-circle atb-criteria-icon' : 'far fa-circle atb-criteria-icon'"></i>
+              <span class="atb-criteria-text">Au moins 8 caractères</span>
+            </div>
+            <div class="atb-criteria-item" [ngClass]="{ 'valid': hasUppercase }">
+              <i [class]="hasUppercase ? 'fas fa-check-circle atb-criteria-icon' : 'far fa-circle atb-criteria-icon'"></i>
+              <span class="atb-criteria-text">Une lettre majuscule (A-Z)</span>
+            </div>
+            <div class="atb-criteria-item" [ngClass]="{ 'valid': hasLowercase }">
+              <i [class]="hasLowercase ? 'fas fa-check-circle atb-criteria-icon' : 'far fa-circle atb-criteria-icon'"></i>
+              <span class="atb-criteria-text">Une lettre minuscule (a-z)</span>
+            </div>
+            <div class="atb-criteria-item" [ngClass]="{ 'valid': hasNumber }">
+              <i [class]="hasNumber ? 'fas fa-check-circle atb-criteria-icon' : 'far fa-circle atb-criteria-icon'"></i>
+              <span class="atb-criteria-text">Un chiffre (0-9)</span>
+            </div>
+            <div class="atb-criteria-item" [ngClass]="{ 'valid': hasSpecialChar }">
+              <i [class]="hasSpecialChar ? 'fas fa-check-circle atb-criteria-icon' : 'far fa-circle atb-criteria-icon'"></i>
+              <span class="atb-criteria-text">Un caractère spécial (!&#64;#$%^&amp;*)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="atb-form-field">
+          <label class="atb-form-label">Confirmer le mot de passe</label>
+          <div class="atb-input-wrapper">
+            <i class="fas fa-lock atb-input-icon"></i>
+            <input [type]="showConfirmPassword ? 'text' : 'password'" class="atb-form-input" formControlName="confirmPassword" placeholder="Confirmez votre nouveau mot de passe">
+            <button type="button" class="atb-toggle-password" (click)="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+              <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <div *ngIf="passwordForm.hasError('mismatch') && passwordForm.get('confirmPassword')?.touched" class="atb-error-message">
+            <i class="fas fa-exclamation-circle"></i> Les mots de passe ne correspondent pas
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="atb-modal-footer">
+      <button class="atb-btn-secondary" (click)="closePasswordModal()">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+      <button class="atb-btn-primary" (click)="changePassword()">
+        <i class="fas fa-check"></i> Mettre à jour
+      </button>
     </div>
   </div>
 </div>

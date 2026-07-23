@@ -8,6 +8,7 @@ import com.atb.employeeevaluation.entity.Evaluation;
 import com.atb.employeeevaluation.entity.FicheEvaluation;
 import com.atb.employeeevaluation.entity.Question;
 import com.atb.employeeevaluation.enums.Decision;
+import com.atb.employeeevaluation.enums.StatutCampagne;
 import com.atb.employeeevaluation.enums.StatutFiche;
 import com.atb.employeeevaluation.enums.TypeActivite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
@@ -163,7 +164,7 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
     }
 
     @Override
-    public FicheEvaluationDTO validerParEmploye(Long ficheId, boolean accepte) {
+    public FicheEvaluationDTO validerParEmploye(Long ficheId, boolean accepte, String commentaire) {
         log.info("Validation employé pour fiche {} - Accepte: {}", ficheId, accepte);
 
         FicheEvaluation fiche = getEntityById(ficheId);
@@ -177,6 +178,7 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
 
         // Enregistrer la décision de l'employé
         fiche.setDecisionEmploye(accepte ? Decision.ACCEPTEE : Decision.REFUSEE);
+        fiche.setCommentaireEmploye(commentaire);
 
         if (accepte) {
             // Si l'employé accepte, clôture définitive
@@ -260,5 +262,34 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
     private FicheEvaluation getEntityById(Long id) {
         return ficheRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Fiche d'évaluation non trouvée avec id: " + id));
+    }
+
+    // ===================== Suppression =====================
+
+    @Override
+    public void deleteFiche(Long ficheId) {
+        FicheEvaluation fiche = getEntityById(ficheId);
+        if (!isEligibleForDeletion(fiche)) {
+            throw new UnauthorizedOperationException(
+                    "Seules les fiches clôturées, dont la campagne est clôturée et validées par le N+2 et l'employé, peuvent être supprimées."
+            );
+        }
+        ficheRepository.delete(fiche);
+    }
+
+    @Override
+    public int deleteAllEligibleByN1(Long n1Id) {
+        List<FicheEvaluation> eligibles = ficheRepository.findByEmployeN1Id(n1Id).stream()
+                .filter(this::isEligibleForDeletion)
+                .collect(Collectors.toList());
+        ficheRepository.deleteAll(eligibles);
+        return eligibles.size();
+    }
+
+    private boolean isEligibleForDeletion(FicheEvaluation fiche) {
+        return fiche.getStatut() == StatutFiche.CLOTUREE
+                && fiche.getDecisionN2() == Decision.ACCEPTEE
+                && fiche.getDecisionEmploye() == Decision.ACCEPTEE
+                && fiche.getEvaluation().getStatut() == StatutCampagne.CLOTUREE;
     }
 }

@@ -16,6 +16,10 @@ public class EmployeDTO {
     private String motDePasse;
     @NotNull private Role role;
     private Long n1Id;
+    private String n1Nom;
+    private String n1Prenom;
     private Long n2Id;
+    private String n2Nom;
+    private String n2Prenom;
     private Boolean actif;
 }

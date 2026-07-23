@@ -55,6 +55,12 @@ public class EmployeServiceImpl implements EmployeService {
     @Override
     public EmployeDTO updateEmploye(Long id, EmployeDTO dto) {
         Employe existant = findEntityById(id);
+        if (dto.getMatricule() != null && !dto.getMatricule().equals(existant.getMatricule())) {
+            if (employeRepository.existsByMatricule(dto.getMatricule())) {
+                throw new RuntimeException("Matricule déjà existant");
+            }
+            existant.setMatricule(dto.getMatricule());
+        }
         existant.setNom(dto.getNom());
         existant.setPrenom(dto.getPrenom());
         existant.setEmail(dto.getEmail());

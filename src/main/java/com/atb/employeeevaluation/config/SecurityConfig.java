@@ -72,13 +72,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/employes/**").hasRole("ADMIN")
 
                         // ==================== ADMIN, N1, N2 ====================
+                        // Lecture seule ouverte à l'EMPLOYE (nom de campagne / questions de sa propre fiche)
+                        .requestMatchers(HttpMethod.GET, "/api/evaluations/**").hasAnyRole("ADMIN", "N1", "N2", "EMPLOYE")
                         .requestMatchers("/api/evaluations/**").hasAnyRole("ADMIN", "N1", "N2")
 
                         // ==================== TOUS LES UTILISATEURS AUTHENTIFIÉS ====================
+                        .requestMatchers(HttpMethod.DELETE, "/api/fiches/**").hasAnyRole("ADMIN", "N1")
                         .requestMatchers("/api/fiches/**").authenticated()
                         .requestMatchers("/api/fiches/evaluer").hasAnyRole("ADMIN", "N1")
                         .requestMatchers("/api/fiches/*/n2").hasAnyRole("ADMIN", "N2")
                         .requestMatchers("/api/fiches/employe/**").authenticated()
+
+                        // ==================== ACTIVITÉS ====================
+                        .requestMatchers(HttpMethod.DELETE, "/api/activites").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
