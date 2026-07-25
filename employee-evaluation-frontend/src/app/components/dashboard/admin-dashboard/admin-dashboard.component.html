@@ -260,14 +260,18 @@
     </section>
 
     <!-- Recent Activity -->
-    <section class="panel panel-activity animate-fade-in delay-5" aria-label="Activité récente">
+    <section class="panel panel-activity animate-fade-in delay-5" aria-label="Activité récente" #activitySection>
       <header class="panel-header">
         <app-lucide-icon name="activity" [size]="20"></app-lucide-icon>
         <h2>Activité récente</h2>
       </header>
       <div class="panel-body">
         <ul class="activity-list" *ngIf="recentActivities.length > 0">
-          <li class="activity-item" *ngFor="let item of recentActivities">
+          <li class="activity-item"
+              *ngFor="let item of recentActivities"
+              [id]="'activity-' + item.id"
+              [class.activity-item-highlighted]="highlightedActivityId === item.id"
+              (click)="clearHighlight()">
             <div class="activity-icon" [style.background]="item.color + '18'" [style.color]="item.color">
               <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
             </div>
@@ -275,6 +279,13 @@
               <span class="activity-text">{{ item.text }}</span>
               <span class="activity-time">{{ item.time }}</span>
             </div>
+            <a class="activity-detail-btn"
+               *ngIf="highlightedActivityId === item.id && getDetailRoute(item)"
+               [routerLink]="getDetailRoute(item)"
+               (click)="$event.stopPropagation()">
+              <app-lucide-icon name="eye" [size]="13"></app-lucide-icon>
+              Voir les détails
+            </a>
           </li>
         </ul>
         <div class="activity-empty" *ngIf="recentActivities.length === 0">

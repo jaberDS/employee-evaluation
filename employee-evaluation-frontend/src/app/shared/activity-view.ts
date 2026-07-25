@@ -2,6 +2,8 @@ import { ActiviteLog } from '../services/activite.service';
 import { IconName } from './lucide-icon/lucide-icon.component';
 
 export interface ActivityView {
+  id: number;
+  type: string;
   icon: IconName;
   text: string;
   time: string;
@@ -47,6 +49,8 @@ export function toActivityView(a: ActiviteLog): ActivityView {
   const meta = TYPE_META[a.type] ?? DEFAULT_META;
   const actor = a.acteurNom ? ` · ${a.acteurNom}` : '';
   return {
+    id: a.id,
+    type: a.type,
     icon: meta.icon,
     color: meta.color,
     text: a.description + actor,

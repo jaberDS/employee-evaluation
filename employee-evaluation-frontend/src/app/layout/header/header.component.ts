@@ -137,6 +137,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.notificationCount = 0;
   }
 
+  selectNotification(item: ActivityView, event: Event): void {
+    event.stopPropagation();
+    this.showNotifications = false;
+    this.router.navigate(['/dashboard/admin'], { queryParams: { activityId: item.id } });
+  }
+
   toggleNotifications(event: Event): void {
     event.stopPropagation();
     this.showNotifications = !this.showNotifications;

@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { DashboardService, DashboardStats } from '../../../services/dashboard.service';
 import { ActiviteService } from '../../../services/activite.service';
@@ -21,10 +22,14 @@ interface DisplayStats {
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('activitySection') activitySection!: ElementRef;
+
   currentUser: any = null;
   today = new Date();
   loading = true;
+  highlightedActivityId: number | null = null;
   private activitiesSub?: Subscription;
+  private routeSub?: Subscription;
 
   stats = {
     totalEmployees: 0,
@@ -58,7 +63,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   constructor(
     private authService: AuthService,
     private dashboardService: DashboardService,
-    private activiteService: ActiviteService
+    private activiteService: ActiviteService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -72,12 +78,42 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       this.recentActivities = activities.slice(0, 8).map(toActivityView);
     });
     this.loadDashboard();
+    this.routeSub = this.route.queryParams.subscribe(params => {
+      const id = params['activityId'];
+      if (id) {
+        this.highlightedActivityId = +id;
+        setTimeout(() => this.scrollToActivity(+id), 400);
+      }
+    });
   }
 
   ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
     this.activitiesSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
+  }
+
+  private scrollToActivity(activityId: number): void {
+    const el = document.getElementById('activity-' + activityId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (this.activitySection) {
+      this.activitySection.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  clearHighlight(): void {
+    this.highlightedActivityId = null;
+  }
+
+  getDetailRoute(item: ActivityView): string | null {
+    const type = item.type;
+    if (type.startsWith('EMPLOYE_') && type !== 'EMPLOYE_SUPPRIME') return '/employees';
+    if (type.startsWith('CAMPAGNE_') && type !== 'CAMPAGNE_SUPPRIMEE') return '/evaluations';
+    if (type.startsWith('FICHE_')) return '/fiches';
+    if (type === 'QUESTION_AJOUTEE') return '/evaluations';
+    return null;
   }
 
   private loadDashboard(): void {

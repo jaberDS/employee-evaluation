@@ -73,7 +73,8 @@
             </div>
 
             <ng-container *ngIf="!loadingNotifications">
-              <div class="notif-item" *ngFor="let item of notifications" role="menuitem">
+              <div class="notif-item" *ngFor="let item of notifications" role="menuitem"
+                   (click)="selectNotification(item, $event)" style="cursor: pointer;">
                 <div class="notif-item-icon" [style.background]="item.color + '18'" [style.color]="item.color">
                   <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
                 </div>

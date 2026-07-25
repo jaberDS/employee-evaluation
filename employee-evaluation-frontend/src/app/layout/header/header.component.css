@@ -216,11 +216,15 @@
   padding: 0.7rem 0.75rem;
   border-radius: 12px;
   transition: background 0.18s ease;
-  cursor: default;
+  cursor: pointer;
 }
 
 .notif-item:hover {
   background: var(--atb-hover, rgba(139, 0, 0, 0.04));
+}
+
+.notif-item:active {
+  transform: scale(0.98);
 }
 
 .notif-item-icon {
