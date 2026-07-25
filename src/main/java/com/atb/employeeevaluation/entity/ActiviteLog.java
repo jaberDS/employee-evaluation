@@ -1,6 +1,7 @@
 package com.atb.employeeevaluation.entity;
 
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeEntite;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -33,6 +34,14 @@ public class ActiviteLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "acteur_id")
     private Employe acteur;
+
+    /** Enregistrement concerné par l'action — permet d'afficher son détail. */
+    @Column(name = "entite_id")
+    private Long entiteId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "entite_type", length = 20)
+    private TypeEntite entiteType;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

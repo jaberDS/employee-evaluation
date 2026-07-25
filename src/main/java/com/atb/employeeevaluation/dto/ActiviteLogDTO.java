@@ -1,6 +1,7 @@
 package com.atb.employeeevaluation.dto;
 
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeEntite;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,5 +14,7 @@ public class ActiviteLogDTO {
     private Long acteurId;
     private String acteurNom;
     private String acteurRole;
+    private Long entiteId;
+    private TypeEntite entiteType;
     private LocalDateTime createdAt;
 }

@@ -13,6 +13,8 @@ public class ActiviteLogMapper {
         dto.setId(entity.getId());
         dto.setType(entity.getType());
         dto.setDescription(entity.getDescription());
+        dto.setEntiteId(entity.getEntiteId());
+        dto.setEntiteType(entity.getEntiteType());
         dto.setCreatedAt(entity.getCreatedAt());
         Employe acteur = entity.getActeur();
         if (acteur != null) {

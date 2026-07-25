@@ -11,6 +11,7 @@ import com.atb.employeeevaluation.enums.Decision;
 import com.atb.employeeevaluation.enums.StatutCampagne;
 import com.atb.employeeevaluation.enums.StatutFiche;
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeEntite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
 import com.atb.employeeevaluation.mapper.FicheEvaluationMapper;
@@ -121,7 +122,8 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
         log.info("Évaluation N+1 terminée. Fiche ID: {}, Note: {}", fiche.getId(), noteN1);
         activiteLogService.log(TypeActivite.FICHE_EVALUEE_N1,
                 "Évaluation N+1 saisie pour " + employe.getPrenom() + " " + employe.getNom()
-                        + " (note: " + noteN1 + ")");
+                        + " (note: " + noteN1 + ")",
+                TypeEntite.FICHE, fiche.getId());
 
         return ficheMapper.toDto(fiche);
     }
@@ -149,14 +151,16 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
             log.info("N+2 a ACCEPTÉ la fiche {}", ficheId);
             activiteLogService.log(TypeActivite.FICHE_VALIDEE_N2,
                     "Évaluation validée par N+2 pour "
-                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom(),
+                    TypeEntite.FICHE, fiche.getId());
         } else {
             // Si N+2 refuse, passage en révision
             fiche.setStatut(StatutFiche.A_REVISER);
             log.info("N+2 a REFUSÉ la fiche {}", ficheId);
             activiteLogService.log(TypeActivite.FICHE_REFUSEE_N2,
                     "Évaluation refusée par N+2 pour "
-                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom(),
+                    TypeEntite.FICHE, fiche.getId());
         }
 
         fiche = ficheRepository.save(fiche);
@@ -187,14 +191,16 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
             log.info("Employé a ACCEPTÉ - Fiche {} clôturée avec note {}", ficheId, fiche.getNoteN1());
             activiteLogService.log(TypeActivite.FICHE_ACCEPTEE_EMPLOYE,
                     "Évaluation acceptée et clôturée pour "
-                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom(),
+                    TypeEntite.FICHE, fiche.getId());
         } else {
             // Si l'employé refuse, passage en révision
             fiche.setStatut(StatutFiche.A_REVISER);
             log.info("Employé a REFUSÉ - Fiche {} en révision", ficheId);
             activiteLogService.log(TypeActivite.FICHE_REFUSEE_EMPLOYE,
                     "Évaluation refusée par l'employé "
-                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom());
+                            + fiche.getEmploye().getPrenom() + " " + fiche.getEmploye().getNom(),
+                    TypeEntite.FICHE, fiche.getId());
         }
 
         fiche = ficheRepository.save(fiche);

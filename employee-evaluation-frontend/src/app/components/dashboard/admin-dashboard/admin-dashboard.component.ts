@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { DashboardService, DashboardStats } from '../../../services/dashboard.service';
-import { ActiviteService } from '../../../services/activite.service';
+import { ActiviteDetail, ActiviteEtape, ActiviteService } from '../../../services/activite.service';
 import { ActivityView, toActivityView } from '../../../shared/activity-view';
+import { IconName } from '../../../shared/lucide-icon/lucide-icon.component';
 
 interface DisplayStats {
   totalEmployees: number;
@@ -19,7 +21,29 @@ interface DisplayStats {
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.css']
+  styleUrls: ['./admin-dashboard.component.css'],
+  animations: [
+    trigger('backdropFade', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('220ms ease-out', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('180ms ease-in', style({ opacity: 0 }))
+      ])
+    ]),
+    trigger('modalPop', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(16px) scale(0.94)' }),
+        animate('320ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          style({ opacity: 1, transform: 'translateY(0) scale(1)' }))
+      ]),
+      transition(':leave', [
+        style({ opacity: 1, transform: 'translateY(0) scale(1)' }),
+        animate('180ms ease-in', style({ opacity: 0, transform: 'translateY(8px) scale(0.97)' }))
+      ])
+    ])
+  ]
 })
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('activitySection') activitySection!: ElementRef;
@@ -28,8 +52,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   today = new Date();
   loading = true;
   highlightedActivityId: number | null = null;
+
+  /** Modale de détail : déroulé du workflow de l'enregistrement concerné. */
+  detail: ActiviteDetail | null = null;
+  detailLoading = false;
+  detailError: string | null = null;
+  showDetail = false;
+
   private activitiesSub?: Subscription;
   private routeSub?: Subscription;
+  private detailSub?: Subscription;
 
   stats = {
     totalEmployees: 0,
@@ -92,6 +124,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnDestroy(): void {
     this.activitiesSub?.unsubscribe();
     this.routeSub?.unsubscribe();
+    this.detailSub?.unsubscribe();
   }
 
   private scrollToActivity(activityId: number): void {
@@ -107,13 +140,65 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.highlightedActivityId = null;
   }
 
-  getDetailRoute(item: ActivityView): string | null {
-    const type = item.type;
-    if (type.startsWith('EMPLOYE_') && type !== 'EMPLOYE_SUPPRIME') return '/employees';
-    if (type.startsWith('CAMPAGNE_') && type !== 'CAMPAGNE_SUPPRIMEE') return '/evaluations';
-    if (type.startsWith('FICHE_')) return '/fiches';
-    if (type === 'QUESTION_AJOUTEE') return '/evaluations';
-    return null;
+  /** Les activités antérieures à cette fonctionnalité n'ont pas d'enregistrement rattaché. */
+  hasDetail(item: ActivityView): boolean {
+    return !!item.entiteType && !!item.entiteId;
+  }
+
+  openDetail(item: ActivityView, event?: Event): void {
+    event?.stopPropagation();
+    this.showDetail = true;
+    this.detailLoading = true;
+    this.detailError = null;
+    this.detail = null;
+
+    this.detailSub?.unsubscribe();
+    this.detailSub = this.activiteService.getDetail(item.id).subscribe({
+      next: detail => {
+        this.detail = detail;
+        this.detailLoading = false;
+      },
+      error: () => {
+        this.detailError = "Impossible de charger le détail de cette activité.";
+        this.detailLoading = false;
+      }
+    });
+  }
+
+  closeDetail(): void {
+    this.showDetail = false;
+    this.detail = null;
+    this.detailError = null;
+    this.detailSub?.unsubscribe();
+  }
+
+  etapeIcon(etape: ActiviteEtape): IconName {
+    return (etape.icone || 'activity') as IconName;
+  }
+
+  /** Vert ≥ 8, orange ≥ 5, rouge en dessous — même convention que la fiche de détail. */
+  noteClass(note?: number): string {
+    if (note == null) return '';
+    if (note >= 8) return 'note-high';
+    if (note >= 5) return 'note-mid';
+    return 'note-low';
+  }
+
+  statutLabel(statut?: string): string {
+    const labels: Record<string, string> = {
+      EN_ATTENTE: 'En attente',
+      EN_COURS_N1: 'En cours N+1',
+      EN_ATTENTE_N2: 'En attente N+2',
+      EN_ATTENTE_EMPLOYE: 'En attente employé',
+      CLOTUREE: 'Clôturée',
+      A_REVISER: 'À réviser',
+      BROUILLON: 'Brouillon',
+      OUVERTE: 'Ouverte',
+      FERMEE: 'Fermée',
+      ACTIF: 'Actif',
+      INACTIF: 'Inactif'
+    };
+    return statut ? (labels[statut] ?? statut) : '';
   }
 
   private loadDashboard(): void {

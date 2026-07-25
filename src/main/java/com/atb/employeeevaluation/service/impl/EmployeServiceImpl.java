@@ -4,6 +4,7 @@ import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.entity.Employe;
 import com.atb.employeeevaluation.enums.Role;
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeEntite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.mapper.EmployeMapper;
 import com.atb.employeeevaluation.repository.EmployeRepository;
@@ -48,7 +49,8 @@ public class EmployeServiceImpl implements EmployeService {
         }
         employe = employeRepository.save(employe);
         activiteLogService.log(TypeActivite.EMPLOYE_CREE,
-                "Nouvel employé ajouté — " + employe.getPrenom() + " " + employe.getNom());
+                "Nouvel employé ajouté — " + employe.getPrenom() + " " + employe.getNom(),
+                TypeEntite.EMPLOYE, employe.getId());
         return employeMapper.toDto(employe);
     }
 
@@ -81,7 +83,8 @@ public class EmployeServiceImpl implements EmployeService {
         }
         Employe saved = employeRepository.save(existant);
         activiteLogService.log(TypeActivite.EMPLOYE_MODIFIE,
-                "Employé modifié — " + saved.getPrenom() + " " + saved.getNom());
+                "Employé modifié — " + saved.getPrenom() + " " + saved.getNom(),
+                TypeEntite.EMPLOYE, saved.getId());
         return employeMapper.toDto(saved);
     }
 
@@ -122,6 +125,15 @@ public class EmployeServiceImpl implements EmployeService {
     public void deleteEmploye(Long id) {
         Employe employe = findEntityById(id);
         String nomComplet = employe.getPrenom() + " " + employe.getNom();
+        // Nullify N1/N2 references from other employees before deleting
+        for (Employe e : employeRepository.findByN1Id(id)) {
+            e.setN1(null);
+            employeRepository.save(e);
+        }
+        for (Employe e : employeRepository.findByN2Id(id)) {
+            e.setN2(null);
+            employeRepository.save(e);
+        }
         employeRepository.deleteById(id);
         activiteLogService.log(TypeActivite.EMPLOYE_SUPPRIME,
                 "Employé supprimé — " + nomComplet);

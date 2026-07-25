@@ -6,6 +6,7 @@ import com.atb.employeeevaluation.entity.Evaluation;
 import com.atb.employeeevaluation.entity.Question;
 import com.atb.employeeevaluation.enums.StatutCampagne;
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeEntite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
 import com.atb.employeeevaluation.mapper.EvaluationMapper;
@@ -46,7 +47,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         evaluation.setStatut(StatutCampagne.BROUILLON);
         evaluation = evaluationRepository.save(evaluation);
         activiteLogService.log(TypeActivite.CAMPAGNE_CREEE,
-                "Nouvelle campagne créée — " + evaluation.getNomEvaluation());
+                "Nouvelle campagne créée — " + evaluation.getNomEvaluation(),
+                TypeEntite.CAMPAGNE, evaluation.getId());
         return evaluationMapper.toDto(evaluation);
     }
 
@@ -123,7 +125,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         evaluation.setStatut(StatutCampagne.OUVERTE);
         evaluationRepository.save(evaluation);
         activiteLogService.log(TypeActivite.CAMPAGNE_OUVERTE,
-                "Campagne lancée — " + evaluation.getNomEvaluation());
+                "Campagne lancée — " + evaluation.getNomEvaluation(),
+                TypeEntite.CAMPAGNE, evaluation.getId());
     }
 
     @Override
@@ -140,7 +143,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         evaluation.setStatut(StatutCampagne.FERMEE);
         evaluationRepository.save(evaluation);
         activiteLogService.log(TypeActivite.CAMPAGNE_FERMEE,
-                "Campagne fermée — " + evaluation.getNomEvaluation());
+                "Campagne fermée — " + evaluation.getNomEvaluation(),
+                TypeEntite.CAMPAGNE, evaluation.getId());
     }
 
     @Override
@@ -157,7 +161,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         evaluation.setStatut(StatutCampagne.CLOTUREE);
         evaluationRepository.save(evaluation);
         activiteLogService.log(TypeActivite.CAMPAGNE_CLOTUREE,
-                "Campagne clôturée — " + evaluation.getNomEvaluation());
+                "Campagne clôturée — " + evaluation.getNomEvaluation(),
+                TypeEntite.CAMPAGNE, evaluation.getId());
     }
 
     // ===================== Gestion des questions =====================

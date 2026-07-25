@@ -1,5 +1,6 @@
 package com.atb.employeeevaluation.controller;
 
+import com.atb.employeeevaluation.dto.ActiviteDetailDTO;
 import com.atb.employeeevaluation.dto.ActiviteLogDTO;
 import com.atb.employeeevaluation.service.ActiviteLogService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,12 @@ public class ActiviteLogController {
     public ResponseEntity<List<ActiviteLogDTO>> getRecentActivities(
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(activiteLogService.getRecentActivities(limit));
+    }
+
+    /** Détail complet de l'enregistrement concerné par une activité (déroulé du workflow). */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ActiviteDetailDTO> getDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(activiteLogService.getActiviteDetail(id));
     }
 
     @DeleteMapping

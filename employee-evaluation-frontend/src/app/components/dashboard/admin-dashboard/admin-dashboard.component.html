@@ -279,13 +279,12 @@
               <span class="activity-text">{{ item.text }}</span>
               <span class="activity-time">{{ item.time }}</span>
             </div>
-            <a class="activity-detail-btn"
-               *ngIf="highlightedActivityId === item.id && getDetailRoute(item)"
-               [routerLink]="getDetailRoute(item)"
-               (click)="$event.stopPropagation()">
+            <button type="button" class="activity-detail-btn"
+                    *ngIf="highlightedActivityId === item.id && hasDetail(item)"
+                    (click)="openDetail(item, $event)">
               <app-lucide-icon name="eye" [size]="13"></app-lucide-icon>
               Voir les détails
-            </a>
+            </button>
           </li>
         </ul>
         <div class="activity-empty" *ngIf="recentActivities.length === 0">
@@ -322,5 +321,109 @@
       </div>
     </section>
 
+  </div>
+</div>
+
+<!-- Détail d'une activité : déroulé du workflow -->
+<div class="detail-overlay"
+     *ngIf="showDetail"
+     @backdropFade
+     (click)="closeDetail()"
+     role="presentation">
+  <div class="detail-modal"
+       @modalPop
+       (click)="$event.stopPropagation()"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="detail-modal-title">
+
+    <button type="button" class="detail-close" (click)="closeDetail()" aria-label="Fermer">
+      <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+    </button>
+
+    <!-- Chargement -->
+    <div class="detail-state" *ngIf="detailLoading">
+      <div class="detail-spinner" aria-hidden="true"></div>
+      <p>Chargement du détail…</p>
+    </div>
+
+    <!-- Erreur -->
+    <div class="detail-state detail-state-error" *ngIf="!detailLoading && detailError">
+      <app-lucide-icon name="alert-circle" [size]="32"></app-lucide-icon>
+      <p>{{ detailError }}</p>
+    </div>
+
+    <ng-container *ngIf="!detailLoading && !detailError && detail as d">
+      <header class="detail-header">
+        <h3 id="detail-modal-title">{{ d.titre }}</h3>
+        <p class="detail-subtitle" *ngIf="d.sousTitre">{{ d.sousTitre }}</p>
+        <span class="detail-status" *ngIf="d.statut">{{ statutLabel(d.statut) }}</span>
+      </header>
+
+      <!-- Enregistrement supprimé : rien à afficher au-delà du libellé -->
+      <div class="detail-state detail-state-empty" *ngIf="d.entiteSupprimee">
+        <app-lucide-icon name="trash-2" [size]="32"></app-lucide-icon>
+        <p>L'enregistrement concerné n'existe plus — seule la trace de l'action est conservée.</p>
+      </div>
+
+      <ng-container *ngIf="!d.entiteSupprimee">
+        <!-- Attributs de l'enregistrement -->
+        <div class="detail-infos" *ngIf="d.infos.length > 0">
+          <div class="detail-info" *ngFor="let info of d.infos">
+            <span class="detail-info-label">{{ info.label }}</span>
+            <span class="detail-info-value">{{ info.valeur }}</span>
+          </div>
+        </div>
+
+        <!-- Déroulé chronologique -->
+        <h4 class="detail-section-title" *ngIf="d.etapes.length > 0">
+          <app-lucide-icon name="activity" [size]="16"></app-lucide-icon>
+          Déroulé
+        </h4>
+
+        <ol class="timeline" *ngIf="d.etapes.length > 0">
+          <li class="timeline-step" *ngFor="let etape of d.etapes">
+            <div class="timeline-marker"
+                 [style.background]="(etape.couleur || '#8B0000') + '18'"
+                 [style.color]="etape.couleur || '#8B0000'"
+                 [style.border-color]="(etape.couleur || '#8B0000') + '40'">
+              <app-lucide-icon [name]="etapeIcon(etape)" [size]="15"></app-lucide-icon>
+            </div>
+            <div class="timeline-body">
+              <div class="timeline-head">
+                <span class="timeline-label">{{ etape.libelle }}</span>
+                <span class="timeline-date" *ngIf="etape.date">
+                  {{ etape.date | date:'d MMM yyyy, HH:mm' }}
+                </span>
+              </div>
+              <div class="timeline-actor" *ngIf="etape.acteur">
+                <app-lucide-icon name="user" [size]="12"></app-lucide-icon>
+                {{ etape.acteur }}
+                <span class="timeline-role" *ngIf="etape.acteurRole">{{ etape.acteurRole }}</span>
+              </div>
+              <div class="timeline-badges" *ngIf="etape.note != null || etape.decision">
+                <span class="timeline-note" [ngClass]="noteClass(etape.note)" *ngIf="etape.note != null">
+                  {{ etape.note }} / 10
+                </span>
+                <span class="timeline-decision"
+                      [class.decision-ok]="etape.decision === 'ACCEPTEE'"
+                      [class.decision-ko]="etape.decision === 'REFUSEE'"
+                      *ngIf="etape.decision">
+                  {{ etape.decision === 'ACCEPTEE' ? 'Acceptée' : 'Refusée' }}
+                </span>
+              </div>
+              <blockquote class="timeline-comment" *ngIf="etape.commentaire">
+                {{ etape.commentaire }}
+              </blockquote>
+            </div>
+          </li>
+        </ol>
+
+        <div class="detail-state detail-state-empty" *ngIf="d.etapes.length === 0">
+          <app-lucide-icon name="activity" [size]="32"></app-lucide-icon>
+          <p>Aucune étape enregistrée pour cet élément.</p>
+        </div>
+      </ng-container>
+    </ng-container>
   </div>
 </div>

@@ -8,6 +8,9 @@ export interface ActivityView {
   text: string;
   time: string;
   color: string;
+  /** Enregistrement concerné — absent pour les activités antérieures à cette fonctionnalité. */
+  entiteId?: number;
+  entiteType?: string;
 }
 
 const TYPE_META: Record<string, { icon: IconName; color: string }> = {
@@ -54,6 +57,8 @@ export function toActivityView(a: ActiviteLog): ActivityView {
     icon: meta.icon,
     color: meta.color,
     text: a.description + actor,
-    time: relativeTime(a.createdAt)
+    time: relativeTime(a.createdAt),
+    entiteId: a.entiteId,
+    entiteType: a.entiteType
   };
 }

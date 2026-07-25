@@ -10,7 +10,37 @@ export interface ActiviteLog {
   acteurId?: number;
   acteurNom?: string;
   acteurRole?: string;
+  entiteId?: number;
+  entiteType?: 'FICHE' | 'EMPLOYE' | 'CAMPAGNE';
   createdAt: string;
+}
+
+/** Un attribut de l'enregistrement concerné. */
+export interface ActiviteInfo {
+  label: string;
+  valeur: string;
+}
+
+/** Une étape du déroulé (workflow) de l'enregistrement. */
+export interface ActiviteEtape {
+  libelle: string;
+  acteur?: string;
+  acteurRole?: string;
+  date?: string;
+  note?: number;
+  commentaire?: string;
+  decision?: 'ACCEPTEE' | 'REFUSEE';
+  icone?: string;
+  couleur?: string;
+}
+
+export interface ActiviteDetail {
+  titre: string;
+  sousTitre?: string;
+  statut?: string;
+  entiteSupprimee: boolean;
+  infos: ActiviteInfo[];
+  etapes: ActiviteEtape[];
 }
 
 @Injectable({
@@ -34,6 +64,11 @@ export class ActiviteService {
 
   getRecent(limit = 10): Observable<ActiviteLog[]> {
     return this.refresh(limit);
+  }
+
+  /** Détail complet (workflow) de l'enregistrement concerné par une activité. */
+  getDetail(id: number): Observable<ActiviteDetail> {
+    return this.http.get<ActiviteDetail>(`${this.apiUrl}/${id}/detail`);
   }
 
   deleteAll(): Observable<void> {
