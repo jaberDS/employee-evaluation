@@ -61,6 +61,11 @@ export class EmployeeService {
     return this.http.get<Employee[]>(`${this.apiUrl}/sous-n1/${n1Id}`);
   }
 
+  /** Returns employees whose N2 is the given manager */
+  getSousN2(n2Id: number): Observable<Employee[]> {
+    return this.http.get<Employee[]>(`${this.apiUrl}/sous-n2/${n2Id}`);
+  }
+
   assignHierarchy(id: number, n1Id?: number | null, n2Id?: number | null): Observable<void> {
     let url = `${this.apiUrl}/${id}/hierarchie?`;
     if (n1Id) url += `n1Id=${n1Id}&`;

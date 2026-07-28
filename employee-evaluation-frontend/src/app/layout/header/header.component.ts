@@ -108,6 +108,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.authService.getRole() === 'ADMIN';
   }
 
+  /** Il n'existe pas de route `/dashboard` : chaque rôle a la sienne. */
+  get dashboardRoute(): string {
+    const role = this.authService.getRole();
+    return role ? `/dashboard/${role.toLowerCase()}` : '/login';
+  }
+
   private get lastSeenId(): number {
     return Number(localStorage.getItem(this.SEEN_KEY) || 0);
   }

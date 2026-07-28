@@ -63,6 +63,19 @@ public class EmployeController {
         return ResponseEntity.ok(employeService.getEmployesByN1(n1Id));
     }
 
+    /** Retourne les employés dont n2_id = n2Id (subordonnés directs du N+2) */
+    @GetMapping("/sous-n2/{n2Id}")
+    public ResponseEntity<List<EmployeDTO>> getSousN2(@PathVariable Long n2Id, Authentication authentication) {
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_N2".equals(a.getAuthority()))) {
+            EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
+            if (!n2Id.equals(current.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+        return ResponseEntity.ok(employeService.getEmployesByN2(n2Id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         employeService.deleteEmploye(id);

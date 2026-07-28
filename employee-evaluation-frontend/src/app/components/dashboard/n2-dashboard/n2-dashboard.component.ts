@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { forkJoin, of, Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { catchError, distinctUntilChanged, filter } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../../services/auth.service';
@@ -63,19 +63,17 @@ export class N2DashboardComponent implements OnInit, OnDestroy {
   // ─── Data ────────────────────────────────────────────────────────────────
 
   loadDashboard(silent = false): void {
+    if (!this.currentUser?.id) return;
     if (!silent) this.loading = true;
 
-    forkJoin({
-      pending:  this.ficheService.getByStatut('EN_ATTENTE_N2').pipe(catchError(() => of([] as FicheEvaluation[]))),
-      waiting:  this.ficheService.getByStatut('EN_ATTENTE_EMPLOYE').pipe(catchError(() => of([] as FicheEvaluation[]))),
-      revise:   this.ficheService.getByStatut('A_REVISER').pipe(catchError(() => of([] as FicheEvaluation[]))),
-      closed:   this.ficheService.getByStatut('CLOTUREE').pipe(catchError(() => of([] as FicheEvaluation[])))
-    }).subscribe({
-      next: ({ pending, waiting, revise, closed }) => {
-        this.pendingCount = pending.length;
+    // Only the fiches of employees whose N+2 is the current user
+    this.ficheService.getByN2(this.currentUser.id).pipe(
+      catchError(() => of([] as FicheEvaluation[]))
+    ).subscribe({
+      next: (fiches) => {
+        this.pendingCount = fiches.filter(f => f.statut === 'EN_ATTENTE_N2').length;
         // Every fiche that has a note N+1 counts toward the employee-note statistics
-        this.ratedFiches = [...pending, ...waiting, ...revise, ...closed]
-          .filter(f => f.noteN1 !== null);
+        this.ratedFiches = fiches.filter(f => f.noteN1 !== null);
         this.computeBuckets();
         this.loading = false;
         setTimeout(() => this.animateCounters(), 100);

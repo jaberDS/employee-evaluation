@@ -374,6 +374,16 @@
   align-items: center;
   gap: 0.4rem;
 }
+.btn-icon-questions {
+  background: rgba(139,0,0,0.09) !important;
+  color: var(--atb-primary) !important;
+}
+.btn-icon-questions:hover {
+  background: var(--atb-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(139,0,0,0.32);
+  transform: translateY(-2px);
+}
 .btn-icon-revise {
   background: rgba(245,158,11,0.14) !important;
   color: #D97706 !important;
@@ -396,6 +406,30 @@
   transform: translateY(-2px);
 }
 @keyframes revisePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.25)} }
+
+.hist-detail-questions {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 12px;
+  background: rgba(139,0,0,0.07);
+  color: var(--atb-primary);
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hist-detail-questions:hover {
+  background: var(--atb-primary);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(139,0,0,0.28);
+}
 
 .hist-detail-revise {
   min-height: 42px;

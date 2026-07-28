@@ -73,7 +73,7 @@ export class N1DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       evaluations: this.evaluationService.getAll().pipe(
         catchError(() => of([] as Evaluation[]))
       ),
-      employees: this.employeeService.getByRole('EMPLOYE').pipe(
+      employees: this.employeeService.getSousN1(this.currentUser.id).pipe(
         catchError(() => of([] as Employee[]))
       ),
       fiches: this.ficheService.getByN1(this.currentUser.id).pipe(

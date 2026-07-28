@@ -22,4 +22,10 @@ public interface FicheEvaluationRepository extends JpaRepository<FicheEvaluation
 
     /** Toutes les fiches des employés rattachés à un N+1 donné */
     List<FicheEvaluation> findByEmployeN1Id(Long n1Id);
+
+    /** Toutes les fiches des employés rattachés à un N+2 donné */
+    List<FicheEvaluation> findByEmployeN2Id(Long n2Id);
+
+    /** Fiches d'un statut donné, limitées aux employés rattachés à un N+2 */
+    List<FicheEvaluation> findByEmployeN2IdAndStatut(Long n2Id, StatutFiche statut);
 }

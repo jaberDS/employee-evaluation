@@ -69,6 +69,7 @@ public class SecurityConfig {
                         // N+1 peut consulter uniquement ses subordonnés directs
                         .requestMatchers(HttpMethod.GET, "/api/employes/role/**").hasAnyRole("ADMIN", "N1", "N2")
                         .requestMatchers(HttpMethod.GET, "/api/employes/sous-n1/**").hasAnyRole("ADMIN", "N1")
+                        .requestMatchers(HttpMethod.GET, "/api/employes/sous-n2/**").hasAnyRole("ADMIN", "N2")
                         .requestMatchers(HttpMethod.GET, "/api/employes/*").authenticated()
                         .requestMatchers("/api/employes/**").hasRole("ADMIN")
 

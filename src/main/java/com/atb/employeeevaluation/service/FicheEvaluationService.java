@@ -24,6 +24,8 @@ public interface FicheEvaluationService {
     List<FicheEvaluationDTO> getFichesByEvaluation(Long evaluationId);
     List<FicheEvaluationDTO> getFichesByStatut(StatutFiche statut);
     List<FicheEvaluationDTO> getFichesByN1(Long n1Id);
+    List<FicheEvaluationDTO> getFichesByN2(Long n2Id);
+    List<FicheEvaluationDTO> getFichesByN2AndStatut(Long n2Id, StatutFiche statut);
 
     // Utilitaires
     void recalculerNoteFinale(Long ficheId);

@@ -111,6 +111,24 @@ public class FicheEvaluationController {
         return ResponseEntity.ok(ficheService.getFichesByN1(n1Id));
     }
 
+    /** Toutes les fiches des subordonnés d'un N+2, optionnellement filtrées par statut */
+    @GetMapping("/n2/{n2Id}")
+    public ResponseEntity<List<FicheEvaluationDTO>> getByN2(
+            @PathVariable Long n2Id,
+            @RequestParam(required = false) StatutFiche statut,
+            Authentication authentication) {
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_N2".equals(a.getAuthority()))) {
+            EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
+            if (!n2Id.equals(current.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+        return ResponseEntity.ok(statut == null
+                ? ficheService.getFichesByN2(n2Id)
+                : ficheService.getFichesByN2AndStatut(n2Id, statut));
+    }
+
     // ===================== Suppression (fiches clôturées et confirmées) =====================
 
     @DeleteMapping("/{ficheId}")

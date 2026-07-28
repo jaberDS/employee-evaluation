@@ -80,6 +80,10 @@
         </div>
 
         <div class="nvc-actions">
+          <button class="btn-n2-questions" (click)="questionsFicheId = f.id">
+            <app-lucide-icon name="list-checks" [size]="16"></app-lucide-icon>
+            Voir les questions
+          </button>
           <button class="btn-n2-reject" (click)="openDecision(f, 'REJECT')">
             <app-lucide-icon name="x-circle" [size]="16"></app-lucide-icon>
             Refuser
@@ -144,3 +148,6 @@
   </div>
 
 </div>
+
+<app-fiche-questions-modal [ficheId]="questionsFicheId"
+                           (closed)="questionsFicheId = null"></app-fiche-questions-modal>

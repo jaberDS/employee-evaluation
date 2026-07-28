@@ -76,6 +76,12 @@ export class FicheService {
     return this.http.get<FicheEvaluation[]>(`${this.apiUrl}/n1/${n1Id}`);
   }
 
+  /** Get fiches for the employees managed by this N+2, optionally filtered by statut */
+  getByN2(n2Id: number, statut?: string): Observable<FicheEvaluation[]> {
+    const url = `${this.apiUrl}/n2/${n2Id}`;
+    return this.http.get<FicheEvaluation[]>(statut ? `${url}?statut=${statut}` : url);
+  }
+
   /** Supprime une fiche clôturée, campagne clôturée, validée par le N+2 et l'employé. */
   delete(ficheId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${ficheId}`);

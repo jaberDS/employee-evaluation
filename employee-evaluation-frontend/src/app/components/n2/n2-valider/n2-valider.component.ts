@@ -15,6 +15,7 @@ import { Evaluation } from '../../../models/evaluation.model';
 export class N2ValiderComponent implements OnInit, OnDestroy {
 
   loading = true;
+  currentUser: any = null;
   private sub = new Subscription();
   private autoRefreshTimer: any;
 
@@ -28,6 +29,9 @@ export class N2ValiderComponent implements OnInit, OnDestroy {
   modalComment = '';
   submitting = false;
 
+  // Fiche dont les questions sont affichées (null = modale fermée)
+  questionsFicheId: number | null = null;
+
   constructor(
     private authService: AuthService,
     private evaluationService: EvaluationService,
@@ -40,7 +44,10 @@ export class N2ValiderComponent implements OnInit, OnDestroy {
       this.authService.currentUser$.pipe(
         filter(user => !!user?.id && user.id !== 0),
         distinctUntilChanged((a, b) => a!.id === b!.id)
-      ).subscribe(() => this.load())
+      ).subscribe(user => {
+        this.currentUser = user;
+        this.load();
+      })
     );
     this.autoRefreshTimer = setInterval(() => this.load(true), 60_000);
   }
@@ -53,11 +60,13 @@ export class N2ValiderComponent implements OnInit, OnDestroy {
   // ─── Data ────────────────────────────────────────────────────────────────
 
   load(silent = false): void {
+    if (!this.currentUser?.id) return;
     if (!silent) this.loading = true;
 
     forkJoin({
       evaluations: this.evaluationService.getAll().pipe(catchError(() => of([] as Evaluation[]))),
-      pending: this.ficheService.getByStatut('EN_ATTENTE_N2').pipe(catchError(() => of([] as FicheEvaluation[])))
+      pending: this.ficheService.getByN2(this.currentUser.id, 'EN_ATTENTE_N2')
+        .pipe(catchError(() => of([] as FicheEvaluation[])))
     }).subscribe({
       next: ({ evaluations, pending }) => {
         const openIds = new Set(evaluations.filter(e => e.statut === 'OUVERTE').map(e => e.id));

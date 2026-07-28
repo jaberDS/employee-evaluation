@@ -59,6 +59,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   detailError: string | null = null;
   showDetail = false;
 
+  /** Fiche concernée par l'activité ouverte — permet d'afficher ses questions. */
+  detailFicheId: number | null = null;
+
+  /** Fiche dont les questions sont affichées (null = modale fermée). */
+  questionsFicheId: number | null = null;
+
   private activitiesSub?: Subscription;
   private routeSub?: Subscription;
   private detailSub?: Subscription;
@@ -151,6 +157,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.detailLoading = true;
     this.detailError = null;
     this.detail = null;
+    this.detailFicheId = item.entiteType === 'FICHE' ? (item.entiteId ?? null) : null;
 
     this.detailSub?.unsubscribe();
     this.detailSub = this.activiteService.getDetail(item.id).subscribe({
@@ -169,6 +176,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.showDetail = false;
     this.detail = null;
     this.detailError = null;
+    this.detailFicheId = null;
     this.detailSub?.unsubscribe();
   }
 

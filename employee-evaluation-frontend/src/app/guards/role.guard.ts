@@ -40,6 +40,6 @@ export class RoleGuard implements CanActivate {
       'N2': '/dashboard/n2',
       'EMPLOYE': '/dashboard/employe'
     };
-    return dashboards[role] || '/dashboard';
+    return dashboards[role] || '/login';
   }
 }

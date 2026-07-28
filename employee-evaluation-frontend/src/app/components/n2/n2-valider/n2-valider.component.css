@@ -203,7 +203,7 @@
 .nvc-actions { display: flex; gap: 0.7rem; }
 
 /* ── Decision buttons ─────────────────────────────────────────────────────── */
-.btn-n2-accept, .btn-n2-reject, .btn-n2-cancel {
+.btn-n2-accept, .btn-n2-reject, .btn-n2-cancel, .btn-n2-questions {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -236,6 +236,17 @@
   border-color: transparent;
   transform: translateY(-2px);
   box-shadow: 0 10px 22px rgba(239,68,68,0.32);
+}
+.btn-n2-questions {
+  flex: 1;
+  background: var(--atb-bg);
+  color: var(--atb-text);
+  border: 1.5px solid var(--atb-border);
+}
+.btn-n2-questions:hover {
+  color: var(--atb-primary);
+  border-color: var(--atb-primary);
+  transform: translateY(-2px);
 }
 .btn-n2-cancel {
   background: transparent;

@@ -122,6 +122,13 @@ public class EmployeServiceImpl implements EmployeService {
     }
 
     @Override
+    public List<EmployeDTO> getEmployesByN2(Long n2Id) {
+        return employeRepository.findByN2Id(n2Id).stream()
+                .map(employeMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteEmploye(Long id) {
         Employe employe = findEntityById(id);
         String nomComplet = employe.getPrenom() + " " + employe.getNom();

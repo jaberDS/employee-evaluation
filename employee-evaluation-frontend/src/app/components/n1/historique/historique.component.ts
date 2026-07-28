@@ -24,6 +24,9 @@ export class N1HistoriqueComponent implements OnInit {
   selectedFiche: FicheEvaluation | null = null;
   showDetail = false;
 
+  // Fiche dont les questions sont affichées (null = modale fermée)
+  questionsFicheId: number | null = null;
+
   // Delete confirmation modal
   confirmTarget: FicheEvaluation | 'ALL' | null = null;
   deleting = false;
@@ -155,6 +158,8 @@ export class N1HistoriqueComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    // La modale des questions se ferme elle-même et reste au-dessus des autres
+    if (this.questionsFicheId !== null) return;
     if (this.showDetail) this.closeDetail();
     if (this.confirmTarget) this.cancelDelete();
   }

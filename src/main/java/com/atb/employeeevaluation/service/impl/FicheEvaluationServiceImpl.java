@@ -254,6 +254,26 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
     }
 
     @Override
+    public List<FicheEvaluationDTO> getFichesByN2(Long n2Id) {
+        if (!employeRepository.existsById(n2Id)) {
+            throw new ResourceNotFoundException("Manager N+2 non trouvé avec id: " + n2Id);
+        }
+        return ficheRepository.findByEmployeN2Id(n2Id).stream()
+                .map(ficheMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FicheEvaluationDTO> getFichesByN2AndStatut(Long n2Id, StatutFiche statut) {
+        if (!employeRepository.existsById(n2Id)) {
+            throw new ResourceNotFoundException("Manager N+2 non trouvé avec id: " + n2Id);
+        }
+        return ficheRepository.findByEmployeN2IdAndStatut(n2Id, statut).stream()
+                .map(ficheMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void recalculerNoteFinale(Long ficheId) {
         FicheEvaluation fiche = getEntityById(ficheId);
 

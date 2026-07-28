@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, interval, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { combineLatest, forkJoin, interval, Subscription } from 'rxjs';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../../services/auth.service';
 import { EvaluationService } from '../../../services/evaluation.service';
@@ -40,6 +40,7 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
   unansweredIds: number[] = [];
 
   private autoSaveSub?: Subscription;
+  private routeSub?: Subscription;
   private autoSaveInterval = 30_000; // 30s
 
   constructor(
@@ -53,8 +54,14 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getUser();
-    this.route.params.subscribe(params => {
+    this.routeSub = combineLatest([
+      this.authService.currentUser$.pipe(
+        filter(user => !!user?.id && user.id !== 0),
+        distinctUntilChanged((a, b) => a!.id === b!.id)
+      ),
+      this.route.params
+    ]).subscribe(([user, params]) => {
+      this.currentUser = user;
       this.campaignId  = +params['campaignId'];
       this.employeeId  = +params['employeeId'];
       this.loadData();
@@ -63,6 +70,7 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.autoSaveSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
   }
 
   // ─── Load ─────────────────────────────────────────────────────────────────
@@ -71,7 +79,7 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
     this.loading = true;
     forkJoin({
       campaign:  this.evaluationService.getById(this.campaignId),
-      employee: this.employeeService.getByRole('EMPLOYE').pipe(
+      employee: this.employeeService.getSousN1(this.currentUser.id).pipe(
         map(employees => employees.find(emp => emp.id === this.employeeId) ?? null)
       ),
       questions: this.evaluationService.getQuestions(this.campaignId)

@@ -14,6 +14,7 @@ public interface EmployeService {
     List<EmployeDTO> getAllEmployes();
     List<EmployeDTO> getEmployesByRole(Role role);
     List<EmployeDTO> getEmployesByN1(Long n1Id);
+    List<EmployeDTO> getEmployesByN2(Long n2Id);
     void deleteEmploye(Long id);
     void assignN1N2(Long employeId, Long n1Id, Long n2Id);
     Employe findEntityById(Long id);

@@ -36,6 +36,7 @@ import { FicheDetailComponent } from './components/fiches/fiche-detail/fiche-det
 import { ProfileComponent } from './components/profile/profile.component';
 import { LucideIconComponent } from './shared/lucide-icon/lucide-icon.component';
 import { ConfirmDialogComponent } from './shared/confirm/confirm-dialog.component';
+import { FicheQuestionsModalComponent } from './shared/fiche-questions/fiche-questions-modal.component';
 
 // N1 feature components
 import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evaluer-employes.component';
@@ -58,6 +59,7 @@ import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.compon
     FicheListComponent, FicheEvaluationComponent, FicheDetailComponent,
     ProfileComponent,
     ConfirmDialogComponent,
+    FicheQuestionsModalComponent,
     // N1 feature components
     EvaluerEmployesComponent,
     N1FicheEvaluationComponent,

@@ -375,6 +375,13 @@
           </div>
         </div>
 
+        <button type="button" class="detail-questions-btn"
+                *ngIf="detailFicheId"
+                (click)="questionsFicheId = detailFicheId">
+          <app-lucide-icon name="list-checks" [size]="15"></app-lucide-icon>
+          Voir les questions
+        </button>
+
         <!-- Déroulé chronologique -->
         <h4 class="detail-section-title" *ngIf="d.etapes.length > 0">
           <app-lucide-icon name="activity" [size]="16"></app-lucide-icon>
@@ -427,3 +434,7 @@
     </ng-container>
   </div>
 </div>
+
+<app-fiche-questions-modal [ficheId]="questionsFicheId"
+                           (closed)="questionsFicheId = null"></app-fiche-questions-modal>
+

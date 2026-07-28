@@ -116,6 +116,10 @@
                 <button class="btn-icon-action btn-icon-view" (click)="openDetail(f)" title="Voir les détails">
                   <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
                 </button>
+                <button class="btn-icon-action btn-icon-questions"
+                        (click)="questionsFicheId = f.id" title="Voir les questions">
+                  <app-lucide-icon name="list-checks" [size]="16"></app-lucide-icon>
+                </button>
                 <button class="btn-icon-action btn-icon-delete" *ngIf="canDelete(f)"
                         (click)="askDelete(f)" title="Supprimer de l'historique">
                   <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
@@ -242,6 +246,10 @@
         <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
         Fermer
       </button>
+      <button class="hist-detail-questions" type="button" (click)="questionsFicheId = selectedFiche.id">
+        <app-lucide-icon name="list-checks" [size]="16"></app-lucide-icon>
+        Voir les questions
+      </button>
       <button class="hist-detail-revise" type="button"
               *ngIf="canRevise(selectedFiche)"
               (click)="reviseFiche(selectedFiche)">
@@ -279,3 +287,6 @@
     </div>
   </section>
 </div>
+
+<app-fiche-questions-modal [ficheId]="questionsFicheId"
+                           (closed)="questionsFicheId = null"></app-fiche-questions-modal>
