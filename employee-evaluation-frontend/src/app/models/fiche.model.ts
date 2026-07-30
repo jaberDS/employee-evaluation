@@ -1,8 +1,11 @@
+import { TypeAffectation } from './evaluation.model';
+
 export interface FicheEvaluation {
   id: number;
   employeId: number;
   employeNom: string;
   employePrenom: string;
+  typeAffectation: TypeAffectation;
   evaluationId: number;
   evaluationNom: string;
   dateCreation: string;

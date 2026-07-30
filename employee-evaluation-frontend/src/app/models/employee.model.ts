@@ -1,3 +1,7 @@
+import { TypeAffectation } from './evaluation.model';
+
+export { TypeAffectation };
+
 export interface Employee {
   id?: number;
   matricule: string;
@@ -6,6 +10,7 @@ export interface Employee {
   email: string;
   motDePasse?: string;
   role: string;
+  typeAffectation: TypeAffectation;
   n1Id?: number | null;
   n1Nom?: string | null;
   n1Prenom?: string | null;

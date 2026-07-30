@@ -87,7 +87,9 @@
   50% { opacity: 0.35; }
 }
 
-.fl-card-body { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+/* Affectation + date à gauche, note repoussée à droite */
+.fl-card-body { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; }
+.fl-card-body .fl-card-note { margin-left: auto; }
 .fl-card-date {
   display: inline-flex;
   align-items: center;

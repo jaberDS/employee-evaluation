@@ -1,9 +1,12 @@
+export type TypeAffectation = 'AGENCE' | 'SIEGE';
+
 export interface Evaluation {
   id?: number;
   nomEvaluation: string;
   dateDebut: string;
   dateFin: string;
   statut?: string;
+  typeAffectation: TypeAffectation;
   questions?: Question[];
 }
 

@@ -65,6 +65,11 @@
             <h3 class="ncs-name">{{ ev.nomEvaluation }}</h3>
           </div>
 
+          <!-- Population ciblée -->
+          <div class="ncs-affectation">
+            <app-affectation-badge [type]="ev.typeAffectation"></app-affectation-badge>
+          </div>
+
           <!-- Dates -->
           <div class="ncs-dates">
             <span><app-lucide-icon name="calendar" [size]="13"></app-lucide-icon> {{ formatDate(ev.dateDebut) }}</span>
@@ -82,7 +87,7 @@
           <div class="ncs-progress-section">
             <div class="ncs-progress-label">
               <span>Progression</span>
-              <span>{{ getCampaignDone(ev) }}/{{ myEmployees.length }}</span>
+              <span>{{ getCampaignDone(ev) }}/{{ getCampaignScope(ev).length }}</span>
             </div>
             <div class="ncs-progress-track">
               <div class="ncs-progress-fill"
@@ -96,7 +101,7 @@
           <div class="ncs-footer">
             <span class="ncs-emp-count">
               <app-lucide-icon name="users" [size]="14"></app-lucide-icon>
-              {{ myEmployees.length }} employé{{ myEmployees.length > 1 ? 's' : '' }}
+              {{ getCampaignScope(ev).length }} employé{{ getCampaignScope(ev).length > 1 ? 's' : '' }}
             </span>
             <span class="ncs-cta">
               {{ getCampaignDone(ev) > 0 && getCampaignProgress(ev) < 100 ? 'Continuer' : getCampaignProgress(ev) === 100 ? 'Voir les évaluations' : 'Commencer' }}
@@ -123,7 +128,9 @@
           </div>
           <div>
             <h1>{{ selectedCampaign.nomEvaluation }}</h1>
-            <p>{{ myEmployees.length }} employé{{ myEmployees.length > 1 ? 's' : '' }} à évaluer
+            <p>
+              <app-affectation-badge [type]="selectedCampaign.typeAffectation" size="sm"></app-affectation-badge>
+              &nbsp;·&nbsp; {{ employeeCards.length }} employé{{ employeeCards.length > 1 ? 's' : '' }} à évaluer
               &nbsp;·&nbsp; {{ getRemainingDays(selectedCampaign.dateFin) }} jours restants
             </p>
           </div>
@@ -184,6 +191,17 @@
         <div class="state-empty-icon"><app-lucide-icon name="users" [size]="40"></app-lucide-icon></div>
         <h3>Aucun employé assigné</h3>
         <p>Contactez votre administrateur pour vous assigner des employés.</p>
+      </div>
+
+      <!-- Team exists but nobody in this campaign's population -->
+      <div *ngIf="myEmployees.length > 0 && employeeCards.length === 0" class="state-empty">
+        <div class="state-empty-icon"><app-lucide-icon name="building" [size]="40"></app-lucide-icon></div>
+        <h3>Aucun employé {{ selectedCampaign.typeAffectation === 'AGENCE' ? 'en Agence' : 'au Siège' }}</h3>
+        <p>
+          Cette campagne cible les employés
+          {{ selectedCampaign.typeAffectation === 'AGENCE' ? 'affectés en Agence' : 'affectés au Siège' }}.
+          Aucun membre de votre équipe ne relève de cette population.
+        </p>
       </div>
 
       <!-- Search -->

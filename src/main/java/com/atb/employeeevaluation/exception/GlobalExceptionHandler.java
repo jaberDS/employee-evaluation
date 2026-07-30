@@ -151,7 +151,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Validation Failed")
-                .message("Erreur de validation des données")
+                .message(String.join(" · ", validationErrors.values()))
                 .validationErrors(validationErrors)
                 .timestamp(System.currentTimeMillis())
                 .build();

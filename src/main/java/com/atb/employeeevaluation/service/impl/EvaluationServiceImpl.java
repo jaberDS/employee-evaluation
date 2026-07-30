@@ -6,6 +6,7 @@ import com.atb.employeeevaluation.entity.Evaluation;
 import com.atb.employeeevaluation.entity.Question;
 import com.atb.employeeevaluation.enums.StatutCampagne;
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import com.atb.employeeevaluation.enums.TypeEntite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,49 @@ public class EvaluationServiceImpl implements EvaluationService {
         return evaluationMapper.toDto(evaluation);
     }
 
+    /**
+     * Crée en une seule opération le couple de campagnes Agence + Siège.
+     * <p>
+     * Les deux populations de la banque sont évaluées sur des référentiels
+     * distincts : une campagne annuelle se décline donc toujours en deux
+     * campagnes jumelles, chacune recevant ensuite ses propres questions.
+     * L'opération est atomique — on ne veut jamais d'une moitié de couple.
+     *
+     * @return les deux campagnes créées, Agence en premier
+     */
+    @Override
+    public List<EvaluationDTO> createEvaluationPaire(EvaluationDTO dto) {
+        if (dto.getDateDebut().isAfter(dto.getDateFin())) {
+            throw new RuntimeException("La date de début doit être avant la date de fin");
+        }
+
+        List<EvaluationDTO> creees = new ArrayList<>();
+        for (TypeAffectation type : List.of(TypeAffectation.AGENCE, TypeAffectation.SIEGE)) {
+            Evaluation evaluation = evaluationMapper.toEntity(dto);
+            evaluation.setId(null);
+            evaluation.setTypeAffectation(type);
+            evaluation.setNomEvaluation(nomPourType(dto.getNomEvaluation(), type));
+            evaluation.setStatut(StatutCampagne.BROUILLON);
+
+            evaluation = evaluationRepository.save(evaluation);
+            activiteLogService.log(TypeActivite.CAMPAGNE_CREEE,
+                    "Nouvelle campagne créée — " + evaluation.getNomEvaluation(),
+                    TypeEntite.CAMPAGNE, evaluation.getId());
+            creees.add(evaluationMapper.toDto(evaluation));
+        }
+        return creees;
+    }
+
+    /** Suffixe le nom de base par la population ciblée, sans doubler un suffixe déjà saisi. */
+    private String nomPourType(String nomBase, TypeAffectation type) {
+        String base = nomBase == null ? "" : nomBase.trim();
+        String suffixe = type == TypeAffectation.AGENCE ? "Agence" : "Siège";
+        if (base.toLowerCase().endsWith(suffixe.toLowerCase())) {
+            return base;
+        }
+        return base + " — " + suffixe;
+    }
+
     @Override
     public EvaluationDTO updateEvaluation(Long id, EvaluationDTO dto) {
         Evaluation evaluation = getEntityById(id);
@@ -71,6 +116,9 @@ public class EvaluationServiceImpl implements EvaluationService {
         evaluation.setNomEvaluation(dto.getNomEvaluation());
         evaluation.setDateDebut(dto.getDateDebut());
         evaluation.setDateFin(dto.getDateFin());
+        if (dto.getTypeAffectation() != null) {
+            evaluation.setTypeAffectation(dto.getTypeAffectation());
+        }
 
         evaluation = evaluationRepository.save(evaluation);
         return evaluationMapper.toDto(evaluation);
@@ -84,6 +132,13 @@ public class EvaluationServiceImpl implements EvaluationService {
     @Override
     public List<EvaluationDTO> getAllEvaluations() {
         return evaluationRepository.findAll().stream()
+                .map(evaluationMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EvaluationDTO> getEvaluationsByTypeAffectation(TypeAffectation typeAffectation) {
+        return evaluationRepository.findByTypeAffectation(typeAffectation).stream()
                 .map(evaluationMapper::toDto)
                 .collect(Collectors.toList());
     }

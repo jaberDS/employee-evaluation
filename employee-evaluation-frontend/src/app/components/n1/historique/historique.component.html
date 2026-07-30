@@ -91,6 +91,8 @@
                 <div class="row-avatar hist-avatar">{{ getInitials(f.employePrenom, f.employeNom) }}</div>
                 <div>
                   <div class="row-name">{{ f.employePrenom }} {{ f.employeNom }}</div>
+                  <app-affectation-badge *ngIf="f.typeAffectation"
+                                         [type]="f.typeAffectation" size="sm"></app-affectation-badge>
                 </div>
               </div>
             </td>
@@ -162,6 +164,8 @@
           <span class="hist-detail-kicker">Détails de l'évaluation</span>
           <h2>{{ selectedFiche.employePrenom }} {{ selectedFiche.employeNom }}</h2>
           <p>{{ selectedFiche.evaluationNom }}</p>
+          <app-affectation-badge *ngIf="selectedFiche.typeAffectation"
+                                 [type]="selectedFiche.typeAffectation" size="sm"></app-affectation-badge>
         </div>
       </div>
       <button class="hist-detail-close" type="button" (click)="closeDetail()" aria-label="Fermer les détails">

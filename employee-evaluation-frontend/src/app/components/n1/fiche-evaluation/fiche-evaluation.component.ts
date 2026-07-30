@@ -7,7 +7,7 @@ import { AuthService } from '../../../services/auth.service';
 import { EvaluationService } from '../../../services/evaluation.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { FicheService } from '../../../services/fiche.service';
-import { Evaluation, Question } from '../../../models/evaluation.model';
+import { Evaluation, Question, TypeAffectation } from '../../../models/evaluation.model';
 import { Employee } from '../../../models/employee.model';
 import { IconName } from '../../../shared/lucide-icon/lucide-icon.component';
 
@@ -125,11 +125,34 @@ export class N1FicheEvaluationComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ─── Aiguillage de présentation ───────────────────────────────────────────
+
+  /**
+   * L'employé porte l'affectation de référence ; la campagne sert de repli
+   * tant que la liste des subordonnés n'est pas revenue.
+   */
+  get typeAffectation(): TypeAffectation {
+    return this.employee?.typeAffectation ?? this.campaign?.typeAffectation ?? 'SIEGE';
+  }
+
   // ─── Answer helpers ───────────────────────────────────────────────────────
 
   setAnswer(questionId: number, value: any): void {
     this.answers[questionId] = value;
     this.unansweredIds = this.unansweredIds.filter(id => id !== questionId);
+  }
+
+  /** Relais depuis les composants de présentation. */
+  onAnswerChange(e: { questionId: number; value: any }): void {
+    this.setAnswer(e.questionId, e.value);
+    // Garde l'input de saisie précise aligné sur l'échelle / le curseur
+    if (typeof e.value === 'number') {
+      this.scoreInputs[e.questionId] = String(e.value);
+    }
+  }
+
+  onScoreInput(e: { questionId: number; event: Event; noteMax: number }): void {
+    this.setScore(e.questionId, e.event, e.noteMax);
   }
 
   getRatingValue(questionId: number): number {

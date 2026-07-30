@@ -3,6 +3,7 @@ package com.atb.employeeevaluation.dto;
 import com.atb.employeeevaluation.enums.Decision;
 import com.atb.employeeevaluation.enums.StatutCampagne;
 import com.atb.employeeevaluation.enums.StatutFiche;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public class FicheEvaluationDTO {
     private Long employeId;
     private String employeNom;
     private String employePrenom;
+    private TypeAffectation typeAffectation;
     private Long evaluationId;
     private String evaluationNom;
     private StatutCampagne evaluationStatut;

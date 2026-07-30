@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.controller;
 
 import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.enums.Role;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import com.atb.employeeevaluation.service.EmployeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,9 @@ public class EmployeController {
 
     /** Retourne les employés dont n1_id = n1Id (subordonnés directs du N+1) */
     @GetMapping("/sous-n1/{n1Id}")
-    public ResponseEntity<List<EmployeDTO>> getSousN1(@PathVariable Long n1Id, Authentication authentication) {
+    public ResponseEntity<List<EmployeDTO>> getSousN1(@PathVariable Long n1Id,
+                                                      @RequestParam(name = "type", required = false) TypeAffectation type,
+                                                      Authentication authentication) {
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(a -> "ROLE_N1".equals(a.getAuthority()))) {
             EmployeDTO current = employeService.getEmployeByMatricule(authentication.getName());
@@ -60,7 +63,9 @@ public class EmployeController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
-        return ResponseEntity.ok(employeService.getEmployesByN1(n1Id));
+        return ResponseEntity.ok(type != null
+                ? employeService.getEmployesByN1AndTypeAffectation(n1Id, type)
+                : employeService.getEmployesByN1(n1Id));
     }
 
     /** Retourne les employés dont n2_id = n2Id (subordonnés directs du N+2) */

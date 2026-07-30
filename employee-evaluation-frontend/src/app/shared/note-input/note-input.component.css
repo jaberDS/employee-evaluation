@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Saisie de note — champ réel, stepper et jauge.
+   Palette ATB : bordeaux #8B0000 → carmin #C62828.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:host { display: block; }
+
+.ni {
+  --ni-deep: #8B0000;
+  --ni-mid: #A3121A;
+  --ni-bright: #C62828;
+  --ni-soft: rgba(139, 0, 0, 0.09);
+}
+
+/* ── Ligne de saisie ──────────────────────────────────────────────────── */
+
+.ni-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ni-step {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--atb-border);
+  border-radius: 11px;
+  background: var(--atb-card);
+  color: var(--atb-text-secondary);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease,
+              border-color 0.18s ease, transform 0.12s ease;
+}
+.ni-step:hover:not(:disabled) {
+  background: var(--ni-soft);
+  border-color: var(--ni-bright);
+  color: var(--ni-deep);
+}
+.ni-step:active:not(:disabled) { transform: scale(0.92); }
+.ni-step:disabled { opacity: 0.35; cursor: not-allowed; }
+.ni-step:focus-visible {
+  outline: 2px solid var(--ni-bright);
+  outline-offset: 2px;
+}
+
+/* Le champ : c'est lui la commande principale, il doit dominer la ligne */
+.ni-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.4rem 0.85rem;
+  border: 2px solid var(--atb-border);
+  border-radius: 13px;
+  background: var(--atb-bg);
+  transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+}
+.ni-field-wrap:focus-within {
+  border-color: var(--ni-bright);
+  background: var(--atb-card);
+  box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.13);
+}
+.ni-filled .ni-field-wrap {
+  border-color: rgba(139, 0, 0, 0.35);
+  background: var(--atb-card);
+}
+
+.ni-field {
+  width: 3.6ch;
+  border: none;
+  background: transparent;
+  color: var(--atb-text-secondary);
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  text-align: center;
+  transform-origin: center;
+}
+.ni-field:focus { outline: none; }
+.ni-field::placeholder { color: var(--atb-border); font-weight: 700; }
+.ni-filled .ni-field { color: var(--ni-deep); }
+
+.ni-max {
+  color: var(--atb-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Mention d'appréciation, poussée à droite */
+.ni-tier {
+  margin-left: auto;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  background: var(--atb-bg);
+  color: var(--atb-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.ni-filled .ni-tier {
+  background: var(--ni-soft);
+  color: var(--ni-deep);
+}
+
+/* ── Jauge ────────────────────────────────────────────────────────────── */
+
+.ni-track {
+  position: relative;
+  height: 8px;
+  margin-top: 0.7rem;
+  border-radius: 999px;
+  background: var(--atb-border);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.ni-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ni-deep), var(--ni-bright));
+}
+
+/* Repères de quart, pour situer la note sans lire le chiffre */
+.ni-ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+.ni-ticks i {
+  flex: 1;
+  border-right: 1px solid var(--atb-card);
+  opacity: 0.55;
+}
+.ni-ticks i:last-child { border-right: none; }
+
+/* Paliers — la jauge se réchauffe à mesure que la note monte */
+.ni-tier-faible .ni-fill { background: linear-gradient(90deg, #7F1D1D, #9F1239); }
+.ni-tier-moyen .ni-fill { background: linear-gradient(90deg, #8B0000, #B45309); }
+.ni-tier-bon .ni-fill { background: linear-gradient(90deg, #8B0000, #C62828); }
+.ni-tier-excellent .ni-fill { background: linear-gradient(90deg, #8B0000, #C62828, #E11D48); }
+
+/* État d'erreur — question obligatoire laissée vide */
+.ni-invalid .ni-field-wrap {
+  border-color: var(--atb-warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14);
+}
+
+/* ── Variante Siège : plus ample, registre documentaire ───────────────── */
+
+.ni-siege .ni-field { font-size: 1.85rem; font-weight: 800; width: 4ch; }
+.ni-siege .ni-field-wrap { padding: 0.5rem 1.05rem; border-radius: 10px; }
+.ni-siege .ni-step { width: 42px; height: 42px; border-radius: 10px; }
+.ni-siege .ni-track { height: 6px; margin-top: 0.9rem; border-radius: 3px; }
+.ni-siege .ni-fill { border-radius: 3px; }
+.ni-siege .ni-tier {
+  border-radius: 4px;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Thème sombre ─────────────────────────────────────────────────────── */
+
+[data-theme="dark"] .ni-field-wrap { background: rgba(255, 255, 255, 0.04); }
+[data-theme="dark"] .ni-filled .ni-field { color: #FCA5A5; }
+[data-theme="dark"] .ni-filled .ni-tier {
+  background: rgba(198, 40, 40, 0.18);
+  color: #FCA5A5;
+}
+[data-theme="dark"] .ni-step { background: rgba(255, 255, 255, 0.04); }
+[data-theme="dark"] .ni-step:hover:not(:disabled) {
+  background: rgba(198, 40, 40, 0.18);
+  color: #FCA5A5;
+}
+[data-theme="dark"] .ni-ticks i { border-right-color: var(--atb-card); }
+
+/* ── Écrans étroits ───────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .ni-tier {
+    order: 4;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.45rem;
+    text-align: center;
+  }
+  .ni-row { flex-wrap: wrap; }
+  .ni-field-wrap { flex: 1; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ni-step, .ni-field-wrap, .ni-tier { transition: none; }
+}

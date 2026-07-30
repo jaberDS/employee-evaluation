@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { EvaluationService } from '../../../services/evaluation.service';
+import { TypeAffectation } from '../../../models/evaluation.model';
 
 @Component({
   selector: 'app-evaluation-form',
@@ -15,6 +16,8 @@ export class EvaluationFormComponent implements OnInit {
   evaluationId?: number;
   submitted = false;
   loading = false;
+  /** Population de la campagne éditée — informatif, non modifiable. */
+  typeAffectation: TypeAffectation = 'SIEGE';
 
   constructor(
     private fb: FormBuilder,
@@ -23,6 +26,8 @@ export class EvaluationFormComponent implements OnInit {
     private router: Router,
     private toastr: ToastrService
   ) {
+    // En création, le type est décidé par le serveur (une saisie = deux campagnes).
+    // En modification, il est chargé depuis la campagne et reste en lecture seule.
     this.evaluationForm = this.fb.group({
       nomEvaluation: ['', [Validators.required, Validators.maxLength(100)]],
       dateDebut: ['', Validators.required],
@@ -46,6 +51,7 @@ export class EvaluationFormComponent implements OnInit {
     if (this.evaluationId) {
       this.evalService.getById(this.evaluationId).subscribe({
         next: (data) => {
+          this.typeAffectation = data.typeAffectation ?? 'SIEGE';
           this.evaluationForm.patchValue({
             nomEvaluation: data.nomEvaluation,
             dateDebut: data.dateDebut.replace('Z', ''), // pour datetime-local
@@ -82,11 +88,17 @@ export class EvaluationFormComponent implements OnInit {
         }
       });
     } else {
-      this.evalService.create(data).subscribe({
-        next: (res) => {
-          this.toastr.success('Campagne créée avec succès', 'Succès');
-          // Rediriger vers la liste des questions de cette campagne
-          this.router.navigate(['/evaluations', res.id, 'questions']);
+      // Une saisie = deux campagnes jumelles (Agence + Siège), chacune
+      // recevant ensuite son propre questionnaire.
+      this.evalService.createPaire(data).subscribe({
+        next: (campagnes) => {
+          this.toastr.success(
+            'Campagnes Agence et Siège créées — ajoutez les questions de chacune',
+            'Succès',
+            { timeOut: 5000 }
+          );
+          const agence = campagnes.find(c => c.typeAffectation === 'AGENCE') ?? campagnes[0];
+          this.router.navigate(['/evaluations', agence.id, 'questions']);
         },
         error: (err) => {
           this.toastr.error(err.error?.message || 'Erreur de création', 'Erreur');

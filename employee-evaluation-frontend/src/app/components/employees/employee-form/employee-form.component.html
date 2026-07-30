@@ -147,6 +147,65 @@
             </div>
           </div>
 
+          <!-- Affectation : détermine quel modèle de fiche d'évaluation
+               sera utilisé pour cet employé (Agence ou Siège) -->
+          <div class="emp-field-group emp-field-affectation">
+            <span class="emp-affectation-legend">
+              <app-lucide-icon name="building" [size]="15"></app-lucide-icon>
+              Affectation
+            </span>
+
+            <div class="emp-affectation-choice" role="radiogroup" aria-label="Affectation de l'employé">
+              <button type="button"
+                      class="emp-affectation-card emp-affectation-agence"
+                      [class.is-selected]="employeeForm.get('typeAffectation')?.value === 'AGENCE'"
+                      role="radio"
+                      [attr.aria-checked]="employeeForm.get('typeAffectation')?.value === 'AGENCE'"
+                      (click)="setAffectation('AGENCE')">
+                <span class="emp-affectation-icon">
+                  <app-lucide-icon name="building" [size]="22"></app-lucide-icon>
+                </span>
+                <span class="emp-affectation-text">
+                  <strong>Agence</strong>
+                  <small>Réseau commercial — fiche orientée performance</small>
+                </span>
+                <span class="emp-affectation-check">
+                  <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+                </span>
+              </button>
+
+              <button type="button"
+                      class="emp-affectation-card emp-affectation-siege"
+                      [class.is-selected]="employeeForm.get('typeAffectation')?.value === 'SIEGE'"
+                      role="radio"
+                      [attr.aria-checked]="employeeForm.get('typeAffectation')?.value === 'SIEGE'"
+                      (click)="setAffectation('SIEGE')">
+                <span class="emp-affectation-icon">
+                  <app-lucide-icon name="landmark" [size]="22"></app-lucide-icon>
+                </span>
+                <span class="emp-affectation-text">
+                  <strong>Siège</strong>
+                  <small>Fonctions support — fiche institutionnelle</small>
+                </span>
+                <span class="emp-affectation-check">
+                  <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+                </span>
+              </button>
+            </div>
+
+            <div class="emp-affectation-hint">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="!isEdit">
+                Cet employé ne sera évaluable que par les campagnes
+                <strong>{{ employeeForm.get('typeAffectation')?.value === 'AGENCE' ? 'Agence' : 'Siège' }}</strong>.
+              </span>
+              <span *ngIf="isEdit">
+                Changer l'affectation modifie les campagnes auxquelles cet employé est rattaché
+                ainsi que le modèle de fiche utilisé par son N+1.
+              </span>
+            </div>
+          </div>
+
           <!-- N+1 -->
           <div class="emp-field-group">
             <div class="emp-input-wrap emp-select-wrap">

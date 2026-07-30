@@ -125,7 +125,10 @@
   gap: 0.3rem;
   font-size: 0.78rem;
   color: var(--atb-text-secondary);
+  margin-right: 0.45rem;
 }
+/* Affectation de l'employé, sur la même ligne que la campagne */
+.nvc-meta app-affectation-badge { vertical-align: middle; }
 .nvc-note {
   flex-shrink: 0;
   display: flex;

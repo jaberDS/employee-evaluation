@@ -41,6 +41,7 @@ export class EmployeeFormComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       motDePasse: ['', this.isEdit ? [] : [Validators.required, Validators.minLength(4)]],
       role: ['EMPLOYE', Validators.required],
+      typeAffectation: ['SIEGE', Validators.required],
       n1Id: [null],
       n2Id: [null],
       actif: [true]
@@ -65,6 +66,12 @@ export class EmployeeFormComponent implements OnInit {
         });
       }
     });
+  }
+
+  /** Sélection de l'affectation via les cartes Agence / Siège. */
+  setAffectation(type: 'AGENCE' | 'SIEGE') {
+    this.employeeForm.get('typeAffectation')?.setValue(type);
+    this.employeeForm.get('typeAffectation')?.markAsDirty();
   }
 
   get n1Candidates() {

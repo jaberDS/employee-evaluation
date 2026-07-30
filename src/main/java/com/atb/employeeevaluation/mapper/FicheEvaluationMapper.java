@@ -22,6 +22,7 @@ public class FicheEvaluationMapper {
         dto.setEmployeId(entity.getEmploye().getId());
         dto.setEmployeNom(entity.getEmploye().getNom());
         dto.setEmployePrenom(entity.getEmploye().getPrenom());
+        dto.setTypeAffectation(entity.getEmploye().getTypeAffectation());
         dto.setEvaluationId(entity.getEvaluation().getId());
         dto.setEvaluationNom(entity.getEvaluation().getNomEvaluation());
         dto.setEvaluationStatut(entity.getEvaluation().getStatut());

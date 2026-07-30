@@ -319,6 +319,11 @@
   line-height: 1.3;
 }
 
+.ncs-affectation {
+  display: flex;
+  margin-bottom: 0.1rem;
+}
+
 .ncs-dates {
   display: flex;
   align-items: center;

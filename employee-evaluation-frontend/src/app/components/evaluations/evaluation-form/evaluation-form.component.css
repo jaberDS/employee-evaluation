@@ -241,6 +241,23 @@
   opacity: 0.5;
 }
 
+/* === SELECT === */
+.camp-select {
+  cursor: pointer;
+  padding-right: 3rem;
+}
+
+.camp-select-wrap .camp-select-chevron {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--atb-text-secondary);
+  pointer-events: none;
+  display: flex;
+  z-index: 3;
+}
+
 /* === FLOATING LABEL === */
 .camp-float-label {
   position: absolute;
@@ -259,7 +276,8 @@
 
 .camp-input:focus ~ .camp-float-label,
 .camp-input:not(:placeholder-shown) ~ .camp-float-label,
-.camp-float-label-date {
+.camp-float-label-date,
+.camp-float-label-select {
   top: 0;
   left: 2.5rem;
   transform: translateY(-50%);
@@ -316,6 +334,89 @@
 }
 
 /* === INFO CARD === */
+/* ── Couple de campagnes Agence + Siège ───────────────────────────────────
+   Une saisie génère deux campagnes : on montre le résultat avant de valider,
+   avec les couleurs des deux modèles de fiche (turquoise / indigo). */
+.camp-paire {
+  margin-top: 1.5rem;
+  animation: campFieldFadeIn 0.5s ease-out 0.3s both;
+}
+
+.camp-paire-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+  color: var(--atb-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.camp-paire-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+}
+
+.camp-paire-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--atb-border);
+  border-radius: 14px;
+  background: var(--atb-card);
+}
+
+.camp-paire-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  color: #fff;
+}
+
+.camp-paire-text { display: flex; flex-direction: column; min-width: 0; }
+.camp-paire-text strong {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--atb-text);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.camp-paire-text small {
+  margin-top: 0.18rem;
+  font-size: 0.72rem;
+  color: var(--atb-text-secondary);
+}
+
+.camp-paire-agence {
+  border-color: rgba(198, 40, 40, 0.45);
+  background: rgba(198, 40, 40, 0.06);
+}
+.camp-paire-agence .camp-paire-icon {
+  background: linear-gradient(135deg, #8B0000, #C62828);
+}
+
+.camp-paire-siege {
+  border-color: rgba(139, 0, 0, 0.45);
+  background: rgba(139, 0, 0, 0.05);
+}
+.camp-paire-siege .camp-paire-icon {
+  background: linear-gradient(135deg, #4A0E0E, #8B0000);
+}
+
+[data-theme="dark"] .camp-paire-agence { background: rgba(198, 40, 40, 0.13); }
+[data-theme="dark"] .camp-paire-siege { background: rgba(139, 0, 0, 0.15); }
+
+@media (max-width: 640px) {
+  .camp-paire-grid { grid-template-columns: 1fr; }
+}
+
 .camp-info-card {
   display: flex;
   align-items: flex-start;
@@ -501,7 +602,8 @@
 
 [data-theme="dark"] .camp-input:focus ~ .camp-float-label,
 [data-theme="dark"] .camp-input:not(:placeholder-shown) ~ .camp-float-label,
-[data-theme="dark"] .camp-float-label-date {
+[data-theme="dark"] .camp-float-label-date,
+[data-theme="dark"] .camp-float-label-select {
   background: #1e2130;
   color: #e57373;
 }

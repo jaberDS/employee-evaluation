@@ -1,6 +1,7 @@
 package com.atb.employeeevaluation.entity;
 
 import com.atb.employeeevaluation.enums.Role;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,12 @@ public class Employe {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_affectation", nullable = false, length = 10,
+            columnDefinition = "VARCHAR(10) DEFAULT 'SIEGE'")
+    @Builder.Default
+    private TypeAffectation typeAffectation = TypeAffectation.SIEGE;
 
     @ManyToOne
     @JoinColumn(name = "n1_id")

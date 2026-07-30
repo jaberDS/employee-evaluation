@@ -115,6 +115,9 @@
   font-size: 0.86rem;
   font-weight: 600;
 }
+/* Affectation : rappel du référentiel utilisé pour la fiche */
+.hist-detail-title-wrap app-affectation-badge { display: inline-block; margin-top: 0.45rem; }
+.row-identity app-affectation-badge { display: inline-block; margin-top: 0.28rem; }
 .hist-detail-close {
   width: 40px;
   height: 40px;

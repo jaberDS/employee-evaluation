@@ -4,6 +4,7 @@ import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.entity.Employe;
 import com.atb.employeeevaluation.enums.Role;
 import com.atb.employeeevaluation.enums.TypeActivite;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import com.atb.employeeevaluation.enums.TypeEntite;
 import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.mapper.EmployeMapper;
@@ -67,6 +68,9 @@ public class EmployeServiceImpl implements EmployeService {
         existant.setPrenom(dto.getPrenom());
         existant.setEmail(dto.getEmail());
         existant.setRole(dto.getRole());
+        if (dto.getTypeAffectation() != null) {
+            existant.setTypeAffectation(dto.getTypeAffectation());
+        }
         existant.setActif(dto.getActif() != null ? dto.getActif() : existant.getActif());
         if (dto.getMotDePasse() != null && !dto.getMotDePasse().isEmpty()) {
             existant.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
@@ -117,6 +121,13 @@ public class EmployeServiceImpl implements EmployeService {
     @Override
     public List<EmployeDTO> getEmployesByN1(Long n1Id) {
         return employeRepository.findByN1Id(n1Id).stream()
+                .map(employeMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EmployeDTO> getEmployesByN1AndTypeAffectation(Long n1Id, TypeAffectation typeAffectation) {
+        return employeRepository.findByN1IdAndTypeAffectation(n1Id, typeAffectation).stream()
                 .map(employeMapper::toDto)
                 .collect(Collectors.toList());
     }

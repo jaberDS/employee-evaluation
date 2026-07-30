@@ -52,6 +52,8 @@
               <app-lucide-icon name="megaphone" [size]="12"></app-lucide-icon>
               {{ f.evaluationNom }}
             </span>
+            <app-affectation-badge *ngIf="f.typeAffectation"
+                                   [type]="f.typeAffectation" size="sm"></app-affectation-badge>
           </div>
           <div class="nvc-note" [ngClass]="noteClass(f.noteN1)">
             <span class="nvc-note-val">{{ f.noteN1 }}</span>

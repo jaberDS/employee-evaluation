@@ -37,10 +37,14 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { LucideIconComponent } from './shared/lucide-icon/lucide-icon.component';
 import { ConfirmDialogComponent } from './shared/confirm/confirm-dialog.component';
 import { FicheQuestionsModalComponent } from './shared/fiche-questions/fiche-questions-modal.component';
+import { AffectationBadgeComponent } from './shared/affectation-badge/affectation-badge.component';
+import { NoteInputComponent } from './shared/note-input/note-input.component';
 
 // N1 feature components
 import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evaluer-employes.component';
 import { N1FicheEvaluationComponent } from './components/n1/fiche-evaluation/fiche-evaluation.component';
+import { FicheAgenceComponent } from './components/n1/fiche-agence/fiche-agence.component';
+import { FicheSiegeComponent } from './components/n1/fiche-siege/fiche-siege.component';
 import { N1HistoriqueComponent } from './components/n1/historique/historique.component';
 
 // N2 feature components
@@ -50,6 +54,7 @@ import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.compon
   declarations: [
     AppComponent,
     LucideIconComponent,
+    NoteInputComponent,
     LoginComponent, NotFoundComponent,
     HeaderComponent, SidebarComponent, FooterComponent,
     AdminDashboardComponent, N1DashboardComponent, N2DashboardComponent, EmployeeDashboardComponent,
@@ -60,9 +65,12 @@ import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.compon
     ProfileComponent,
     ConfirmDialogComponent,
     FicheQuestionsModalComponent,
+    AffectationBadgeComponent,
     // N1 feature components
     EvaluerEmployesComponent,
     N1FicheEvaluationComponent,
+    FicheAgenceComponent,
+    FicheSiegeComponent,
     N1HistoriqueComponent,
     // N2 feature components
     N2ValiderComponent

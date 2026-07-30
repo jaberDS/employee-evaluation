@@ -2,12 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { TypeAffectation } from '../models/evaluation.model';
+
+export { TypeAffectation };
 
 export interface FicheEvaluation {
   id: number;
   employeId: number;
   employeNom: string;
   employePrenom: string;
+  typeAffectation: TypeAffectation;
   evaluationId: number;
   evaluationNom: string;
   evaluationStatut: string | null; // BROUILLON | OUVERTE | FERMEE | CLOTUREE

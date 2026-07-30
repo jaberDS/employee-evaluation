@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { TypeAffectation } from '../models/evaluation.model';
 
 export interface Employee {
   id?: number;
@@ -11,6 +12,7 @@ export interface Employee {
   email: string;
   motDePasse?: string;
   role: string;
+  typeAffectation: TypeAffectation;
   n1Id?: number | null;
   n1Nom?: string | null;
   n1Prenom?: string | null;
@@ -56,9 +58,10 @@ export class EmployeeService {
     return this.http.get<Employee[]>(`${this.apiUrl}/role/${role}`);
   }
 
-  /** Returns employees whose N1 is the given manager */
-  getSousN1(n1Id: number): Observable<Employee[]> {
-    return this.http.get<Employee[]>(`${this.apiUrl}/sous-n1/${n1Id}`);
+  /** Returns employees whose N1 is the given manager, optionally filtered by affectation */
+  getSousN1(n1Id: number, type?: TypeAffectation): Observable<Employee[]> {
+    const options = type ? { params: new HttpParams().set('type', type) } : {};
+    return this.http.get<Employee[]>(`${this.apiUrl}/sous-n1/${n1Id}`, options);
   }
 
   /** Returns employees whose N2 is the given manager */

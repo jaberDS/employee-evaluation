@@ -2,15 +2,19 @@ package com.atb.employeeevaluation.service;
 
 import com.atb.employeeevaluation.dto.EvaluationDTO;
 import com.atb.employeeevaluation.dto.QuestionDTO;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 
 import java.util.List;
 
 public interface EvaluationService {
     // CRUD Evaluation
     EvaluationDTO createEvaluation(EvaluationDTO dto);
+    /** Crée d'un seul geste le couple de campagnes Agence + Siège. */
+    List<EvaluationDTO> createEvaluationPaire(EvaluationDTO dto);
     EvaluationDTO updateEvaluation(Long id, EvaluationDTO dto);
     EvaluationDTO getEvaluationById(Long id);
     List<EvaluationDTO> getAllEvaluations();
+    List<EvaluationDTO> getEvaluationsByTypeAffectation(TypeAffectation typeAffectation);
     void deleteEvaluation(Long id);
 
     // Gestion des statuts

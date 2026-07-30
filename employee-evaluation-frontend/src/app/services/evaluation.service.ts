@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Evaluation, Question } from '../models/evaluation.model';
+import { Evaluation, Question, TypeAffectation } from '../models/evaluation.model';
 
-export { Evaluation, Question } from '../models/evaluation.model';
+export { Evaluation, Question, TypeAffectation } from '../models/evaluation.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +15,9 @@ export class EvaluationService {
   constructor(private http: HttpClient) {}
 
   // ============ CRUD EVALUATION ============
-  getAll(): Observable<Evaluation[]> {
-    return this.http.get<Evaluation[]>(this.apiUrl);
+  getAll(type?: TypeAffectation): Observable<Evaluation[]> {
+    const options = type ? { params: new HttpParams().set('type', type) } : {};
+    return this.http.get<Evaluation[]>(this.apiUrl, options);
   }
 
   getById(id: number): Observable<Evaluation> {
@@ -25,6 +26,14 @@ export class EvaluationService {
 
   create(evaluation: Evaluation): Observable<Evaluation> {
     return this.http.post<Evaluation>(this.apiUrl, evaluation);
+  }
+
+  /**
+   * Crée le couple de campagnes Agence + Siège à partir d'une seule saisie.
+   * Retourne les deux campagnes créées (Agence en premier).
+   */
+  createPaire(evaluation: Partial<Evaluation>): Observable<Evaluation[]> {
+    return this.http.post<Evaluation[]>(`${this.apiUrl}/paire`, evaluation);
   }
 
   update(id: number, evaluation: Evaluation): Observable<Evaluation> {

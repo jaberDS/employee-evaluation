@@ -18,6 +18,7 @@ export class EvaluationListComponent implements OnInit, AfterViewInit {
   loading = true;
   searchTerm = '';
   statusFilter = 'ALL';
+  affectationFilter = 'ALL';
   dateFilter = 'ALL';
   sortColumn: SortColumn = 'dateDebut';
   sortDirection: SortDirection = 'desc';
@@ -52,6 +53,10 @@ export class EvaluationListComponent implements OnInit, AfterViewInit {
 
     if (this.statusFilter !== 'ALL') {
       result = result.filter(ev => ev.statut === this.statusFilter);
+    }
+
+    if (this.affectationFilter !== 'ALL') {
+      result = result.filter(ev => ev.typeAffectation === this.affectationFilter);
     }
 
     if (this.dateFilter !== 'ALL') {
@@ -210,6 +215,7 @@ export class EvaluationListComponent implements OnInit, AfterViewInit {
   clearFilters(): void {
     this.searchTerm  = '';
     this.statusFilter = 'ALL';
+    this.affectationFilter = 'ALL';
     this.dateFilter   = 'ALL';
     this.currentPage  = 1;
   }

@@ -57,6 +57,53 @@
           </div>
         </div>
 
+        <!-- Création : aperçu du couple de campagnes qui sera généré -->
+        <div class="camp-paire" *ngIf="!isEdit">
+          <span class="camp-paire-legend">
+            <app-lucide-icon name="layers" [size]="15"></app-lucide-icon>
+            Deux campagnes seront créées
+          </span>
+          <div class="camp-paire-grid">
+            <div class="camp-paire-card camp-paire-agence">
+              <span class="camp-paire-icon">
+                <app-lucide-icon name="building" [size]="20"></app-lucide-icon>
+              </span>
+              <span class="camp-paire-text">
+                <strong>{{ (f['nomEvaluation'].value || 'Nouvelle campagne') }} — Agence</strong>
+                <small>Employés du réseau commercial</small>
+              </span>
+            </div>
+            <div class="camp-paire-card camp-paire-siege">
+              <span class="camp-paire-icon">
+                <app-lucide-icon name="landmark" [size]="20"></app-lucide-icon>
+              </span>
+              <span class="camp-paire-text">
+                <strong>{{ (f['nomEvaluation'].value || 'Nouvelle campagne') }} — Siège</strong>
+                <small>Employés des fonctions support</small>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Édition : la population est fixée à la création, on la rappelle seulement -->
+        <div class="camp-paire camp-paire-readonly" *ngIf="isEdit">
+          <span class="camp-paire-legend">
+            <app-lucide-icon name="building" [size]="15"></app-lucide-icon>
+            Population ciblée
+          </span>
+          <div class="camp-paire-card"
+               [class.camp-paire-agence]="typeAffectation === 'AGENCE'"
+               [class.camp-paire-siege]="typeAffectation !== 'AGENCE'">
+            <span class="camp-paire-icon">
+              <app-lucide-icon [name]="typeAffectation === 'AGENCE' ? 'building' : 'landmark'" [size]="20"></app-lucide-icon>
+            </span>
+            <span class="camp-paire-text">
+              <strong>{{ typeAffectation === 'AGENCE' ? 'Agence' : 'Siège' }}</strong>
+              <small>Définie à la création, non modifiable</small>
+            </span>
+          </div>
+        </div>
+
         <!-- Dates Row -->
         <div class="camp-dates-grid">
           <!-- Start Date -->
@@ -99,7 +146,17 @@
           </div>
           <div class="camp-info-content">
             <span class="camp-info-title">Information</span>
-            <span class="camp-info-text">Les questions pourront être ajoutées après la création de la campagne.</span>
+            <span class="camp-info-text" *ngIf="!isEdit">
+              Les deux populations de la banque sont évaluées sur des référentiels distincts :
+              cette saisie génère <strong>une campagne Agence et une campagne Siège</strong>,
+              partageant le même nom et les mêmes dates. Vous ajouterez ensuite
+              les questions propres à chacune.
+            </span>
+            <span class="camp-info-text" *ngIf="isEdit">
+              Cette campagne ne concerne que les employés affectés
+              <strong>{{ typeAffectation === 'AGENCE' ? 'en Agence' : 'au Siège' }}</strong>.
+              Sa campagne jumelle se modifie séparément.
+            </span>
           </div>
         </div>
 

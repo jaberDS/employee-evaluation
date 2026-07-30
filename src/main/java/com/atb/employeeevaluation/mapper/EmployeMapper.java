@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.mapper;
 
 import com.atb.employeeevaluation.dto.EmployeDTO;
 import com.atb.employeeevaluation.entity.Employe;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +17,8 @@ public class EmployeMapper {
                 .email(dto.getEmail())
                 .motDePasse(dto.getMotDePasse())
                 .role(dto.getRole())
+                .typeAffectation(dto.getTypeAffectation() != null
+                        ? dto.getTypeAffectation() : TypeAffectation.SIEGE)
                 .actif(dto.getActif() != null ? dto.getActif() : true)
                 .build();
     }
@@ -29,6 +32,7 @@ public class EmployeMapper {
         dto.setEmail(entity.getEmail());
         dto.setMotDePasse(null);
         dto.setRole(entity.getRole());
+        dto.setTypeAffectation(entity.getTypeAffectation());
         dto.setN1Id(entity.getN1() != null ? entity.getN1().getId() : null);
         dto.setN1Nom(entity.getN1() != null ? entity.getN1().getNom() : null);
         dto.setN1Prenom(entity.getN1() != null ? entity.getN1().getPrenom() : null);

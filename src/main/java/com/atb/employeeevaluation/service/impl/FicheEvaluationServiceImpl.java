@@ -64,7 +64,16 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
             );
         }
 
-        // 4. Récupérer ou créer la fiche
+        // 4. Vérifier que l'employé relève bien de la population ciblée par la campagne
+        if (employe.getTypeAffectation() != evaluation.getTypeAffectation()) {
+            throw new UnauthorizedOperationException(
+                    "Cette campagne est réservée aux employés " + evaluation.getTypeAffectation()
+                            + ". L'employé " + employe.getPrenom() + " " + employe.getNom()
+                            + " est affecté au " + employe.getTypeAffectation() + "."
+            );
+        }
+
+        // 5. Récupérer ou créer la fiche
         FicheEvaluation fiche = ficheRepository.findByEmployeIdAndEvaluationId(
                 request.getEmployeId(),
                 request.getEvaluationId()
@@ -76,12 +85,12 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
                         .build()
         );
 
-        // 5. Vérifier que la fiche peut être modifiée
+        // 6. Vérifier que la fiche peut être modifiée
         if (fiche.getStatut() == StatutFiche.CLOTUREE) {
             throw new UnauthorizedOperationException("Cette évaluation est déjà clôturée");
         }
 
-        // 6. Valider les réponses
+        // 7. Valider les réponses
         Map<Long, Double> reponses = request.getReponses();
         List<Question> questions = questionRepository.findByEvaluationIdOrderByOrdreAsc(
                 request.getEvaluationId()
@@ -102,11 +111,11 @@ public class FicheEvaluationServiceImpl implements FicheEvaluationService {
             }
         }
 
-        // 7. Calculer la note N1 (moyenne)
+        // 8. Calculer la note N1 (moyenne)
         double total = reponses.values().stream().mapToDouble(Double::doubleValue).sum();
         double noteN1 = Math.round((total / (double) questions.size()) * 100.0) / 100.0;
 
-        // 8. Sauvegarder les réponses en JSON
+        // 9. Sauvegarder les réponses en JSON
         try {
             String reponsesJson = objectMapper.writeValueAsString(reponses);
             fiche.setReponsesN1(reponsesJson);

@@ -84,6 +84,11 @@
       <option value="FERMEE">Fermée</option>
       <option value="CLOTUREE">Clôturée</option>
     </select>
+    <select class="filter-select" [(ngModel)]="affectationFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par affectation">
+      <option value="ALL">Toutes les affectations</option>
+      <option value="AGENCE">Agence</option>
+      <option value="SIEGE">Siège</option>
+    </select>
     <select class="filter-select" [(ngModel)]="dateFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par période">
       <option value="ALL">Toutes les dates</option>
       <option value="ACTIVE">En cours</option>
@@ -150,7 +155,9 @@
                 <div class="row-avatar">{{ getInitials(ev.nomEvaluation) }}</div>
                 <div>
                   <div class="row-name">{{ ev.nomEvaluation }}</div>
-                  <div class="row-sub">Campagne d'évaluation</div>
+                  <div class="row-sub">
+                    <app-affectation-badge [type]="ev.typeAffectation" size="sm"></app-affectation-badge>
+                  </div>
                 </div>
               </div>
             </td>
@@ -212,7 +219,7 @@
       <span>
         <app-lucide-icon name="clipboard-list" [size]="14"></app-lucide-icon>
         {{ filteredEvaluations.length }} campagne(s) affichée(s)
-        <span *ngIf="searchTerm || statusFilter !== 'ALL' || dateFilter !== 'ALL'">
+        <span *ngIf="searchTerm || statusFilter !== 'ALL' || affectationFilter !== 'ALL' || dateFilter !== 'ALL'">
           ({{ evaluations.length }} au total)
         </span>
       </span>

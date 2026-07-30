@@ -1,6 +1,7 @@
 package com.atb.employeeevaluation.dto;
 
 import com.atb.employeeevaluation.enums.Role;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ public class EmployeDTO {
     @Email @NotBlank private String email;
     private String motDePasse;
     @NotNull private Role role;
+    @NotNull private TypeAffectation typeAffectation;
     private Long n1Id;
     private String n1Nom;
     private String n1Prenom;

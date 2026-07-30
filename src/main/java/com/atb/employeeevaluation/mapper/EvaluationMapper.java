@@ -3,6 +3,7 @@ package com.atb.employeeevaluation.mapper;
 import com.atb.employeeevaluation.dto.EvaluationDTO;
 import com.atb.employeeevaluation.entity.Evaluation;
 import com.atb.employeeevaluation.enums.StatutCampagne;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,8 @@ public class EvaluationMapper {
                 .dateDebut(dto.getDateDebut())
                 .dateFin(dto.getDateFin())
                 .statut(dto.getStatut() != null ? dto.getStatut() : StatutCampagne.BROUILLON)
+                .typeAffectation(dto.getTypeAffectation() != null
+                        ? dto.getTypeAffectation() : TypeAffectation.SIEGE)
                 .build();
     }
 
@@ -31,6 +34,7 @@ public class EvaluationMapper {
         dto.setDateDebut(entity.getDateDebut());
         dto.setDateFin(entity.getDateFin());
         dto.setStatut(entity.getStatut());
+        dto.setTypeAffectation(entity.getTypeAffectation());
         if (entity.getQuestions() != null && !entity.getQuestions().isEmpty()) {
             dto.setQuestions(entity.getQuestions().stream()
                     .map(questionMapper::toDto)

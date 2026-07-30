@@ -26,10 +26,14 @@
     <div class="fd-header">
       <div class="fd-header-main">
         <h1>{{ fiche.evaluationNom }}</h1>
-        <span class="fd-header-date">
-          <app-lucide-icon name="calendar" [size]="14"></app-lucide-icon>
-          Évalué le {{ formatDate(fiche.dateCreation) }}
-        </span>
+        <div class="fd-header-meta">
+          <span class="fd-header-date">
+            <app-lucide-icon name="calendar" [size]="14"></app-lucide-icon>
+            Évalué le {{ formatDate(fiche.dateCreation) }}
+          </span>
+          <app-affectation-badge *ngIf="fiche.typeAffectation"
+                                 [type]="fiche.typeAffectation" size="sm"></app-affectation-badge>
+        </div>
       </div>
       <div class="fd-header-note" *ngIf="fiche.noteN1 !== null" [ngClass]="noteClass(fiche.noteN1)">
         <span class="fdn-val">{{ fiche.noteN1 }}</span>

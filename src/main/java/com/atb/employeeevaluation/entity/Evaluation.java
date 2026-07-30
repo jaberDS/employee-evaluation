@@ -1,6 +1,7 @@
 package com.atb.employeeevaluation.entity;
 
 import com.atb.employeeevaluation.enums.StatutCampagne;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,12 @@ public class Evaluation {
     @Column(nullable = false)
     @Builder.Default
     private StatutCampagne statut = StatutCampagne.BROUILLON;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_affectation", nullable = false, length = 10,
+            columnDefinition = "VARCHAR(10) DEFAULT 'SIEGE'")
+    @Builder.Default
+    private TypeAffectation typeAffectation = TypeAffectation.SIEGE;
 
     @OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("ordre ASC")

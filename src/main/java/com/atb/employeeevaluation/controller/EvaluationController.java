@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.controller;
 
 import com.atb.employeeevaluation.dto.EvaluationDTO;
 import com.atb.employeeevaluation.dto.QuestionDTO;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import com.atb.employeeevaluation.service.EvaluationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,15 @@ public class EvaluationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(evaluationService.createEvaluation(dto));
     }
 
+    /**
+     * Création standard : une campagne saisie donne le couple Agence + Siège.
+     * Retourne les deux campagnes créées.
+     */
+    @PostMapping("/paire")
+    public ResponseEntity<List<EvaluationDTO>> createPaire(@Valid @RequestBody EvaluationDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(evaluationService.createEvaluationPaire(dto));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<EvaluationDTO> update(@PathVariable Long id, @Valid @RequestBody EvaluationDTO dto) {
         return ResponseEntity.ok(evaluationService.updateEvaluation(id, dto));
@@ -36,8 +46,11 @@ public class EvaluationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EvaluationDTO>> getAll() {
-        return ResponseEntity.ok(evaluationService.getAllEvaluations());
+    public ResponseEntity<List<EvaluationDTO>> getAll(
+            @RequestParam(name = "type", required = false) TypeAffectation type) {
+        return ResponseEntity.ok(type != null
+                ? evaluationService.getEvaluationsByTypeAffectation(type)
+                : evaluationService.getAllEvaluations());
     }
 
     @DeleteMapping("/{id}")

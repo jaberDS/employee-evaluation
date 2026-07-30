@@ -127,27 +127,31 @@ export class EvaluerEmployesComponent implements OnInit, OnDestroy {
   buildCards(): void {
     if (!this.selectedCampaign) { this.employeeCards = []; return; }
     const campId = this.selectedCampaign.id!;
+    const campType = this.selectedCampaign.typeAffectation;
 
-    this.employeeCards = this.myEmployees.map(emp => {
-      const fiche = this.myFiches.find(
-        f => f.employeId === emp.id && f.evaluationId === campId
-      ) ?? null;
+    // Une campagne ne cible qu'une population : on écarte les employés hors périmètre
+    this.employeeCards = this.myEmployees
+      .filter(emp => emp.typeAffectation === campType)
+      .map(emp => {
+        const fiche = this.myFiches.find(
+          f => f.employeId === emp.id && f.evaluationId === campId
+        ) ?? null;
 
-      let status: 'non_commence' | 'en_cours' | 'termine' = 'non_commence';
-      if (fiche) {
-        status = fiche.noteN1 !== null ? 'termine' : 'en_cours';
-      }
+        let status: 'non_commence' | 'en_cours' | 'termine' = 'non_commence';
+        if (fiche) {
+          status = fiche.noteN1 !== null ? 'termine' : 'en_cours';
+        }
 
-      let progressPct = 0;
-      if (status === 'termine') progressPct = 100;
-      else if (status === 'en_cours' && fiche?.reponsesN1) {
-        const answered = Object.keys(fiche.reponsesN1).length;
-        const total    = this.selectedCampaign?.questions?.length ?? 1;
-        progressPct    = Math.round((answered / total) * 100);
-      }
+        let progressPct = 0;
+        if (status === 'termine') progressPct = 100;
+        else if (status === 'en_cours' && fiche?.reponsesN1) {
+          const answered = Object.keys(fiche.reponsesN1).length;
+          const total    = this.selectedCampaign?.questions?.length ?? 1;
+          progressPct    = Math.round((answered / total) * 100);
+        }
 
-      return { employee: emp, fiche, status, progressPct };
-    });
+        return { employee: emp, fiche, status, progressPct };
+      });
   }
 
   get filteredCards(): EmployeeCard[] {
@@ -163,13 +167,22 @@ export class EvaluerEmployesComponent implements OnInit, OnDestroy {
   get pendingCount(): number { return this.employeeCards.filter(c => c.status !== 'termine').length; }
   get allDone(): boolean     { return this.employeeCards.length > 0 && this.pendingCount === 0; }
 
+  /** Employés de l'équipe relevant de la population ciblée par la campagne */
+  getCampaignScope(ev: Evaluation): Employee[] {
+    return this.myEmployees.filter(emp => emp.typeAffectation === ev.typeAffectation);
+  }
+
   getCampaignDone(ev: Evaluation): number {
-    return this.myFiches.filter(f => f.evaluationId === ev.id && f.noteN1 !== null).length;
+    const scopeIds = new Set(this.getCampaignScope(ev).map(e => e.id));
+    return this.myFiches.filter(
+      f => f.evaluationId === ev.id && f.noteN1 !== null && scopeIds.has(f.employeId)
+    ).length;
   }
 
   getCampaignProgress(ev: Evaluation): number {
-    if (!this.myEmployees.length) return 0;
-    return Math.round((this.getCampaignDone(ev) / this.myEmployees.length) * 100);
+    const scopeSize = this.getCampaignScope(ev).length;
+    if (!scopeSize) return 0;
+    return Math.round((this.getCampaignDone(ev) / scopeSize) * 100);
   }
 
   getRemainingDays(dateFin: string): number {

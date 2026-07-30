@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.repository;
 
 import com.atb.employeeevaluation.entity.Employe;
 import com.atb.employeeevaluation.enums.Role;
+import com.atb.employeeevaluation.enums.TypeAffectation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,5 +17,6 @@ public interface EmployeRepository extends JpaRepository<Employe, Long> {
     boolean existsByEmail(String email);
     List<Employe> findByRole(Role role);
     List<Employe> findByN1Id(Long n1Id);
+    List<Employe> findByN1IdAndTypeAffectation(Long n1Id, TypeAffectation typeAffectation);
     List<Employe> findByN2Id(Long n2Id);
 }
