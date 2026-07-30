@@ -25,6 +25,7 @@
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^8.0.0",
     "@popperjs/core": "^2.11.8",
+    "@simplewebauthn/browser": "^13.3.0",
     "bootstrap": "^5.3.2",
     "gsap": "^3.15.0",
     "ngx-toastr": "^18.0.0",

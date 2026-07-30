@@ -7,6 +7,7 @@ import { RoleGuard } from './guards/role.guard';
 
 // Pages
 import { LoginComponent } from './pages/login/login.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 // Layout (non utilisé directement dans les routes, mais les composants seront chargés par AppComponent)
@@ -50,6 +51,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 const routes: Routes = [
   // Page de connexion (publique)
   { path: 'login', component: LoginComponent },
+  { path: 'mot-de-passe-oublie', component: ForgotPasswordComponent },
 
   // Redirection par défaut vers login
   { path: '', redirectTo: '/login', pathMatch: 'full' },

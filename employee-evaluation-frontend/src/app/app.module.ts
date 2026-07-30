@@ -39,6 +39,8 @@ import { ConfirmDialogComponent } from './shared/confirm/confirm-dialog.componen
 import { FicheQuestionsModalComponent } from './shared/fiche-questions/fiche-questions-modal.component';
 import { AffectationBadgeComponent } from './shared/affectation-badge/affectation-badge.component';
 import { NoteInputComponent } from './shared/note-input/note-input.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { FaceCaptureComponent } from './shared/face-capture/face-capture.component';
 
 // N1 feature components
 import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evaluer-employes.component';
@@ -55,6 +57,8 @@ import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.compon
     AppComponent,
     LucideIconComponent,
     NoteInputComponent,
+    FaceCaptureComponent,
+    ForgotPasswordComponent,
     LoginComponent, NotFoundComponent,
     HeaderComponent, SidebarComponent, FooterComponent,
     AdminDashboardComponent, N1DashboardComponent, N2DashboardComponent, EmployeeDashboardComponent,

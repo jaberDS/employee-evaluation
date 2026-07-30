@@ -1,0 +1,183 @@
+<div class="fc-stage" #stage>
+
+  <!-- ═══ Navigateur incompatible ═══════════════════════════════════════ -->
+  <div class="fc-unsupported" *ngIf="!supported">
+    <div class="fc-error-icon"><i class="fas fa-video-slash"></i></div>
+    <strong>Caméra indisponible</strong>
+    <p>
+      La reconnaissance faciale exige une connexion sécurisée (HTTPS) et un
+      navigateur autorisant l'accès à la caméra.
+    </p>
+    <button class="fc-btn fc-btn-ghost" (click)="cancel()">Fermer</button>
+  </div>
+
+  <ng-container *ngIf="supported">
+
+    <!-- ═══ Introduction ════════════════════════════════════════════════ -->
+    <div class="fc-intro" *ngIf="phase === 'INTRO'">
+
+      <div class="fc-hero">
+        <span class="fc-hero-layer fc-hero-ring"></span>
+        <span class="fc-hero-layer fc-hero-ring"></span>
+        <span class="fc-hero-layer fc-hero-ring"></span>
+        <div class="fc-hero-layer fc-hero-core">
+          <i class="fas fa-face-smile"></i>
+          <span class="fc-hero-scan"></span>
+          <span class="fc-hero-grid"></span>
+        </div>
+      </div>
+
+      <div class="fc-intro-copy">
+        <h3 class="fc-title">
+          {{ mode === 'ENROLL' ? 'Enregistrer votre visage' : 'Vérification faciale' }}
+        </h3>
+        <p class="fc-lead">
+          {{ mode === 'ENROLL'
+              ? 'Votre visage devient un second facteur. Aucune photo n\'est conservée : seul un vecteur mathématique, non réversible en image, est stocké.'
+              : 'Suivez les consignes affichées à l\'écran. Elles changent à chaque tentative.' }}
+        </p>
+      </div>
+
+      <ul class="fc-tips">
+        <li><i class="fas fa-lightbulb"></i> Placez-vous face à une source de lumière</li>
+        <li><i class="fas fa-glasses"></i> Retirez lunettes de soleil et masque</li>
+        <li><i class="fas fa-user"></i> Restez seul dans le cadre</li>
+      </ul>
+
+      <div class="fc-actions">
+        <button class="fc-btn fc-btn-ghost" (click)="cancel()">
+          <i class="fas fa-xmark"></i> Annuler
+        </button>
+        <button class="fc-btn fc-btn-primary" (click)="start()">
+          <i class="fas fa-camera"></i> Démarrer
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ Ouverture de la caméra ══════════════════════════════════════ -->
+    <div class="fc-loading" *ngIf="phase === 'STARTING'">
+      <span class="fc-spinner"></span>
+      <strong>Activation de la caméra…</strong>
+      <span>Autorisez l'accès si votre navigateur le demande.</span>
+    </div>
+
+    <!-- ═══ Capture guidée ══════════════════════════════════════════════
+         Le viseur reste monté pendant le décompte : démonter la vidéo pour la
+         remonter juste après relancerait l'exposition de la caméra. -->
+    <div class="fc-capture"
+         [class.fc-hidden]="phase !== 'COUNTDOWN' && phase !== 'CAPTURE'">
+
+      <div class="fc-viewport" [class.fc-recording]="recording">
+        <span class="fc-halo" aria-hidden="true"></span>
+
+        <!-- Miroir : l'utilisateur se voit comme dans une glace, sinon
+             « tourner à gauche » devient contre-intuitif. -->
+        <video #video class="fc-video" playsinline muted autoplay></video>
+
+        <svg class="fc-ring" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="fc-ring-track" cx="100" cy="100" r="92"></circle>
+          <circle class="fc-ring-fill" cx="100" cy="100" r="92"
+                  [attr.stroke-dasharray]="ringCircumference"
+                  [attr.stroke-dashoffset]="ringOffset"></circle>
+        </svg>
+
+        <span class="fc-corner fc-corner-tl"></span>
+        <span class="fc-corner fc-corner-tr"></span>
+        <span class="fc-corner fc-corner-bl"></span>
+        <span class="fc-corner fc-corner-br"></span>
+
+        <span class="fc-scanline" aria-hidden="true"></span>
+        <span class="fc-flash" aria-hidden="true"></span>
+
+        <!-- Flèche pilotée par GSAP pour les consignes de rotation. -->
+        <span class="fc-guide" aria-hidden="true" *ngIf="phase === 'CAPTURE'">
+          <i class="fas" [ngClass]="currentStep ? iconFor(currentStep.action) : ''"></i>
+        </span>
+
+        <!-- Décompte, superposé au viseur déjà actif. -->
+        <div class="fc-countdown" *ngIf="phase === 'COUNTDOWN'">
+          <span class="fc-countdown-value">{{ countdown > 0 ? countdown : 'GO' }}</span>
+        </div>
+
+        <span class="fc-rec" *ngIf="recording" aria-hidden="true">
+          <span class="fc-rec-dot"></span> Capture
+        </span>
+      </div>
+
+      <ng-container *ngIf="phase === 'CAPTURE'">
+        <div class="fc-instruction" *ngIf="currentStep" [attr.data-step]="currentIndex">
+          <span class="fc-instruction-icon">
+            <i class="fas" [ngClass]="iconFor(currentStep.action)"></i>
+          </span>
+          <span class="fc-instruction-text">
+            <strong>{{ currentStep.instruction }}</strong>
+            <small>{{ hintFor(currentStep.action) }}</small>
+          </span>
+        </div>
+
+        <!-- Jalons de rafale : rend visible que plusieurs prises sont faites,
+             ce qui explique pourquoi il faut tenir le geste. -->
+        <div class="fc-burst" *ngIf="currentStep" aria-hidden="true">
+          <span class="fc-burst-slot"
+                *ngFor="let slot of burstSlots"
+                [class.fc-burst-filled]="slot < burstCount"></span>
+        </div>
+
+        <div class="fc-steps" *ngIf="steps.length">
+          <span class="fc-step-dot"
+                *ngFor="let s of steps; let i = index"
+                [class.fc-step-done]="i < currentIndex"
+                [class.fc-step-active]="i === currentIndex"></span>
+        </div>
+
+        <button class="fc-btn fc-btn-ghost fc-btn-sm" (click)="cancel()">
+          <i class="fas fa-xmark"></i> Annuler
+        </button>
+      </ng-container>
+    </div>
+
+    <!-- ═══ Analyse ═════════════════════════════════════════════════════ -->
+    <div class="fc-analyzing" *ngIf="phase === 'ANALYZING'">
+      <div class="fc-dots">
+        <span class="fc-dot"></span>
+        <span class="fc-dot"></span>
+        <span class="fc-dot"></span>
+        <span class="fc-dot"></span>
+      </div>
+      <strong>Analyse en cours…</strong>
+      <span>Vérification de la vivacité et comparaison du gabarit.</span>
+    </div>
+
+    <!-- ═══ Succès ══════════════════════════════════════════════════════ -->
+    <div class="fc-success" *ngIf="phase === 'SUCCESS'">
+      <svg class="fc-check" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="fc-check-burst" cx="60" cy="60" r="52"></circle>
+        <circle class="fc-check-ring" cx="60" cy="60" r="52"></circle>
+        <path class="fc-check-path" d="M38 61 L54 77 L84 45"></path>
+      </svg>
+      <strong>{{ mode === 'ENROLL' ? 'Visage enregistré' : 'Identité confirmée' }}</strong>
+      <span *ngIf="mode !== 'ENROLL'">Ouverture de votre session…</span>
+    </div>
+
+    <!-- ═══ Échec ═══════════════════════════════════════════════════════ -->
+    <div class="fc-error" *ngIf="phase === 'ERROR'">
+      <div class="fc-error-icon"><i class="fas fa-triangle-exclamation"></i></div>
+      <strong>Vérification échouée</strong>
+      <p>{{ errorMessage }}</p>
+      <p class="fc-error-hint" *ngIf="errorHint">
+        <i class="fas fa-circle-info"></i> {{ errorHint }}
+      </p>
+      <div class="fc-actions">
+        <button class="fc-btn fc-btn-ghost" (click)="cancel()">
+          <i class="fas fa-xmark"></i> Annuler
+        </button>
+        <button class="fc-btn fc-btn-primary" (click)="retry()">
+          <i class="fas fa-rotate"></i> Réessayer
+        </button>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <canvas #canvas class="fc-canvas" aria-hidden="true"></canvas>
+</div>

@@ -1,5 +1,6 @@
 package com.atb.employeeevaluation.exception;
 
+import com.atb.employeeevaluation.security.FaceRecognitionClient;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,6 +55,61 @@ public class GlobalExceptionHandler {
                 .timestamp(System.currentTimeMillis())
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Unauthorized")
+                .message(ex.getMessage())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    /**
+     * Échec de vérification faciale : la tentative a échoué, pas la session.
+     * Un 401 ici pousserait l'intercepteur du navigateur à rafraîchir le jeton
+     * puis à déconnecter l'utilisateur, alors qu'il doit pouvoir réessayer.
+     */
+    @ExceptionHandler(FaceVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleFaceVerification(FaceVerificationException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Unprocessable Entity")
+                .message(ex.getMessage())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitExceededException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .error("Too Many Requests")
+                .message(ex.getMessage())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
+    }
+
+    /**
+     * Le microservice facial ne répond pas : c'est une panne d'infrastructure,
+     * pas un échec de vérification. Un 401 pousserait l'utilisateur à croire que
+     * son visage a été refusé.
+     */
+    @ExceptionHandler(FaceRecognitionClient.FaceServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleFaceServiceDown(
+            FaceRecognitionClient.FaceServiceUnavailableException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error("Service Unavailable")
+                .message(ex.getMessage())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
     // ===================== Gestion des exceptions de sécurité =====================

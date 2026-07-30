@@ -5,6 +5,7 @@ import com.atb.employeeevaluation.enums.TypeAffectation;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,15 @@ public class Employe {
     @Column(nullable = false)
     @Builder.Default  // ✅ Ajouté pour supprimer le warning
     private Boolean actif = true;
+
+    /**
+     * Date du dernier changement de mot de passe. Tout jeton d'accès émis avant
+     * cette date est rejeté par JwtAuthenticationFilter — c'est ce qui coupe les
+     * sessions ouvertes après une réinitialisation. Nullable : les comptes
+     * existants n'en ont pas.
+     */
+    @Column(name = "mot_de_passe_modifie_le")
+    private LocalDateTime motDePasseModifieLe;
 
 
 

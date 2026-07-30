@@ -61,9 +61,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // ==================== PUBLIC ====================
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // Pré-authentification uniquement. L'enrôlement d'un facteur
+                        // vit sous /api/mfa/** et exige une session valide, sinon
+                        // n'importe qui pourrait enrôler une clé sur un autre compte.
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout",
+                                         "/api/auth/mfa/**", "/api/auth/recovery/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+
+                        // /me et /change-password exigent une session
+                        .requestMatchers("/api/auth/**").authenticated()
+                        .requestMatchers("/api/mfa/**").authenticated()
 
                         // ==================== ADMIN ====================
                         // N+1 peut consulter uniquement ses subordonnés directs

@@ -30,6 +30,17 @@ export interface User {
   actif: boolean;
 }
 
+/**
+ * Réponse de /auth/login. Si un second facteur est enrôlé, `session` est absente
+ * et il faut d'abord valider le facteur avec `mfaToken`.
+ */
+export interface LoginResponse {
+  mfaRequired: boolean;
+  mfaToken?: string;
+  factors?: string[];
+  session?: AuthResponse;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -70,12 +81,24 @@ export class AuthService {
     }
   }
 
-  login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
+  /**
+   * La session n'est posée que si le serveur l'a délivrée. Avec un second
+   * facteur en attente, aucun jeton n'atterrit dans localStorage — ce qui évite
+   * la bascule prématurée du shell applicatif.
+   */
+  login(request: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request).pipe(
       tap(response => {
-        this.setSession(response);
+        if (response.session) {
+          this.setSession(response.session);
+        }
       })
     );
+  }
+
+  /** Ouvre la session une fois le second facteur validé. */
+  completeSession(session: AuthResponse): void {
+    this.setSession(session);
   }
 
   logout(): void {

@@ -1,0 +1,13 @@
+# Service de reconnaissance faciale ATB
+# Installation : pip install -r requirements.txt
+#
+# onnxruntime est la variante CPU. Sur une machine équipée d'un GPU NVIDIA,
+# remplacer par onnxruntime-gpu et passer ctx_id=0 dans main.py.
+
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.9
+insightface>=0.7.3
+onnxruntime>=1.19
+numpy>=1.26
+opencv-python-headless>=4.10

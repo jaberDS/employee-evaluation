@@ -1,0 +1,676 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CAPTURE FACIALE — palette ATB (#8B0000 → #C62828)
+
+   Le composant est utilisé à la fois dans une modale (profil) et en pleine
+   page (connexion, récupération) : il ne pose donc ni fond ni bordure propre,
+   et s'adapte à la largeur qu'on lui donne.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.fc-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  min-height: 340px;
+  justify-content: center;
+}
+
+.fc-canvas { display: none; }
+.fc-hidden { display: none !important; }
+
+/* ─── Typographie commune ────────────────────────────────────────────────── */
+
+.fc-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--atb-text);
+}
+
+.fc-lead {
+  margin: 0.35rem 0 0;
+  max-width: 44ch;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--atb-text-secondary);
+}
+
+/* ─── Introduction ───────────────────────────────────────────────────────── */
+
+.fc-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.fc-intro-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fc-hero {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.3rem;
+}
+
+.fc-hero-core {
+  position: relative;
+  z-index: 2;
+  width: 84px;
+  height: 84px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  box-shadow: 0 14px 34px rgba(139, 0, 0, 0.38);
+  overflow: hidden;
+}
+
+/* Trame fine : évoque la cartographie du visage sans figurer de traits. */
+.fc-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 14px 14px;
+  opacity: 0.6;
+}
+
+/* Ligne de balayage : signale « analyse » sans mot ni icône supplémentaire. */
+.fc-hero-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 14px 3px rgba(255, 255, 255, 0.7);
+  animation: fcScan 2.4s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes fcScan {
+  0%, 100% { top: 10%; opacity: 0; }
+  12%      { opacity: 1; }
+  50%      { top: 90%; opacity: 1; }
+  88%      { opacity: 1; }
+}
+
+.fc-hero-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 0, 0, 0.4);
+  animation: fcRipple 2.7s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.fc-hero-ring:nth-child(2) { animation-delay: 0.9s; }
+.fc-hero-ring:nth-child(3) { animation-delay: 1.8s; }
+
+@keyframes fcRipple {
+  0%   { transform: scale(0.62); opacity: 0.85; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+.fc-tips {
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0.9rem 1.1rem;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  text-align: left;
+  border-radius: 14px;
+  background: var(--atb-bg);
+  border: 1px solid var(--atb-border);
+}
+
+.fc-tips li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.82rem;
+  color: var(--atb-text-secondary);
+}
+
+.fc-tips i {
+  width: 20px;
+  color: var(--atb-primary);
+  text-align: center;
+}
+
+/* ─── Ouverture de la caméra ─────────────────────────────────────────────── */
+
+.fc-loading,
+.fc-analyzing,
+.fc-success,
+.fc-error,
+.fc-unsupported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1.5rem 0.5rem;
+}
+
+.fc-loading strong,
+.fc-analyzing strong,
+.fc-success strong,
+.fc-error strong,
+.fc-unsupported strong {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--atb-text);
+}
+
+.fc-loading span,
+.fc-analyzing span,
+.fc-success span {
+  font-size: 0.83rem;
+  color: var(--atb-text-secondary);
+}
+
+.fc-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--atb-border);
+  border-top-color: var(--atb-primary);
+  animation: fcSpin 0.8s linear infinite;
+  margin-bottom: 0.4rem;
+}
+
+@keyframes fcSpin { to { transform: rotate(360deg); } }
+
+/* ─── Capture ────────────────────────────────────────────────────────────── */
+
+.fc-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.fc-viewport {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  flex-shrink: 0;
+}
+
+/* Halo respirant, animé par GSAP pendant toute la capture. */
+.fc-halo {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(198, 40, 40, 0.22) 0%,
+    rgba(198, 40, 40, 0.06) 55%,
+    transparent 72%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.fc-video {
+  position: absolute;
+  inset: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  object-fit: cover;
+  border-radius: 50%;
+  background: #111;
+  /* Effet miroir : sans lui, « tournez à gauche » devient contre-intuitif. */
+  transform: scaleX(-1);
+}
+
+.fc-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.fc-ring-track,
+.fc-ring-fill {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.fc-ring-track { stroke: var(--atb-border); }
+
+.fc-ring-fill {
+  stroke: var(--atb-primary);
+  filter: drop-shadow(0 0 6px rgba(198, 40, 40, 0.55));
+  transition: stroke 0.3s ease;
+}
+
+/* Pendant la rafale l'anneau vire au vert : « c'est maintenant que ça compte ». */
+.fc-recording .fc-ring-fill {
+  stroke: #16a34a;
+  filter: drop-shadow(0 0 8px rgba(22, 163, 74, 0.6));
+}
+
+/* Coins de cadrage, façon viseur d'appareil photo. */
+.fc-corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid var(--atb-accent);
+  opacity: 0.65;
+  animation: fcCornerPulse 2.2s ease-in-out infinite;
+  transition: border-color 0.3s ease;
+}
+
+.fc-recording .fc-corner { border-color: #16a34a; }
+
+.fc-corner-tl { top: -6px;    left: -6px;   border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
+.fc-corner-tr { top: -6px;    right: -6px;  border-left: none;  border-bottom: none; border-radius: 0 10px 0 0; }
+.fc-corner-bl { bottom: -6px; left: -6px;   border-right: none; border-top: none;    border-radius: 0 0 0 10px; }
+.fc-corner-br { bottom: -6px; right: -6px;  border-left: none;  border-top: none;    border-radius: 0 0 10px 0; }
+
+@keyframes fcCornerPulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.85; }
+}
+
+.fc-scanline {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(198, 40, 40, 0.9) 20%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(198, 40, 40, 0.9) 80%,
+    transparent);
+  box-shadow: 0 0 14px 2px rgba(198, 40, 40, 0.5);
+  animation: fcScanSweep 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes fcScanSweep {
+  0%, 100% { top: 22%; opacity: 0; }
+  15%      { opacity: 1; }
+  50%      { top: 78%; opacity: 1; }
+  85%      { opacity: 1; }
+}
+
+/* Éclair de prise de vue, piloté par GSAP. */
+.fc-flash {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Flèche de guidage : montre le geste attendu, sur le cadre lui-même. */
+.fc-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -22px 0 0 -22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+  background: rgba(22, 163, 74, 0.9);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Décompte superposé au viseur déjà actif. */
+.fc-countdown {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 17, 17, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.fc-countdown-value {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* Témoin d'enregistrement, façon caméra. */
+.fc-rec {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(22, 163, 74, 0.92);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.fc-rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  animation: fcRecBlink 1s steps(2, start) infinite;
+}
+
+@keyframes fcRecBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* Consigne en cours */
+.fc-instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(139, 0, 0, 0.3);
+  max-width: 100%;
+}
+
+.fc-instruction-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.fc-instruction strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+}
+
+.fc-instruction small {
+  font-size: 0.72rem;
+  opacity: 0.82;
+}
+
+.fc-instruction-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.2);
+  animation: fcIconBeat 1.4s ease-in-out infinite;
+}
+
+@keyframes fcIconBeat {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.18); }
+}
+
+/* Jalons de rafale : une barre par trame capturée dans la consigne. */
+.fc-burst {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fc-burst-slot {
+  width: 16px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--atb-border);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.fc-burst-filled {
+  background: #16a34a;
+  transform: scaleY(1.6);
+}
+
+/* Progression par consigne */
+.fc-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fc-step-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--atb-border);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fc-step-done {
+  background: #16a34a;
+}
+
+.fc-step-active {
+  width: 26px;
+  border-radius: 50px;
+  background: linear-gradient(90deg, var(--atb-primary), var(--atb-accent));
+}
+
+/* ─── Analyse ────────────────────────────────────────────────────────────── */
+
+.fc-dots {
+  display: flex;
+  gap: 0.55rem;
+  margin-bottom: 0.5rem;
+  height: 24px;
+  align-items: center;
+}
+
+.fc-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+}
+
+/* ─── Succès ─────────────────────────────────────────────────────────────── */
+
+.fc-check {
+  width: 108px;
+  height: 108px;
+  margin-bottom: 0.3rem;
+}
+
+.fc-check-burst {
+  fill: none;
+  stroke: #16a34a;
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.fc-check-ring {
+  fill: rgba(22, 163, 74, 0.1);
+  stroke: #16a34a;
+  stroke-width: 4;
+}
+
+.fc-check-path {
+  fill: none;
+  stroke: #16a34a;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 60;
+}
+
+/* ─── Échec / incompatibilité ────────────────────────────────────────────── */
+
+.fc-error-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.22);
+}
+
+.fc-error p,
+.fc-unsupported p {
+  margin: 0;
+  max-width: 42ch;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--atb-text-secondary);
+}
+
+/* Conseil d'action, visuellement détaché du message d'erreur du serveur. */
+.fc-error-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.5rem !important;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  text-align: left;
+  background: var(--atb-bg);
+  border: 1px solid var(--atb-border);
+  font-size: 0.8rem !important;
+}
+
+.fc-error-hint i {
+  margin-top: 2px;
+  color: var(--atb-primary);
+}
+
+/* ─── Boutons ────────────────────────────────────────────────────────────── */
+
+.fc-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 11px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--atb-transition);
+}
+
+.fc-btn-sm {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.8rem;
+}
+
+.fc-btn-primary {
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(139, 0, 0, 0.28);
+}
+
+.fc-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(139, 0, 0, 0.38);
+}
+
+.fc-btn-ghost {
+  background: var(--atb-card);
+  color: var(--atb-text-secondary);
+  border-color: var(--atb-border);
+}
+
+.fc-btn-ghost:hover {
+  border-color: var(--atb-primary);
+  color: var(--atb-primary);
+  background: rgba(139, 0, 0, 0.04);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .fc-viewport { width: 216px; height: 216px; }
+  .fc-hero { width: 108px; height: 108px; }
+  .fc-hero-core { width: 72px; height: 72px; font-size: 1.8rem; }
+  .fc-countdown-value { font-size: 2.6rem; }
+  .fc-actions { width: 100%; }
+  .fc-actions .fc-btn { flex: 1; }
+}
+
+/* ─── Mouvement réduit ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-hero-ring,
+  .fc-hero-scan,
+  .fc-scanline,
+  .fc-corner,
+  .fc-instruction-icon,
+  .fc-rec-dot,
+  .fc-spinner {
+    animation: none !important;
+  }
+  .fc-spinner { border-top-color: var(--atb-primary); opacity: 0.6; }
+  .fc-hero-ring { opacity: 0.22; }
+  .fc-scanline { opacity: 0.5; top: 50%; }
+  .fc-btn { transition: none; }
+  .fc-btn-primary:hover:not(:disabled) { transform: none; }
+  .fc-check-path { stroke-dasharray: none; }
+  .fc-burst-filled { transform: none; }
+}

@@ -1,9 +1,13 @@
 package com.atb.employeeevaluation.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponse {
     private Long id;           // Real employee DB id — needed by N1/N2 dashboards

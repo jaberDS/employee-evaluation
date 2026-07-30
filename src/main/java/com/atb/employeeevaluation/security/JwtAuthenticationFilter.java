@@ -1,5 +1,7 @@
 package com.atb.employeeevaluation.security;
 
+import com.atb.employeeevaluation.entity.Employe;
+import com.atb.employeeevaluation.repository.EmployeRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Component
@@ -23,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final EmployeRepository employeRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -39,8 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             try {
-                username = jwtUtil.extractUsername(jwt);
-                log.debug("👤 Username extrait: {}", username);
+                // Un jeton d'étape MFA ou de réinitialisation ne doit jamais
+                // authentifier une requête : on l'écarte avant toute résolution.
+                if (jwtUtil.isAccessToken(jwt)) {
+                    username = jwtUtil.extractUsername(jwt);
+                    log.debug("👤 Username extrait: {}", username);
+                } else {
+                    log.debug("↩️ Jeton non-accès ignoré par le filtre");
+                }
             } catch (Exception e) {
                 log.error("❌ Erreur extraction username: {}", e.getMessage());
             }
@@ -52,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.debug("✅ UserDetails chargé: {}", userDetails.getUsername());
                 log.debug("✅ Autorités: {}", userDetails.getAuthorities());
 
-                if (jwtUtil.validateToken(jwt, userDetails)) {
+                if (jwtUtil.validateToken(jwt, userDetails) && !emisAvantChangementMotDePasse(jwt, username)) {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
@@ -71,5 +82,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Un mot de passe changé invalide les jetons émis avant. La blacklist en mémoire
+     * de AuthServiceImpl n'étant pas consultée ici, c'est ce contrôle qui garantit
+     * qu'une session ouverte ne survit pas à une réinitialisation.
+     */
+    private boolean emisAvantChangementMotDePasse(String jwt, String matricule) {
+        try {
+            LocalDateTime modifieLe = employeRepository.findByMatricule(matricule)
+                    .map(Employe::getMotDePasseModifieLe)
+                    .orElse(null);
+            if (modifieLe == null) {
+                return false;
+            }
+            LocalDateTime emisLe = LocalDateTime.ofInstant(
+                    jwtUtil.extractIssuedAt(jwt).toInstant(), ZoneId.systemDefault());
+            // Tolérance d'une seconde : « iat » est arrondi à la seconde.
+            return emisLe.isBefore(modifieLe.minusSeconds(1));
+        } catch (Exception e) {
+            log.error("❌ Erreur contrôle date de mot de passe: {}", e.getMessage());
+            return false;
+        }
     }
 }

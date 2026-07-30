@@ -42,7 +42,9 @@ public class ActiviteLogServiceImpl implements ActiviteLogService {
             TypeActivite.EMPLOYE_CREE, TypeActivite.EMPLOYE_MODIFIE, TypeActivite.EMPLOYE_SUPPRIME,
             TypeActivite.CAMPAGNE_CREEE, TypeActivite.CAMPAGNE_MODIFIEE, TypeActivite.CAMPAGNE_SUPPRIMEE,
             TypeActivite.CAMPAGNE_OUVERTE, TypeActivite.CAMPAGNE_FERMEE, TypeActivite.CAMPAGNE_CLOTUREE,
-            TypeActivite.QUESTION_AJOUTEE
+            TypeActivite.QUESTION_AJOUTEE,
+            // Les échecs d'authentification forte n'intéressent que l'administration
+            TypeActivite.MFA_ECHOUEE
     );
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");

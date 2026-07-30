@@ -117,32 +117,167 @@
     </div>
   </div>
 
-  <!-- ===== SECTION SÉCURITÉ ===== -->
+  <!-- ═══ SÉCURITÉ ═══════════════════════════════════════════════════════ -->
   <div class="row mt-4">
     <div class="col-12">
-      <div class="profile-card security-card">
-        <div class="card-header-custom">
-          <h5><i class="fas fa-shield-alt"></i> Sécurité</h5>
-          <span class="card-subtitle">Protégez votre compte</span>
-        </div>
-        <div class="card-body-custom d-flex justify-content-between align-items-center flex-wrap">
-          <div>
-            <div class="security-item">
-              <i class="fas fa-key security-icon"></i>
-              <div>
-                <span class="security-label">Mot de passe</span>
-                <span class="security-desc">Dernière modification : il y a 30 jours</span>
-              </div>
+      <section class="sec-panel" #secPanel>
+
+        <!-- Bandeau d'état : la protection est-elle active ? -->
+        <header class="sec-hero" [class.sec-hero-on]="hasMfa">
+          <div class="sec-hero-glow" aria-hidden="true"></div>
+
+          <div class="sec-hero-shield">
+            <i class="fas" [ngClass]="hasMfa ? 'fa-shield-halved' : 'fa-shield'"></i>
+          </div>
+
+          <div class="sec-hero-text">
+            <span class="sec-hero-kicker">Sécurité du compte</span>
+            <h2>{{ hasMfa ? 'Votre compte est protégé' : 'Renforcez votre protection' }}</h2>
+            <p>
+              {{ hasMfa
+                  ? 'La vérification en deux étapes est active. Une preuve biométrique est exigée à chaque connexion.'
+                  : 'Ajoutez un second facteur : un mot de passe seul ne suffit plus à protéger un compte bancaire.' }}
+            </p>
+          </div>
+
+          <div class="sec-hero-score">
+            <svg viewBox="0 0 80 80" aria-hidden="true">
+              <circle class="sec-score-track" cx="40" cy="40" r="34"></circle>
+              <circle class="sec-score-fill" cx="40" cy="40" r="34"
+                      [attr.stroke-dasharray]="scoreCircumference"
+                      [attr.stroke-dashoffset]="scoreOffset"></circle>
+            </svg>
+            <div class="sec-score-label">
+              <strong>{{ displayScore }}<span>%</span></strong>
+              <em>Robustesse</em>
             </div>
           </div>
-          <button class="btn btn-outline-danger" (click)="openPasswordModal()">
-            <i class="fas fa-key"></i> Changer le mot de passe
-          </button>
+        </header>
+
+        <!-- Facteurs -->
+        <div class="sec-factors">
+
+          <!-- Mot de passe -->
+          <article class="sec-factor sec-factor-done">
+            <div class="sec-factor-top">
+              <span class="sec-factor-icon sec-icon-pw">
+                <i class="fas fa-key"></i>
+              </span>
+              <span class="sec-factor-state sec-state-on">
+                <i class="fas fa-check"></i> Actif
+              </span>
+            </div>
+            <h3>Mot de passe</h3>
+            <p>Première barrière de votre compte. Modifiez-le régulièrement.</p>
+            <button class="sec-btn sec-btn-ghost" (click)="openPasswordModal()">
+              <i class="fas fa-rotate"></i> Changer
+            </button>
+          </article>
+
+          <!-- Clés d'accès -->
+          <article class="sec-factor" [class.sec-factor-done]="passkeys.length > 0">
+            <div class="sec-factor-top">
+              <span class="sec-factor-icon sec-icon-pk">
+                <i class="fas fa-fingerprint"></i>
+              </span>
+              <span class="sec-factor-state" [ngClass]="passkeys.length ? 'sec-state-on' : 'sec-state-off'">
+                <i class="fas" [ngClass]="passkeys.length ? 'fa-check' : 'fa-minus'"></i>
+                {{ passkeys.length ? passkeys.length + ' enregistrée(s)' : 'Inactif' }}
+              </span>
+            </div>
+            <h3>Clé d'accès</h3>
+            <p>Empreinte ou visage, sur cet ordinateur ou votre téléphone via QR code.</p>
+            <button class="sec-btn sec-btn-primary" (click)="openPasskeyModal()"
+                    [disabled]="!passkeySupported">
+              <i class="fas fa-plus"></i> Ajouter
+            </button>
+          </article>
+
+          <!-- Reconnaissance faciale -->
+          <article class="sec-factor" [class.sec-factor-done]="hasFace">
+            <div class="sec-factor-top">
+              <span class="sec-factor-icon sec-icon-face">
+                <i class="fas fa-face-smile"></i>
+              </span>
+              <span class="sec-factor-state" [ngClass]="hasFace ? 'sec-state-on' : 'sec-state-off'">
+                <i class="fas" [ngClass]="hasFace ? 'fa-check' : 'fa-minus'"></i>
+                {{ hasFace ? 'Actif' : 'Inactif' }}
+              </span>
+            </div>
+            <h3>Reconnaissance faciale</h3>
+            <p>Votre visage comme second facteur, avec détection de vivacité.</p>
+            <button class="sec-btn" [ngClass]="hasFace ? 'sec-btn-ghost' : 'sec-btn-primary'"
+                    (click)="hasFace ? askDeleteFace() : openFaceModal()"
+                    [disabled]="!faceSupported">
+              <i class="fas" [ngClass]="hasFace ? 'fa-trash-can' : 'fa-camera'"></i>
+              {{ hasFace ? 'Supprimer' : 'Configurer' }}
+            </button>
+          </article>
         </div>
-        <div class="card-footer-custom">
-          <i class="fas fa-clock"></i> Dernière connexion : {{ lastLogin | date:'dd/MM/yyyy HH:mm' }}
+
+        <!-- Appareils enregistrés -->
+        <div class="sec-devices" *ngIf="passkeySupported">
+          <div class="sec-devices-head">
+            <h3><i class="fas fa-mobile-screen"></i> Appareils de confiance</h3>
+            <span *ngIf="passkeys.length">{{ passkeys.length }} appareil(s)</span>
+          </div>
+
+          <div class="sec-skeleton" *ngIf="passkeysLoading">
+            <span></span><span></span>
+          </div>
+
+          <div class="sec-empty" *ngIf="!passkeysLoading && !passkeys.length">
+            <div class="sec-empty-art" aria-hidden="true">
+              <span class="sec-empty-ring"></span>
+              <span class="sec-empty-ring"></span>
+              <i class="fas fa-fingerprint"></i>
+            </div>
+            <strong>Aucun appareil enregistré</strong>
+            <span>
+              Enregistrez votre téléphone ou cet ordinateur pour vous connecter
+              d'une simple empreinte — sans code reçu par SMS.
+            </span>
+            <button class="sec-btn sec-btn-primary" (click)="openPasskeyModal()"
+                    [disabled]="!passkeySupported">
+              <i class="fas fa-plus"></i> Enregistrer un appareil
+            </button>
+          </div>
+
+          <ul class="sec-device-list" *ngIf="!passkeysLoading && passkeys.length">
+            <li class="sec-device" *ngFor="let key of passkeys">
+              <span class="sec-device-icon">
+                <i class="fas fa-fingerprint"></i>
+              </span>
+              <div class="sec-device-text">
+                <strong>{{ key.label }}</strong>
+                <span>
+                  Ajouté le {{ key.creeLe | date:'dd/MM/yyyy' }}
+                  <ng-container *ngIf="key.derniereUtilisation">
+                    · Utilisé le {{ key.derniereUtilisation | date:'dd/MM/yyyy' }}
+                  </ng-container>
+                </span>
+              </div>
+              <span class="sec-device-tag" *ngIf="key.backedUp" title="Synchronisée sur vos appareils">
+                <i class="fas fa-cloud"></i> Synchronisée
+              </span>
+              <button class="sec-device-delete" (click)="askDeletePasskey(key)"
+                      [attr.aria-label]="'Supprimer ' + key.label">
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </li>
+          </ul>
+
+          <div class="sec-warning" *ngIf="!passkeySupported">
+            <i class="fas fa-triangle-exclamation"></i>
+            Ce navigateur ne prend pas en charge les clés d'accès.
+          </div>
         </div>
-      </div>
+
+        <footer class="sec-foot">
+          <i class="fas fa-clock"></i>
+          Dernière connexion : {{ lastLogin | date:'dd/MM/yyyy HH:mm' }}
+        </footer>
+      </section>
     </div>
   </div>
 </div>
@@ -255,6 +390,235 @@
       </button>
       <button class="atb-btn-primary" (click)="changePassword()">
         <i class="fas fa-check"></i> Mettre à jour
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL AJOUTER UNE CLÉ D'ACCÈS ===== -->
+<div *ngIf="showPasskeyModal" class="atb-modal-backdrop" (click)="closePasskeyModal()"></div>
+<div *ngIf="showPasskeyModal" class="atb-modal-container">
+  <div class="atb-modal">
+    <div class="atb-modal-header">
+      <div class="atb-modal-header-left">
+        <div class="atb-modal-icon-box">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        <div class="atb-modal-header-text">
+          <h5 class="atb-modal-title">Ajouter une clé d'accès</h5>
+          <p class="atb-modal-subtitle">Empreinte, visage ou téléphone</p>
+        </div>
+      </div>
+      <button class="atb-modal-close" (click)="closePasskeyModal()" [disabled]="passkeyBusy">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="atb-modal-body">
+      <div class="pk-scanner" aria-hidden="true">
+        <span class="pk-scanner-ring"></span>
+        <span class="pk-scanner-ring"></span>
+        <span class="pk-scanner-ring"></span>
+        <div class="pk-scanner-core">
+          <i class="fas" [ngClass]="passkeyDevice === 'PHONE' ? 'fa-qrcode' : 'fa-fingerprint'"></i>
+        </div>
+      </div>
+
+      <!-- Choix de l'appareil : sans cela, Windows n'affiche que Windows Hello
+           et le QR pour le téléphone reste caché sous un sous-menu. -->
+      <label class="atb-form-label">Où se trouve votre empreinte ?</label>
+      <div class="pk-choices">
+        <button type="button" class="pk-choice"
+                [class.pk-choice-on]="passkeyDevice === 'THIS_DEVICE'"
+                (click)="passkeyDevice = 'THIS_DEVICE'" [disabled]="passkeyBusy">
+          <span class="pk-choice-icon"><i class="fas fa-laptop"></i></span>
+          <span class="pk-choice-text">
+            <strong>Cet ordinateur</strong>
+            <em>Windows Hello — empreinte, visage ou code PIN</em>
+          </span>
+          <i class="fas fa-circle-check pk-choice-mark"></i>
+        </button>
+
+        <button type="button" class="pk-choice"
+                [class.pk-choice-on]="passkeyDevice === 'PHONE'"
+                (click)="passkeyDevice = 'PHONE'" [disabled]="passkeyBusy">
+          <span class="pk-choice-icon"><i class="fas fa-mobile-screen-button"></i></span>
+          <span class="pk-choice-text">
+            <strong>Mon téléphone</strong>
+            <em>Un QR code s'affiche, à scanner puis valider par empreinte</em>
+          </span>
+          <i class="fas fa-circle-check pk-choice-mark"></i>
+        </button>
+      </div>
+
+      <div class="pk-note" *ngIf="passkeyDevice === 'PHONE'">
+        <i class="fas fa-circle-info"></i>
+        Activez le Bluetooth sur les deux appareils : c'est lui qui établit le
+        canal sécurisé après la lecture du QR code.
+      </div>
+
+      <div class="atb-form-field">
+        <label class="atb-form-label" for="pk-label">Nom de l'appareil</label>
+        <div class="atb-input-wrapper">
+          <i class="fas fa-mobile-screen atb-input-icon"></i>
+          <input id="pk-label" type="text" class="atb-form-input"
+                 [(ngModel)]="passkeyLabel" maxlength="60"
+                 placeholder="Ex. iPhone de Karim"
+                 [disabled]="passkeyBusy" />
+        </div>
+      </div>
+
+      <div class="atb-error-message" *ngIf="passkeyError">
+        <i class="fas fa-circle-exclamation"></i> {{ passkeyError }}
+      </div>
+    </div>
+
+    <div class="atb-modal-footer">
+      <button class="atb-btn-secondary" (click)="closePasskeyModal()" [disabled]="passkeyBusy">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+      <button class="atb-btn-primary" (click)="enrollPasskey()" [disabled]="passkeyBusy">
+        <i class="fas" [ngClass]="passkeyBusy ? 'fa-spinner fa-spin'
+                                  : (passkeyDevice === 'PHONE' ? 'fa-qrcode' : 'fa-fingerprint')"></i>
+        {{ passkeyBusy ? 'En attente...' : (passkeyDevice === 'PHONE' ? 'Afficher le QR code' : 'Enregistrer') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SUPPRIMER UNE CLÉ D'ACCÈS ===== -->
+<div *ngIf="showDeletePasskeyModal" class="atb-modal-backdrop" (click)="closeDeletePasskeyModal()"></div><div *ngIf="showDeletePasskeyModal" class="atb-modal-container">
+  <div class="atb-modal">
+    <div class="atb-modal-header">
+      <div class="atb-modal-header-left">
+        <div class="atb-modal-icon-box">
+          <i class="fas fa-trash-can"></i>
+        </div>
+        <div class="atb-modal-header-text">
+          <h5 class="atb-modal-title">Supprimer la clé d'accès</h5>
+          <p class="atb-modal-subtitle">{{ deletePasskeyTarget?.label }}</p>
+        </div>
+      </div>
+      <button class="atb-modal-close" (click)="closeDeletePasskeyModal()" [disabled]="passkeyBusy">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="atb-modal-body">
+      <p class="pk-delete-warning">
+        <i class="fas fa-triangle-exclamation"></i>
+        Si c'est votre dernière clé, votre compte ne sera plus protégé par la
+        vérification en deux étapes et vous perdrez ce moyen de récupération.
+      </p>
+
+      <div class="atb-form-field">
+        <label class="atb-form-label" for="pk-del-pw">Confirmez avec votre mot de passe</label>
+        <div class="atb-input-wrapper">
+          <i class="fas fa-lock atb-input-icon"></i>
+          <input id="pk-del-pw" type="password" class="atb-form-input"
+                 [(ngModel)]="deletePasskeyPassword"
+                 autocomplete="current-password"
+                 placeholder="Votre mot de passe actuel"
+                 [disabled]="passkeyBusy" />
+        </div>
+      </div>
+
+      <div class="atb-error-message" *ngIf="deletePasskeyError">
+        <i class="fas fa-circle-exclamation"></i> {{ deletePasskeyError }}
+      </div>
+    </div>
+
+    <div class="atb-modal-footer">
+      <button class="atb-btn-secondary" (click)="closeDeletePasskeyModal()" [disabled]="passkeyBusy">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+      <button class="atb-btn-primary" (click)="confirmDeletePasskey()" [disabled]="passkeyBusy">
+        <i class="fas" [ngClass]="passkeyBusy ? 'fa-spinner fa-spin' : 'fa-trash-can'"></i>
+        {{ passkeyBusy ? 'Suppression...' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL RECONNAISSANCE FACIALE ===== -->
+<div *ngIf="showFaceModal" class="atb-modal-backdrop" (click)="closeFaceModal()"></div>
+<div *ngIf="showFaceModal" class="atb-modal-container">
+  <div class="atb-modal">
+    <div class="atb-modal-header">
+      <div class="atb-modal-header-left">
+        <div class="atb-modal-icon-box">
+          <i class="fas fa-face-smile"></i>
+        </div>
+        <div class="atb-modal-header-text">
+          <h5 class="atb-modal-title">Reconnaissance faciale</h5>
+          <p class="atb-modal-subtitle">Détection de vivacité active</p>
+        </div>
+      </div>
+      <button class="atb-modal-close" (click)="closeFaceModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="atb-modal-body">
+      <app-face-capture
+        mode="ENROLL"
+        (enrolled)="onFaceEnrolled()"
+        (cancelled)="closeFaceModal()">
+      </app-face-capture>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SUPPRIMER LA RECONNAISSANCE FACIALE ===== -->
+<div *ngIf="showDeleteFaceModal" class="atb-modal-backdrop" (click)="closeDeleteFaceModal()"></div>
+<div *ngIf="showDeleteFaceModal" class="atb-modal-container">
+  <div class="atb-modal">
+    <div class="atb-modal-header">
+      <div class="atb-modal-header-left">
+        <div class="atb-modal-icon-box">
+          <i class="fas fa-trash-can"></i>
+        </div>
+        <div class="atb-modal-header-text">
+          <h5 class="atb-modal-title">Désactiver la reconnaissance faciale</h5>
+          <p class="atb-modal-subtitle">Votre gabarit sera supprimé</p>
+        </div>
+      </div>
+      <button class="atb-modal-close" (click)="closeDeleteFaceModal()" [disabled]="faceBusy">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="atb-modal-body">
+      <p class="pk-delete-warning">
+        <i class="fas fa-triangle-exclamation"></i>
+        Sans autre second facteur, votre compte ne sera plus protégé par la
+        vérification en deux étapes et vous perdrez ce moyen de récupération.
+      </p>
+
+      <div class="atb-form-field">
+        <label class="atb-form-label" for="face-del-pw">Confirmez avec votre mot de passe</label>
+        <div class="atb-input-wrapper">
+          <i class="fas fa-lock atb-input-icon"></i>
+          <input id="face-del-pw" type="password" class="atb-form-input"
+                 [(ngModel)]="deleteFacePassword"
+                 autocomplete="current-password"
+                 placeholder="Votre mot de passe actuel"
+                 [disabled]="faceBusy" />
+        </div>
+      </div>
+
+      <div class="atb-error-message" *ngIf="deleteFaceError">
+        <i class="fas fa-circle-exclamation"></i> {{ deleteFaceError }}
+      </div>
+    </div>
+
+    <div class="atb-modal-footer">
+      <button class="atb-btn-secondary" (click)="closeDeleteFaceModal()" [disabled]="faceBusy">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+      <button class="atb-btn-primary" (click)="confirmDeleteFace()" [disabled]="faceBusy">
+        <i class="fas" [ngClass]="faceBusy ? 'fa-spinner fa-spin' : 'fa-trash-can'"></i>
+        {{ faceBusy ? 'Suppression...' : 'Désactiver' }}
       </button>
     </div>
   </div>

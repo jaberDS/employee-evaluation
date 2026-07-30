@@ -11,6 +11,17 @@ export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
+  /**
+   * Endpoints où un 401 ne veut PAS dire « session expirée ».
+   *
+   * Une cérémonie de second facteur porte son propre jeton d'étape : elle peut
+   * échouer alors que la session applicative reste parfaitement valable. Y
+   * répondre par un rafraîchissement puis une déconnexion renvoyait
+   * l'utilisateur à l'écran de connexion au moindre échec de vivacité, sans
+   * même qu'il puisse lire le message d'erreur.
+   */
+  private readonly ceremonyPaths = ['/auth/', '/mfa/'];
+
   constructor(private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -25,12 +36,16 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         // Only attempt token refresh for real auth failures (401 on non-login endpoints).
         // 403 = business rule violation (not an auth issue) — pass through directly.
-        if (error.status === 401 && !authReq.url.includes('/auth/')) {
+        if (error.status === 401 && !this.isCeremony(authReq.url)) {
           return this.handle401Error(authReq, next);
         }
         return throwError(() => error);
       })
     );
+  }
+
+  private isCeremony(url: string): boolean {
+    return this.ceremonyPaths.some(chemin => url.includes(chemin));
   }
 
   private addTokenToRequest(request: HttpRequest<any>, token: string): HttpRequest<any> {

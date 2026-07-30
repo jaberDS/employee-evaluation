@@ -433,3 +433,230 @@
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VÉRIFICATION EN DEUX ÉTAPES
+   Palette ATB : bordeaux #8B0000 → carmin #C62828.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.mfa-link-forgot {
+  display: block;
+  margin-top: 1.1rem;
+  text-align: center;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--atb-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.mfa-link-forgot:hover { color: var(--atb-primary); }
+
+/* ── En-tête d'étape ──────────────────────────────────────────────────── */
+.mfa-head { text-align: center; margin-bottom: 1.6rem; }
+
+.mfa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(139, 0, 0, 0.08);
+  color: var(--atb-primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mfa-head h2 {
+  margin: 0.85rem 0 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--atb-text);
+}
+
+.mfa-head p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--atb-text-secondary);
+}
+
+/* ── Choix du facteur ─────────────────────────────────────────────────── */
+.mfa-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mfa-factor {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1rem 1.1rem;
+  border: 1.5px solid var(--atb-border);
+  border-radius: 16px;
+  background: var(--atb-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+.mfa-factor:hover {
+  border-color: var(--atb-accent);
+  box-shadow: 0 10px 26px -14px rgba(139, 0, 0, 0.45);
+  transform: translateY(-2px);
+}
+
+.mfa-factor-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #8B0000, #C62828);
+  color: #fff;
+}
+
+.mfa-factor-text { flex: 1; min-width: 0; }
+.mfa-factor-text strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--atb-text);
+}
+.mfa-factor-text em {
+  display: block;
+  margin-top: 0.15rem;
+  font-style: normal;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--atb-text-secondary);
+}
+
+.mfa-factor-chevron { flex-shrink: 0; color: var(--atb-text-secondary); }
+
+/* ── Scène d'attente ──────────────────────────────────────────────────── */
+.mfa-stage { text-align: center; padding: 0.5rem 0 1.25rem; }
+
+.mfa-stage h2 {
+  margin: 1.5rem 0 0.45rem;
+  font-size: 1.22rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  color: var(--atb-text);
+}
+
+.mfa-hint {
+  margin: 0 auto;
+  max-width: 34ch;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--atb-text-secondary);
+}
+
+/* Anneaux concentriques — animés par GSAP, pas en CSS */
+.mfa-rings {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.mfa-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--atb-accent);
+  opacity: 0;
+}
+
+.mfa-core {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B0000, #C62828);
+  color: #fff;
+  box-shadow: 0 12px 30px -10px rgba(139, 0, 0, 0.6);
+}
+
+/* ── Coche de succès ──────────────────────────────────────────────────── */
+.mfa-success {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+}
+.mfa-success svg { width: 100%; height: 100%; }
+
+.mfa-success-circle {
+  fill: none;
+  stroke: var(--atb-primary);
+  stroke-width: 2.5;
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: mfaDrawCircle 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mfa-success-check {
+  fill: none;
+  stroke: var(--atb-primary);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: mfaDrawCheck 0.4s 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mfaDrawCircle { to { stroke-dashoffset: 0; } }
+@keyframes mfaDrawCheck  { to { stroke-dashoffset: 0; } }
+
+/* ── Actions ──────────────────────────────────────────────────────────── */
+.mfa-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+
+.mfa-actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.mfa-cancel {
+  width: 100%;
+  padding: 0.6rem;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--atb-text-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.mfa-cancel:hover { color: var(--atb-primary); }
+
+/* ── Thème sombre ─────────────────────────────────────────────────────── */
+[data-theme="dark"] .mfa-badge {
+  background: rgba(198, 40, 40, 0.18);
+  color: #FCA5A5;
+}
+[data-theme="dark"] .mfa-success-circle,
+[data-theme="dark"] .mfa-success-check { stroke: #FCA5A5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mfa-factor:hover { transform: none; }
+  .mfa-success-circle,
+  .mfa-success-check { animation: none; stroke-dashoffset: 0; }
+}
