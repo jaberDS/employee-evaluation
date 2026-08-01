@@ -139,8 +139,13 @@ public class FaceServiceImpl implements FaceService {
 
         float[] vecteur = versTableau(resultat.getEmbedding());
 
-        // Un employé n'a qu'un gabarit : on écrase le précédent s'il existe.
-        FaceTemplate gabarit = templateRepository.findByEmployeMatriculeAndActifTrue(matricule)
+        // Un employé n'a qu'un gabarit, et la base l'impose : la contrainte
+        // d'unicité porte sur `employe_id`. On cherche donc le gabarit existant
+        // sans filtrer sur `actif` — une inscription qui suit une suppression
+        // retrouve ainsi la ligne désactivée et la réactive, là où un filtre sur
+        // les seuls gabarits actifs tenterait un second insert et se heurterait
+        // à la contrainte (« Une valeur dupliquée a été détectée »).
+        FaceTemplate gabarit = templateRepository.findByEmployeMatricule(matricule)
                 .orElseGet(() -> FaceTemplate.builder().employe(employe).build());
 
         gabarit.setEmbedding(encoder(vecteur));

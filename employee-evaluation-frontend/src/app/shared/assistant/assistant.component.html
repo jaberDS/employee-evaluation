@@ -33,6 +33,16 @@
       </div>
 
       <div class="ia-head-actions">
+        <!-- Bouton de coupure : visible seulement pendant la lecture, pour
+             reprendre la main sans fermer le panneau. -->
+        <button
+          class="ia-icon-btn ia-icon-btn-live"
+          *ngIf="parle"
+          (click)="faireTaire()"
+          aria-label="Arrêter la lecture">
+          <i class="fas fa-stop"></i>
+        </button>
+
         <button
           class="ia-icon-btn"
           *ngIf="lectureSupportee"
@@ -116,8 +126,14 @@
         <span></span><span></span><span></span><span></span><span></span>
       </span>
       <span class="ia-listening-text">
-        {{ apercuVocal || 'Je vous écoute…' }}
+        {{ apercuVocal || 'Je vous écoute… prenez votre temps.' }}
       </span>
+      <button
+        type="button"
+        class="ia-listening-done"
+        (click)="basculerMicro()">
+        Terminé
+      </button>
     </div>
 
     <!-- Saisie -->
@@ -128,7 +144,7 @@
         [(ngModel)]="question"
         name="question"
         maxlength="1000"
-        placeholder="Posez votre question…"
+        [placeholder]="ecoute ? 'Dictée en cours…' : 'Posez votre question…'"
         aria-label="Votre question"
         [disabled]="occupe"
         autocomplete="off" />

@@ -20,6 +20,8 @@ import base64
 import binascii
 import logging
 import os
+import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from typing import Dict, List, Optional, Tuple
 
@@ -94,18 +96,38 @@ IDENTITY_CONSISTENCY_THRESHOLD = float(os.getenv("FACE_IDENTITY_CONSISTENCY", "0
 FRONTAL_NOSE_LIMIT = float(os.getenv("FACE_FRONTAL_NOSE_LIMIT", "0.09"))
 
 _analyzer: Optional[FaceAnalysis] = None
+_pool: Optional[ThreadPoolExecutor] = None
+
+# Modèles réellement exploités. `genderage` est le seul du paquet buffalo_l dont
+# aucune sortie n'est lue ici : le charger coûte une inférence par trame pour
+# rien. `detection` trouve le visage, `recognition` produit l'embedding,
+# `landmark_2d_106` donne les yeux et la bouche, `landmark_3d_68` fournit `pose`.
+MODULES = ["detection", "recognition", "landmark_2d_106", "landmark_3d_68"]
+
+# Nombre de trames analysées de front. Les inférences ONNX libèrent le GIL, donc
+# des threads suffisent — et coûtent bien moins qu'autant de processus, chacun
+# devant recharger les modèles. Plafonné : au-delà du nombre de cœurs les trames
+# se disputent le CPU sans rien gagner.
+PARALLELISME = int(os.getenv("FACE_WORKERS", str(min(4, (os.cpu_count() or 2)))))
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Charge les modèles une seule fois : l'init coûte plusieurs secondes."""
-    global _analyzer
+    global _analyzer, _pool
     logger.info("Chargement du modèle %s (det_size=%d)...", MODEL_NAME, DET_SIZE)
-    analyzer = FaceAnalysis(name=MODEL_NAME, providers=["CPUExecutionProvider"])
+    analyzer = FaceAnalysis(
+        name=MODEL_NAME,
+        providers=["CPUExecutionProvider"],
+        allowed_modules=MODULES,
+    )
     analyzer.prepare(ctx_id=-1, det_size=(DET_SIZE, DET_SIZE))
     _analyzer = analyzer
-    logger.info("Modèle prêt.")
+    _pool = ThreadPoolExecutor(max_workers=PARALLELISME, thread_name_prefix="face")
+    logger.info("Modèle prêt (%d trames de front).", PARALLELISME)
     yield
+    _pool.shutdown(wait=False)
+    _pool = None
     _analyzer = None
 
 
@@ -200,6 +222,40 @@ def _get_analyzer() -> FaceAnalysis:
     if _analyzer is None:
         raise HTTPException(status_code=503, detail="Modèle non chargé")
     return _analyzer
+
+
+def _pool_courant() -> ThreadPoolExecutor:
+    if _pool is None:
+        raise HTTPException(status_code=503, detail="Service non initialisé")
+    return _pool
+
+
+def _analyser_trame(entree):
+    """
+    Décode et analyse une trame. Renvoie `(index, None)` si rien d'exploitable.
+
+    Exécutée sur le pool de threads : une trame illisible ou sans visage ne doit
+    pas faire échouer les autres, d'où la capture des erreurs de décodage — une
+    exception remontée ici interromprait `map` et donc toute la cérémonie.
+    """
+    index, frame = entree
+    try:
+        image = _decode_image(frame.image)
+        face = _largest_face(image)
+    except HTTPException:
+        return index, None
+    except Exception:
+        logger.warning("Trame %d illisible", index, exc_info=True)
+        return index, None
+
+    if face is None or face.det_score < MIN_DET_SCORE:
+        return index, None
+
+    return index, (
+        _metrics(face),
+        _normalise(np.asarray(face.normed_embedding, dtype=np.float32)),
+        _quality(face, image),
+    )
 
 
 def _normalise(vector: np.ndarray) -> np.ndarray:
@@ -526,18 +582,21 @@ def verify_liveness(request: LivenessRequest) -> LivenessResponse:
     analyses: Dict[int, dict] = {}
     embeddings: Dict[int, np.ndarray] = {}
     qualites: Dict[int, float] = {}
-    exploitables = 0
 
-    for index, frame in enumerate(request.frames):
-        image = _decode_image(frame.image)
-        face = _largest_face(image)
-        if face is None or face.det_score < MIN_DET_SCORE:
+    # Les trames sont analysées de front. Chaque passe est indépendante des
+    # autres — décodage, détection, embedding — et l'inférence ONNX relâche le
+    # GIL, si bien que le traitement séquentiel laissait la plupart des cœurs
+    # inoccupés pendant une vingtaine de secondes. Le résultat est indexé, donc
+    # l'ordre d'arrivée n'a aucune importance.
+    debut = time.perf_counter()
+    for index, mesure in _pool_courant().map(_analyser_trame, enumerate(request.frames)):
+        if mesure is None:
             continue
+        analyses[index], embeddings[index], qualites[index] = mesure
 
-        analyses[index] = _metrics(face)
-        embeddings[index] = _normalise(np.asarray(face.normed_embedding, dtype=np.float32))
-        qualites[index] = _quality(face, image)
-        exploitables += 1
+    exploitables = len(analyses)
+    logger.info("Analyse de %d trames en %.1f s (%d exploitables)",
+                len(request.frames), time.perf_counter() - debut, exploitables)
 
     if not exploitables:
         return LivenessResponse(

@@ -17,8 +17,17 @@ interface Message {
   destination?: string | null;
 }
 
-/** Délai avant redirection : laisse le temps de lire la réponse. */
-const DELAI_NAVIGATION = 1300;
+/**
+ * Délai avant redirection **lorsque rien n'est lu à voix haute** (vocal coupé
+ * ou synthèse absente) : le temps de lire la réponse à l'écran.
+ *
+ * Quand la réponse est prononcée, ce délai ne s'applique pas : c'est la fin de
+ * la phrase qui déclenche la navigation, sinon on couperait la parole.
+ */
+const DELAI_NAVIGATION = 1600;
+
+/** Garde-fou : si la synthèse ne signale jamais sa fin, on navigue quand même. */
+const DELAI_SECOURS = 15_000;
 
 @Component({
   selector: 'app-assistant',
@@ -44,8 +53,14 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Transcription en cours de dictée, affichée en gris dans le champ. */
   apercuVocal = '';
   ecoute = false;
+  /** Une réponse est en cours de lecture à voix haute. */
+  parle = false;
   /** Lecture à voix haute des réponses, mémorisée d'une session à l'autre. */
   vocalActif = true;
+
+  /** Redirection annoncée, en attente de la fin de la phrase. */
+  private cheminEnAttente: string | null = null;
+  private minuteurSecours: any = null;
 
   /** Exemples proposés tant que la conversation est vide. */
   suggestions: string[] = [];
@@ -83,7 +98,8 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.abonnements.unsubscribe();
-    this.voix.arreterEcoute();
+    this.annulerAttente();
+    this.voix.annulerEcoute();
     this.voix.arreterLecture();
   }
 
@@ -95,12 +111,15 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    // Une phrase dictée part directement : redemander de cliquer « envoyer »
-    // annulerait tout le bénéfice de la dictée.
+    // La dictée part d'elle-même : le service n'émet la transcription qu'après
+    // un vrai silence (dix secondes) ou sur « Terminé », donc à ce stade la
+    // phrase est bel et bien finie. Envoyer maintenant évite un clic de plus.
     this.abonnements.add(
       this.voix.transcription.subscribe(texte => {
         this.apercuVocal = '';
-        this.question = texte;
+        this.question = this.question.trim()
+          ? (this.question.trim() + ' ' + texte)
+          : texte;
         this.cdr.detectChanges();
         this.envoyer();
       })
@@ -120,6 +139,16 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         this.apercuVocal = '';
         this.erreur = message;
         this.cdr.detectChanges();
+      })
+    );
+
+    // La navigation attend ici, et nulle part ailleurs : la phrase est finie,
+    // on peut changer d'écran sans la couper.
+    this.abonnements.add(
+      this.voix.finLecture.subscribe(() => {
+        this.parle = false;
+        this.cdr.detectChanges();
+        this.naviguerSiAttendu();
       })
     );
   }
@@ -149,10 +178,17 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => this.champRef?.nativeElement.focus(), 260);
   }
 
+  /**
+   * Fermeture explicite : la personne reprend la main, on coupe donc la parole
+   * en cours et on abandonne une redirection annoncée. C'est le seul endroit où
+   * la lecture est interrompue de force.
+   */
   fermer(): void {
-    this.voix.arreterEcoute();
+    this.annulerAttente();
+    this.voix.annulerEcoute();
     this.voix.arreterLecture();
     this.ecoute = false;
+    this.parle = false;
 
     const panneau = this.panneauRef?.nativeElement;
     if (!panneau || this.mouvementReduit) {
@@ -172,7 +208,17 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   effacer(): void {
     this.messages = [];
     this.erreur = '';
+    this.annulerAttente();
     this.voix.arreterLecture();
+    this.parle = false;
+  }
+
+  /** Coupe la lecture en cours sans fermer le panneau. */
+  faireTaire(): void {
+    this.voix.arreterLecture();
+    this.parle = false;
+    // La redirection annoncée reste due : on n'attend plus la fin de la phrase.
+    this.naviguerSiAttendu();
   }
 
   basculerVocal(): void {
@@ -180,11 +226,19 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     localStorage.setItem('assistant-voix', this.vocalActif ? '1' : '0');
     if (!this.vocalActif) {
       this.voix.arreterLecture();
+      this.parle = false;
+      this.naviguerSiAttendu();
     }
   }
 
   // ═══ Dictée ════════════════════════════════════════════════════════════
 
+  /**
+   * Ouvre ou ferme le micro.
+   *
+   * L'arrêt manuel est un « j'ai fini de parler », pas une annulation : le
+   * moteur restitue ce qu'il a entendu et le texte arrive dans le champ.
+   */
   basculerMicro(): void {
     if (this.ecoute) {
       this.voix.arreterEcoute();
@@ -194,6 +248,7 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     this.erreur = '';
     // La lecture en cours couvrirait le micro et se ferait réécouter.
     this.voix.arreterLecture();
+    this.parle = false;
     this.voix.ecouter();
     this.ecoute = true;
     this.animerMicro();
@@ -210,6 +265,7 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     const texte = this.question.trim();
     if (!texte || this.occupe) return;
 
+    this.annulerAttente();
     this.messages.push({ auteur: 'user', texte });
     this.question = '';
     this.erreur = '';
@@ -230,17 +286,28 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
           this.animerDernierMessage();
           this.defiler();
 
-          if (this.vocalActif) {
-            this.voix.lire(reponse.reponse);
-          }
-
           // Le chemin vient du serveur, qui l'a validé contre le catalogue de
           // routes autorisées à ce rôle : rien à revérifier ici.
-          if (reponse.chemin) {
-            setTimeout(() => {
-              this.router.navigate([reponse.chemin!]);
-              this.fermer();
-            }, DELAI_NAVIGATION);
+          this.cheminEnAttente = reponse.chemin ?? null;
+
+          const lu = this.vocalActif && this.lectureSupportee && !!reponse.reponse?.trim();
+
+          if (lu) {
+            this.parle = true;
+            this.cdr.detectChanges();
+            this.voix.lire(reponse.reponse);
+
+            // Si la synthèse reste muette — onglet en arrière-plan, voix
+            // indisponible — la redirection ne doit pas rester bloquée.
+            if (this.cheminEnAttente) {
+              this.minuteurSecours = setTimeout(() => {
+                this.parle = false;
+                this.naviguerSiAttendu();
+              }, DELAI_SECOURS);
+            }
+          } else if (this.cheminEnAttente) {
+            // Sans lecture, un court temps de lecture à l'écran suffit.
+            this.minuteurSecours = setTimeout(() => this.naviguerSiAttendu(), DELAI_NAVIGATION);
           }
         },
         error: err => {
@@ -250,6 +317,31 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     );
+  }
+
+  /**
+   * Effectue la redirection en attente, s'il y en a une.
+   *
+   * Le panneau se ferme sans passer par `fermer()`, qui couperait la lecture :
+   * ici elle vient précisément de se terminer, et rien ne justifie d'annuler
+   * une synthèse déjà achevée.
+   */
+  private naviguerSiAttendu(): void {
+    const chemin = this.cheminEnAttente;
+    this.annulerAttente();
+    if (!chemin) return;
+
+    this.router.navigate([chemin]);
+    this.ouvert = false;
+    this.cdr.detectChanges();
+  }
+
+  private annulerAttente(): void {
+    this.cheminEnAttente = null;
+    if (this.minuteurSecours) {
+      clearTimeout(this.minuteurSecours);
+      this.minuteurSecours = null;
+    }
   }
 
   private defiler(): void {

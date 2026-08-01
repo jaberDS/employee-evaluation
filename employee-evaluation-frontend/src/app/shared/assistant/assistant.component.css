@@ -162,6 +162,24 @@
   opacity: 0.45;
 }
 
+/* Coupure de la parole : signalée activement, car elle n'apparaît que le temps
+   d'une lecture et doit se trouver du premier coup d'œil. */
+.ia-icon-btn-live {
+  color: #fff;
+  background: #c62828;
+  animation: iaLivePulse 1.6s ease-in-out infinite;
+}
+
+.ia-icon-btn-live:hover {
+  color: #fff;
+  background: #8b0000;
+}
+
+@keyframes iaLivePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.5); }
+  50%      { box-shadow: 0 0 0 6px rgba(198, 40, 40, 0); }
+}
+
 /* ─── Fil de conversation ────────────────────────────────────────────────── */
 
 .ia-thread {
@@ -294,13 +312,14 @@
   border: 1px solid rgba(22, 163, 74, 0.24);
 }
 
-/* Réflexion */
+/* Réflexion — les halos du spinner débordent de son disque : d'où le retrait
+   à gauche, sans lequel ils se font rogner par le bord du fil. */
 .ia-thinking {
   align-self: flex-start;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.3rem 0.1rem;
+  gap: 0.85rem;
+  padding: 0.4rem 0.1rem 0.4rem 0.9rem;
 }
 
 .ia-thinking span {
@@ -361,6 +380,29 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+/* ─── Dictée ─────────────────────────────────────────────────────────────── */
+
+/* « Terminé » : la dictée se clôt aussi d'elle-même après dix secondes de
+   silence, mais pouvoir la fermer sur commande évite d'attendre ce délai. */
+.ia-listening-done {
+  border: 1px solid rgba(22, 163, 74, 0.4);
+  background: #fff;
+  color: #16a34a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.ia-listening-done:hover {
+  background: #16a34a;
+  color: #fff;
 }
 
 /* ─── Saisie ─────────────────────────────────────────────────────────────── */
@@ -455,28 +497,34 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   SPINNER — Uiverse.io par mrhyddenn
+   SPINNER — d'après Uiverse.io / mrhyddenn
 
-   Repris tel quel, à la demande. Ses teintes vives sortent de la charte ATB,
-   d'où son cantonnement à l'état « réflexion » : c'est un moment transitoire,
-   où le contraste sert justement à signaler que la machine travaille.
+   La structure est celle du modèle fourni : un anneau et sept halos décalés,
+   mis en rotation. Seules les teintes changent — l'arc-en-ciel d'origine est
+   remplacé par le dégradé rouge → blanc de la charte ATB, demandé pour que le
+   composant reste dans la palette de l'application.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .spinner {
   width: 3em;
   height: 3em;
-  cursor: not-allowed;
   border-radius: 50%;
-  border: 2px solid #444;
-  box-shadow: -10px -10px 10px #6359f8, 0px -10px 10px 0px #9c32e2,
-              10px -10px 10px #f36896, 10px 0 10px #ff0b0b,
-              10px 10px 10px 0px #ff5500, 0 10px 10px 0px #ff9500,
-              -10px 10px 10px 0px #ffb700;
+  border: 2px solid rgba(139, 0, 0, 0.55);
+  /* Sept halos parcourant le cercle : rouge profond, puis rouge vif, puis
+     blanc. La progression donne la sensation de rotation. */
+  box-shadow:
+    -10px -10px 10px #8b0000,
+     0px -10px 10px 0px #b71c1c,
+     10px -10px 10px #c62828,
+     10px   0   10px #e53935,
+     10px  10px 10px 0px #ff6b6b,
+     0px  10px 10px 0px #ffd6d6,
+    -10px  10px 10px 0px #ffffff;
   animation: rot55 0.7s linear infinite;
 }
 
 .spinnerin {
-  border: 2px solid #444;
+  border: 2px solid rgba(139, 0, 0, 0.45);
   width: 1.5em;
   height: 1.5em;
   border-radius: 50%;
@@ -487,19 +535,30 @@
 }
 
 @keyframes rot55 {
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* Le spinner se positionne en absolu : il lui faut un parent de référence,
-   sinon son disque intérieur se cale sur la fenêtre entière. */
+   sinon son disque intérieur se cale sur la fenêtre entière.
+
+   `transform` est réaffirmé à zéro : GSAP anime les bulles voisines et laisse
+   parfois une matrice résiduelle sur les éléments enfants, laquelle écrase la
+   rotation de l'animation CSS et fige le spinner. Les halos continuent alors de
+   s'afficher, immobiles — ce qui se lit comme un composant cassé.  */
 .ia-thinking .spinner {
   position: relative;
-  width: 2.1em;
-  height: 2.1em;
+  width: 2.4em;
+  height: 2.4em;
   flex-shrink: 0;
+  margin: 0.15em 0.2em;
+  animation: rot55 0.7s linear infinite;
+  will-change: transform;
 }
+
+/* Les halos débordent largement du disque : sans marge, ils se font rogner par
+   le fil de conversation qui défile. Le retrait est posé plus haut, avec le
+   reste du bloc « réflexion ». */
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 
@@ -526,7 +585,7 @@
 @media (prefers-reduced-motion: reduce) {
   .ia-fab-halo,
   .ia-mic-on,
-  .spinner {
+  .ia-icon-btn-live {
     animation: none !important;
   }
   .ia-fab,
@@ -537,6 +596,15 @@
   .ia-fab-open:hover { transform: rotate(90deg); }
   .ia-chip:hover { transform: none; }
   .ia-send:hover:not(:disabled) { transform: none; }
-  /* Sans rotation, la bordure colorée seule signale l'activité. */
-  .spinner { opacity: 0.85; }
+
+  /* Le spinner garde sa rotation, mais ralentie.
+     Windows active « mouvement réduit » dès que les animations système sont
+     coupées, ce qui est fréquent : le supprimer laissait un anneau parfaitement
+     immobile pendant l'attente, indiscernable d'un composant en panne. Une
+     rotation lente et régulière informe sans agresser — c'est un mouvement
+     continu et prévisible, pas un défilement ni un clignotement. */
+  .spinner,
+  .ia-thinking .spinner {
+    animation-duration: 2.2s;
+  }
 }
