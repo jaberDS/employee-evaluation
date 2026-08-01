@@ -57,18 +57,24 @@ MAX_FRAMES = int(os.getenv("FACE_MAX_FRAMES", "48"))
 # Un seuil fixe classerait la moitié des gens comme « en train de cligner ».
 # On compare donc chacun à lui-même, ce qui s'auto-calibre.
 
-# L'œil doit se fermer à moins de 78 % de son ouverture au repos.
+# L'œil doit se fermer à moins de 82 % de son ouverture au repos.
 # Avec une rafale on mesure le minimum de la séquence, donc on attrape le creux
 # réel du clignement et non un instant quelconque : le seuil peut rester lâche
 # sans ouvrir la porte à la photo figée, qui elle ne bouge pas du tout (1,00).
-BLINK_CLOSE_RATIO = float(os.getenv("FACE_BLINK_RATIO", "0.78"))
+# Relevé de 0,78 : un clignement mesuré valait 0,74 du repos, marge trop mince
+# quand la rafale tombe légèrement à côté du creux.
+BLINK_CLOSE_RATIO = float(os.getenv("FACE_BLINK_RATIO", "0.82"))
 # Rotation de tête d'au moins 10° par rapport à la pose de départ.
 YAW_DELTA_DEG = float(os.getenv("FACE_YAW_DELTA_DEG", "10.0"))
 # Déplacement du nez, en fraction de la distance inter-oculaire. Sert de mesure
 # de repli quand `pose` est absent, et de recoupement quand il est présent.
 NOSE_DELTA_RATIO = float(os.getenv("FACE_NOSE_DELTA", "0.11"))
-# La bouche doit s'élargir d'au moins 5 % par rapport au repos.
-SMILE_WIDEN_RATIO = float(os.getenv("FACE_SMILE_WIDEN", "1.05"))
+# La bouche doit s'élargir d'au moins 3 %. Mesuré : un sourire franc ne gagne
+# que 5 % en largeur, donc 5 % de seuil ne laissait aucune marge.
+SMILE_WIDEN_RATIO = float(os.getenv("FACE_SMILE_WIDEN", "1.03"))
+# Le rapport largeur/hauteur de bouche, lui, gagne beaucoup plus : 12 % est un
+# seuil confortable qu'un visage au repos ne franchit pas.
+SMILE_RATIO_GAIN = float(os.getenv("FACE_SMILE_RATIO_GAIN", "1.12"))
 
 # Exiger le BON côté de rotation suppose que le signe du yaw rendu par le modèle
 # est celui qu'on croit — il varie selon les versions d'InsightFace. Par défaut
@@ -303,17 +309,26 @@ def _metrics(face) -> dict:
 
     oeil: Optional[float] = None
     bouche: Optional[float] = None
+    bouche_ratio: Optional[float] = None
 
     if marks is not None and len(marks) >= 106:
         marks = np.asarray(marks, dtype=np.float32)
         oeil = (_eye_openness(marks, LEFT_EYE) + _eye_openness(marks, RIGHT_EYE)) / 2.0
         contour = marks[MOUTH[0]:MOUTH[1]]
+        largeur_bouche = float(contour[:, 0].max() - contour[:, 0].min())
+        hauteur_bouche = float(contour[:, 1].max() - contour[:, 1].min())
         if largeur_visage > 0:
-            bouche = float(contour[:, 0].max() - contour[:, 0].min()) / largeur_visage
+            bouche = largeur_bouche / largeur_visage
+        # Rapport largeur/hauteur : un sourire étire la bouche ET l'aplatit, donc
+        # ce rapport bouge bien plus que la largeur seule. Sur un vrai sourire la
+        # largeur ne gagnait que 5 %, trop peu pour un seuil fiable.
+        if hauteur_bouche > 0:
+            bouche_ratio = _sain(largeur_bouche / hauteur_bouche, 0.0)
 
     return {
         "eye": oeil,
         "mouth": bouche,
+        "mouth_ratio": bouche_ratio,
         "yaw": float(pose[1]) if pose is not None and len(pose) >= 2 else None,
         "nose": _nose_offset(face),
     }
@@ -346,17 +361,40 @@ def _check_blink(rafale: List[dict], repos: List[dict]) -> Tuple[bool, str]:
 
 
 def _check_smile(rafale: List[dict], repos: List[dict]) -> Tuple[bool, str]:
+    """
+    Sourire : élargissement de la bouche OU aplatissement de son contour.
+
+    Les deux indices sont acceptés séparément parce que la largeur seule est peu
+    discriminante — un sourire franc ne la gagne que de 5 %, à peine au-dessus du
+    bruit de mesure. Le rapport largeur/hauteur, lui, bouge nettement : la bouche
+    s'étire et s'aplatit en même temps.
+    """
+    preuves: List[str] = []
+    detecte = False
+
     largeurs = _values(rafale, "mouth")
     references = _values(repos, "mouth")
-    if not largeurs or not references:
-        return True, "Largeur de bouche non mesurable"
+    if largeurs and references:
+        large = max(largeurs)
+        # Médiane au repos : plus stable que la moyenne sur trois trames, dont une
+        # peut attraper un début de sourire.
+        neutre = float(np.median(references))
+        seuil = neutre * SMILE_WIDEN_RATIO
+        preuves.append(f"largeur {large:.3f} vs {neutre:.3f} (seuil {seuil:.3f})")
+        detecte = detecte or large > seuil
 
-    large = max(largeurs)
-    # Médiane au repos : plus stable que la moyenne sur trois trames, dont une
-    # peut attraper un début de sourire.
-    neutre = float(np.median(references))
-    seuil = neutre * SMILE_WIDEN_RATIO
-    return large > seuil, f"bouche {large:.3f} vs repos {neutre:.3f} (seuil {seuil:.3f})"
+    ratios = _values(rafale, "mouth_ratio")
+    ratios_repos = _values(repos, "mouth_ratio")
+    if ratios and ratios_repos:
+        etire = max(ratios)
+        neutre = float(np.median(ratios_repos))
+        seuil = neutre * SMILE_RATIO_GAIN
+        preuves.append(f"forme {etire:.2f} vs {neutre:.2f} (seuil {seuil:.2f})")
+        detecte = detecte or etire > seuil
+
+    if not preuves:
+        return True, "Bouche non mesurable"
+    return detecte, " · ".join(preuves)
 
 
 def _check_turn(action: str, rafale: List[dict], repos: List[dict]) -> Tuple[bool, str]:

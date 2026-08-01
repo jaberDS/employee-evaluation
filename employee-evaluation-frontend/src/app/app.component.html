@@ -10,6 +10,9 @@
       <app-footer></app-footer>
     </div>
   </div>
+
+  <!-- Assistant : flottant, présent sur tous les écrans authentifiés. -->
+  <app-assistant></app-assistant>
 </div>
 
   <router-outlet *ngIf="!authService.isAuthenticated()"></router-outlet>

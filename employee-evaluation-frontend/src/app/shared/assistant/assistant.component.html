@@ -1,0 +1,157 @@
+<!-- L'assistant n'apparaît que si le serveur détient une clé Gemini. -->
+<ng-container *ngIf="disponible">
+
+  <!-- ═══ Bouton flottant ═══════════════════════════════════════════════ -->
+  <button
+    class="ia-fab"
+    [class.ia-fab-open]="ouvert"
+    (click)="basculer()"
+    [attr.aria-label]="ouvert ? 'Fermer l\'assistant' : 'Ouvrir l\'assistant'"
+    [attr.aria-expanded]="ouvert">
+    <span class="ia-fab-halo" aria-hidden="true"></span>
+    <i class="fas" [ngClass]="ouvert ? 'fa-xmark' : 'fa-wand-magic-sparkles'"></i>
+  </button>
+
+  <!-- ═══ Panneau ═══════════════════════════════════════════════════════ -->
+  <section
+    class="ia-panel"
+    #panneau
+    *ngIf="ouvert"
+    role="dialog"
+    aria-label="Assistant ATB">
+
+    <!-- En-tête -->
+    <header class="ia-head">
+      <div class="ia-head-id">
+        <span class="ia-avatar" aria-hidden="true">
+          <i class="fas fa-wand-magic-sparkles"></i>
+        </span>
+        <span class="ia-head-text">
+          <strong>Assistant ATB</strong>
+          <small>Navigation et statistiques</small>
+        </span>
+      </div>
+
+      <div class="ia-head-actions">
+        <button
+          class="ia-icon-btn"
+          *ngIf="lectureSupportee"
+          (click)="basculerVocal()"
+          [class.ia-off]="!vocalActif"
+          [attr.aria-label]="vocalActif ? 'Couper la lecture vocale' : 'Activer la lecture vocale'"
+          [attr.aria-pressed]="vocalActif">
+          <i class="fas" [ngClass]="vocalActif ? 'fa-volume-high' : 'fa-volume-xmark'"></i>
+        </button>
+
+        <button
+          class="ia-icon-btn"
+          *ngIf="messages.length"
+          (click)="effacer()"
+          aria-label="Effacer la conversation">
+          <i class="fas fa-trash-can"></i>
+        </button>
+
+        <button class="ia-icon-btn" (click)="fermer()" aria-label="Fermer">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Fil de conversation -->
+    <div class="ia-thread" #fil aria-live="polite">
+
+      <!-- Accueil : visible tant qu'aucune question n'a été posée -->
+      <div class="ia-welcome" *ngIf="!messages.length">
+        <div class="ia-welcome-icon" aria-hidden="true">
+          <i class="fas fa-comments"></i>
+        </div>
+        <strong>Que puis-je faire pour vous ?</strong>
+        <p>
+          Posez une question sur vos chiffres, ou demandez-moi de vous emmener
+          sur un écran.
+        </p>
+
+        <div class="ia-chips">
+          <button
+            class="ia-chip"
+            *ngFor="let s of suggestions"
+            (click)="utiliserSuggestion(s)">
+            {{ s }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div
+        class="ia-msg"
+        *ngFor="let m of messages"
+        [class.ia-msg-user]="m.auteur === 'user'"
+        [class.ia-msg-ia]="m.auteur === 'ia'">
+        <!-- Interpolation et non innerHTML : le texte du modèle ne doit
+             jamais pouvoir injecter de balise. -->
+        <p>{{ m.texte }}</p>
+        <span class="ia-goto" *ngIf="m.destination">
+          <i class="fas fa-arrow-right-long"></i> {{ m.destination }}
+        </span>
+      </div>
+
+      <!-- Réflexion en cours -->
+      <div class="ia-thinking" *ngIf="occupe">
+        <div class="spinner" role="status" aria-label="Réflexion en cours">
+          <div class="spinnerin"></div>
+        </div>
+        <span>Je réfléchis…</span>
+      </div>
+
+      <!-- Erreur -->
+      <div class="ia-error" *ngIf="erreur">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>{{ erreur }}</span>
+      </div>
+    </div>
+
+    <!-- Onde d'écoute -->
+    <div class="ia-listening" *ngIf="ecoute">
+      <span class="ia-wave" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </span>
+      <span class="ia-listening-text">
+        {{ apercuVocal || 'Je vous écoute…' }}
+      </span>
+    </div>
+
+    <!-- Saisie -->
+    <form class="ia-input" (ngSubmit)="envoyer()">
+      <input
+        #champ
+        type="text"
+        [(ngModel)]="question"
+        name="question"
+        maxlength="1000"
+        placeholder="Posez votre question…"
+        aria-label="Votre question"
+        [disabled]="occupe"
+        autocomplete="off" />
+
+      <button
+        type="button"
+        class="ia-mic"
+        *ngIf="dicteeSupportee"
+        [class.ia-mic-on]="ecoute"
+        (click)="basculerMicro()"
+        [disabled]="occupe"
+        [attr.aria-label]="ecoute ? 'Arrêter la dictée' : 'Dicter la question'"
+        [attr.aria-pressed]="ecoute">
+        <i class="fas" [ngClass]="ecoute ? 'fa-stop' : 'fa-microphone'"></i>
+      </button>
+
+      <button
+        type="submit"
+        class="ia-send"
+        [disabled]="occupe || !question.trim()"
+        aria-label="Envoyer">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+  </section>
+</ng-container>

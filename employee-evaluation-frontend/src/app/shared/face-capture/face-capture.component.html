@@ -42,6 +42,9 @@
         <li><i class="fas fa-lightbulb"></i> Placez-vous face à une source de lumière</li>
         <li><i class="fas fa-glasses"></i> Retirez lunettes de soleil et masque</li>
         <li><i class="fas fa-user"></i> Restez seul dans le cadre</li>
+        <li *ngIf="mode !== 'ENROLL'">
+          <i class="fas fa-stopwatch"></i> Tenez chaque geste jusqu'à la fin de la consigne
+        </li>
       </ul>
 
       <div class="fc-actions">

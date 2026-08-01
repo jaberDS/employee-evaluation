@@ -41,6 +41,7 @@ import { AffectationBadgeComponent } from './shared/affectation-badge/affectatio
 import { NoteInputComponent } from './shared/note-input/note-input.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { FaceCaptureComponent } from './shared/face-capture/face-capture.component';
+import { AssistantComponent } from './shared/assistant/assistant.component';
 
 // N1 feature components
 import { EvaluerEmployesComponent } from './components/n1/evaluer-employes/evaluer-employes.component';
@@ -58,6 +59,7 @@ import { N2ValiderComponent } from './components/n2/n2-valider/n2-valider.compon
     LucideIconComponent,
     NoteInputComponent,
     FaceCaptureComponent,
+    AssistantComponent,
     ForgotPasswordComponent,
     LoginComponent, NotFoundComponent,
     HeaderComponent, SidebarComponent, FooterComponent,

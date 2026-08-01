@@ -1,0 +1,542 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   ASSISTANT IA — palette ATB (#8B0000 → #C62828)
+
+   Présent sur tous les écrans authentifiés. Le panneau se replie sur un bouton
+   flottant pour ne jamais gêner le contenu de la page.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  --ia-z: 1080;
+}
+
+/* ─── Bouton flottant ────────────────────────────────────────────────────── */
+
+.ia-fab {
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  z-index: var(--ia-z);
+  width: 58px;
+  height: 58px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  box-shadow: 0 10px 30px rgba(139, 0, 0, 0.42);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+}
+
+.ia-fab:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 16px 38px rgba(139, 0, 0, 0.5);
+}
+
+.ia-fab-open {
+  transform: rotate(90deg);
+}
+
+.ia-fab-open:hover {
+  transform: rotate(90deg) scale(1.05);
+}
+
+/* Halo pulsé : signale une fonction vivante sans réclamer l'attention. */
+.ia-fab-halo {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(198, 40, 40, 0.55);
+  animation: iaPulse 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes iaPulse {
+  0%   { transform: scale(0.86); opacity: 0.8; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+/* ─── Panneau ────────────────────────────────────────────────────────────── */
+
+.ia-panel {
+  position: fixed;
+  bottom: 98px;
+  right: 26px;
+  z-index: var(--ia-z);
+  width: 384px;
+  max-width: calc(100vw - 36px);
+  height: 540px;
+  max-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--atb-card);
+  border: 1px solid var(--atb-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+/* ─── En-tête ────────────────────────────────────────────────────────────── */
+
+.ia-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--atb-border);
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.05), rgba(198, 40, 40, 0.02));
+  flex-shrink: 0;
+}
+
+.ia-head-id {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.ia-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  box-shadow: 0 5px 14px rgba(139, 0, 0, 0.3);
+}
+
+.ia-head-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.ia-head-text strong {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--atb-text);
+}
+
+.ia-head-text small {
+  font-size: 0.72rem;
+  color: var(--atb-text-secondary);
+}
+
+.ia-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.ia-icon-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--atb-text-secondary);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.ia-icon-btn:hover {
+  color: var(--atb-primary);
+  background: rgba(139, 0, 0, 0.07);
+}
+
+.ia-icon-btn.ia-off {
+  opacity: 0.45;
+}
+
+/* ─── Fil de conversation ────────────────────────────────────────────────── */
+
+.ia-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  scroll-behavior: smooth;
+}
+
+.ia-thread::-webkit-scrollbar { width: 6px; }
+.ia-thread::-webkit-scrollbar-track { background: transparent; }
+.ia-thread::-webkit-scrollbar-thumb {
+  background: var(--atb-border);
+  border-radius: 3px;
+}
+
+/* Accueil */
+.ia-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 1.4rem 0.5rem 0.5rem;
+}
+
+.ia-welcome-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: var(--atb-primary);
+  background: rgba(139, 0, 0, 0.08);
+  border: 1px solid rgba(139, 0, 0, 0.16);
+  margin-bottom: 0.2rem;
+}
+
+.ia-welcome strong {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--atb-text);
+}
+
+.ia-welcome p {
+  margin: 0;
+  max-width: 30ch;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--atb-text-secondary);
+}
+
+.ia-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: 0.7rem;
+}
+
+.ia-chip {
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.81rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--atb-text);
+  background: var(--atb-bg);
+  border: 1px solid var(--atb-border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.ia-chip:hover {
+  color: var(--atb-primary);
+  border-color: var(--atb-primary);
+  background: rgba(139, 0, 0, 0.05);
+  transform: translateX(3px);
+}
+
+/* Messages */
+.ia-msg {
+  max-width: 86%;
+  padding: 0.68rem 0.9rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.ia-msg p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ia-msg-user {
+  align-self: flex-end;
+  color: #fff;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  border-bottom-right-radius: 5px;
+  box-shadow: 0 5px 16px rgba(139, 0, 0, 0.24);
+}
+
+.ia-msg-ia {
+  align-self: flex-start;
+  color: var(--atb-text);
+  background: var(--atb-bg);
+  border: 1px solid var(--atb-border);
+  border-bottom-left-radius: 5px;
+}
+
+/* Pastille de redirection */
+.ia-goto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 7px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.24);
+}
+
+/* Réflexion */
+.ia-thinking {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.3rem 0.1rem;
+}
+
+.ia-thinking span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--atb-text-secondary);
+}
+
+/* Erreur */
+.ia-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 11px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.08);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.ia-error i {
+  margin-top: 2px;
+}
+
+/* ─── Écoute ─────────────────────────────────────────────────────────────── */
+
+.ia-listening {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--atb-border);
+  background: rgba(22, 163, 74, 0.06);
+  flex-shrink: 0;
+}
+
+.ia-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.ia-wave span {
+  width: 3px;
+  height: 7px;
+  border-radius: 2px;
+  background: #16a34a;
+}
+
+.ia-listening-text {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--atb-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Saisie ─────────────────────────────────────────────────────────────── */
+
+.ia-input {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--atb-border);
+  background: var(--atb-card);
+  flex-shrink: 0;
+}
+
+.ia-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.62rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--atb-text);
+  background: var(--atb-bg);
+  border: 1.5px solid var(--atb-border);
+  border-radius: 11px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.ia-input input:focus {
+  border-color: var(--atb-primary);
+}
+
+.ia-input input:disabled {
+  opacity: 0.6;
+}
+
+.ia-mic,
+.ia-send {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.22s ease;
+}
+
+.ia-mic {
+  color: var(--atb-text-secondary);
+  background: var(--atb-bg);
+  border: 1.5px solid var(--atb-border);
+}
+
+.ia-mic:hover:not(:disabled) {
+  color: var(--atb-primary);
+  border-color: var(--atb-primary);
+}
+
+/* Micro actif : vert, pour le distinguer nettement du bouton d'envoi. */
+.ia-mic-on {
+  color: #fff !important;
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  animation: iaMicPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iaMicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45); }
+  50%      { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+}
+
+.ia-send {
+  color: #fff;
+  background: linear-gradient(135deg, var(--atb-primary), var(--atb-accent));
+  box-shadow: 0 5px 14px rgba(139, 0, 0, 0.26);
+}
+
+.ia-send:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(139, 0, 0, 0.34);
+}
+
+.ia-mic:disabled,
+.ia-send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPINNER — Uiverse.io par mrhyddenn
+
+   Repris tel quel, à la demande. Ses teintes vives sortent de la charte ATB,
+   d'où son cantonnement à l'état « réflexion » : c'est un moment transitoire,
+   où le contraste sert justement à signaler que la machine travaille.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.spinner {
+  width: 3em;
+  height: 3em;
+  cursor: not-allowed;
+  border-radius: 50%;
+  border: 2px solid #444;
+  box-shadow: -10px -10px 10px #6359f8, 0px -10px 10px 0px #9c32e2,
+              10px -10px 10px #f36896, 10px 0 10px #ff0b0b,
+              10px 10px 10px 0px #ff5500, 0 10px 10px 0px #ff9500,
+              -10px 10px 10px 0px #ffb700;
+  animation: rot55 0.7s linear infinite;
+}
+
+.spinnerin {
+  border: 2px solid #444;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes rot55 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Le spinner se positionne en absolu : il lui faut un parent de référence,
+   sinon son disque intérieur se cale sur la fenêtre entière. */
+.ia-thinking .spinner {
+  position: relative;
+  width: 2.1em;
+  height: 2.1em;
+  flex-shrink: 0;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .ia-panel {
+    right: 12px;
+    left: 12px;
+    bottom: 88px;
+    width: auto;
+    height: calc(100vh - 130px);
+  }
+
+  .ia-fab {
+    bottom: 18px;
+    right: 18px;
+    width: 52px;
+    height: 52px;
+    font-size: 1.2rem;
+  }
+}
+
+/* ─── Mouvement réduit ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ia-fab-halo,
+  .ia-mic-on,
+  .spinner {
+    animation: none !important;
+  }
+  .ia-fab,
+  .ia-chip,
+  .ia-send,
+  .ia-mic { transition: none; }
+  .ia-fab:hover { transform: none; }
+  .ia-fab-open:hover { transform: rotate(90deg); }
+  .ia-chip:hover { transform: none; }
+  .ia-send:hover:not(:disabled) { transform: none; }
+  /* Sans rotation, la bordure colorée seule signale l'activité. */
+  .spinner { opacity: 0.85; }
+}

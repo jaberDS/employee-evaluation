@@ -179,7 +179,11 @@ public class FaceServiceImpl implements FaceService {
                         "Aucun visage enregistré sur ce compte"));
 
         double similarite = cosinus(decoder(gabarit.getEmbedding()), versTableau(resultat.getEmbedding()));
-        log.debug("Similarité faciale pour {} : {}", matricule, similarite);
+        // En info et non en debug : sans cette trace, un refus d'identité est
+        // indiscernable d'un échec de vivacité côté exploitation, et le seuil
+        // ne peut pas être recalibré sur la population réelle.
+        log.info("Similarité faciale pour {} : {} (seuil {})",
+                matricule, String.format("%.4f", similarite), seuilCorrespondance);
 
         if (similarite < seuilCorrespondance) {
             activiteLogService.log(TypeActivite.MFA_ECHOUEE,

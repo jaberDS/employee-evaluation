@@ -11,6 +11,63 @@
   width: 100%;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   DEUX IDENTITÉS
+
+   Le même composant sert deux moments très différents : on enrôle son visage
+   depuis son profil, au calme ; on le présente pour entrer, souvent pressé.
+   Les deux contextes méritent donc une allure propre — sans dupliquer le
+   composant, qui doit garder un seul parcours et une seule logique.
+
+     ENROLL  — cadre arrondi, palette ATB, tempo ample : on découvre.
+     VERIFY  — cadre circulaire net, accents froids, tempo resserré : on prouve.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  /* Accent de l'étape active, redéfini par mode ci-dessous. */
+  --fc-live: #16a34a;
+  --fc-live-soft: rgba(22, 163, 74, 0.92);
+}
+
+/* La vérification emprunte un bleu acier : registre « contrôle de sécurité »
+   plutôt que « réglage de compte », et distingue l'écran au premier coup d'œil. */
+:host(.fc-mode-verify) {
+  --fc-live: #0369a1;
+  --fc-live-soft: rgba(3, 105, 161, 0.92);
+}
+
+/* Le viseur d'inscription s'arrondit sans être un cercle : moins « scanner
+   d'aéroport », plus « portrait », ce qui convient à un moment volontaire. */
+:host(.fc-mode-enroll) .fc-video,
+:host(.fc-mode-enroll) .fc-flash,
+:host(.fc-mode-enroll) .fc-countdown {
+  border-radius: 34px;
+}
+
+:host(.fc-mode-enroll) .fc-halo {
+  border-radius: 40px;
+}
+
+/* En vérification, l'anneau de progression est plus fin et plus net : il se lit
+   comme une jauge de sécurité, pas comme une décoration. */
+:host(.fc-mode-verify) .fc-ring-track,
+:host(.fc-mode-verify) .fc-ring-fill {
+  stroke-width: 4;
+}
+
+:host(.fc-mode-verify) .fc-corner {
+  width: 30px;
+  height: 30px;
+  border-width: 2px;
+}
+
+/* L'inscription assume une bordure épaisse et des coins courts : plus doux. */
+:host(.fc-mode-enroll) .fc-corner {
+  width: 22px;
+  height: 22px;
+  border-width: 3px;
+}
+
 .fc-stage {
   position: relative;
   display: flex;
@@ -271,8 +328,8 @@
 
 /* Pendant la rafale l'anneau vire au vert : « c'est maintenant que ça compte ». */
 .fc-recording .fc-ring-fill {
-  stroke: #16a34a;
-  filter: drop-shadow(0 0 8px rgba(22, 163, 74, 0.6));
+  stroke: var(--fc-live);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--fc-live) 60%, transparent));
 }
 
 /* Coins de cadrage, façon viseur d'appareil photo. */
@@ -286,7 +343,7 @@
   transition: border-color 0.3s ease;
 }
 
-.fc-recording .fc-corner { border-color: #16a34a; }
+.fc-recording .fc-corner { border-color: var(--fc-live); }
 
 .fc-corner-tl { top: -6px;    left: -6px;   border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
 .fc-corner-tr { top: -6px;    right: -6px;  border-left: none;  border-bottom: none; border-radius: 0 10px 0 0; }
@@ -346,7 +403,7 @@
   justify-content: center;
   font-size: 1.1rem;
   color: #fff;
-  background: rgba(22, 163, 74, 0.9);
+  background: var(--fc-live-soft);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
   opacity: 0;
   pointer-events: none;
@@ -388,7 +445,7 @@
   letter-spacing: 0.4px;
   text-transform: uppercase;
   color: #fff;
-  background: rgba(22, 163, 74, 0.92);
+  background: var(--fc-live-soft);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
@@ -470,7 +527,7 @@
 }
 
 .fc-burst-filled {
-  background: #16a34a;
+  background: var(--fc-live);
   transform: scaleY(1.6);
 }
 
@@ -490,7 +547,7 @@
 }
 
 .fc-step-done {
-  background: #16a34a;
+  background: var(--fc-live);
 }
 
 .fc-step-active {
@@ -526,20 +583,20 @@
 
 .fc-check-burst {
   fill: none;
-  stroke: #16a34a;
+  stroke: var(--fc-live);
   stroke-width: 3;
   opacity: 0;
 }
 
 .fc-check-ring {
-  fill: rgba(22, 163, 74, 0.1);
-  stroke: #16a34a;
+  fill: color-mix(in srgb, var(--fc-live) 10%, transparent);
+  stroke: var(--fc-live);
   stroke-width: 4;
 }
 
 .fc-check-path {
   fill: none;
-  stroke: #16a34a;
+  stroke: var(--fc-live);
   stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;

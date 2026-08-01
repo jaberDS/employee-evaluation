@@ -23,16 +23,32 @@ type Phase = 'INTRO' | 'STARTING' | 'COUNTDOWN' | 'CAPTURE' | 'ANALYZING' | 'SUC
  * là où une seule le ratait presque toujours.
  */
 const RAFALE = 4;
-/** Fraction de la consigne consacrée à la rafale, le reste laissant réagir. */
-const PART_UTILE = 0.72;
-/** Le mouvement démarre après un temps de lecture de la consigne. */
-const DELAI_LECTURE = 0.2;
+
+/**
+ * Temps laissé pour lire la consigne et amorcer le geste, avant la première
+ * prise de vue.
+ *
+ * Valeur fixe et non proportionnelle : lire « Souriez » prend le même temps
+ * quelle que soit la durée allouée à la consigne. Exprimé en fraction, les
+ * consignes courtes ne laissaient presque rien — la première trame partait
+ * avant même que l'utilisateur ait fini de lire.
+ */
+const DELAI_LECTURE_MS = 1100;
+
+/** Marge finale : la dernière prise ne doit jamais mordre sur la consigne suivante. */
+const MARGE_FIN_MS = 450;
 
 @Component({
   selector: 'app-face-capture',
   standalone: false,
   templateUrl: './face-capture.component.html',
-  styleUrls: ['./face-capture.component.css']
+  styleUrls: ['./face-capture.component.css'],
+  // La classe portée par l'hôte laisse la feuille de style décliner deux
+  // identités distinctes sans dupliquer le composant.
+  host: {
+    '[class.fc-mode-enroll]': "mode === 'ENROLL'",
+    '[class.fc-mode-verify]': "mode !== 'ENROLL'"
+  }
 })
 export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
 
@@ -239,8 +255,11 @@ export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    const debut = etape.dureeMs * DELAI_LECTURE;
-    const fenetre = etape.dureeMs * PART_UTILE - debut;
+    // La rafale occupe le temps restant une fois la lecture et la marge finale
+    // retranchées. Le `max` protège d'une durée serveur trop courte, qui rendrait
+    // la fenêtre négative et ferait tirer les quatre trames au même instant.
+    const debut = Math.min(DELAI_LECTURE_MS, etape.dureeMs * 0.4);
+    const fenetre = Math.max(400, etape.dureeMs - debut - MARGE_FIN_MS);
     const pas = fenetre / (RAFALE - 1);
 
     this.schedule(() => {
@@ -322,10 +341,16 @@ export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
   /** Relance une cérémonie complète : les consignes sont retirées au sort. */
   retry(): void {
     this.clearTimers();
+    // La caméra est fermée avant de rouvrir : réutiliser un flux dont la piste
+    // a déjà été arrêtée donne un aperçu noir, sur lequel aucun visage n'est
+    // détecté — l'échec se répétait alors indéfiniment.
+    this.stopCamera();
+    this.stopAmbient();
     this.frames = [];
     this.currentIndex = -1;
     this.progress = 0;
     this.burstCount = 0;
+    this.recording = false;
     this.start();
   }
 
@@ -389,7 +414,16 @@ export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
     }
 
     video.srcObject = this.stream;
-    await video.play();
+    // `play()` rejette avec AbortError quand un `srcObject` précédent est
+    // remplacé alors que sa lecture démarrait encore — exactement le cas au
+    // « Réessayer ». Cette promesse rejetée faisait échouer la relance et
+    // affichait « The play() request was interrupted » au lieu de recommencer.
+    // La lecture démarre malgré tout : on attend, sans laisser l'erreur remonter.
+    try {
+      await video.play();
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') throw err;
+    }
     this.cameraReady = true;
   }
 
@@ -428,6 +462,26 @@ export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
+  /**
+   * Deux tempéraments d'animation selon le contexte.
+   *
+   * À l'inscription l'utilisateur est chez lui, dans son profil : le mouvement
+   * peut être ample et posé. À la connexion il attend d'entrer, souvent pressé :
+   * on resserre les durées et on adoucit les rebonds, qui paraîtraient
+   * frivoles sur un écran de sécurité.
+   */
+  private get enrolment(): boolean {
+    return this.mode === 'ENROLL';
+  }
+
+  private get tempo(): number {
+    return this.enrolment ? 1 : 0.78;
+  }
+
+  private get elan(): string {
+    return this.enrolment ? 'back.out(1.7)' : 'power3.out';
+  }
+
   private query(selecteur: string): Element | null {
     return this.stageRef?.nativeElement.querySelector(selecteur) ?? null;
   }
@@ -437,15 +491,23 @@ export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
     const racine = this.stageRef?.nativeElement;
     if (!racine) return;
 
+    // À l'inscription les anneaux éclosent en cascade ; à la connexion ils
+    // apparaissent d'un bloc, plus sobrement.
     gsap.timeline()
       .from(racine.querySelectorAll('.fc-hero-layer'), {
-        scale: 0.4, opacity: 0, duration: 0.7, stagger: 0.09, ease: 'back.out(1.6)'
+        scale: this.enrolment ? 0.4 : 0.82,
+        opacity: 0,
+        duration: 0.7 * this.tempo,
+        stagger: this.enrolment ? 0.09 : 0.04,
+        ease: this.elan
       })
       .from(racine.querySelectorAll('.fc-intro-copy > *'), {
-        y: 20, opacity: 0, duration: 0.5, stagger: 0.07, ease: 'power3.out'
+        y: 20, opacity: 0, duration: 0.5 * this.tempo,
+        stagger: 0.07, ease: 'power3.out'
       }, '-=0.35')
       .from(racine.querySelectorAll('.fc-tips li'), {
-        x: -14, opacity: 0, duration: 0.4, stagger: 0.06, ease: 'power2.out'
+        x: -14, opacity: 0, duration: 0.4 * this.tempo,
+        stagger: 0.06, ease: 'power2.out'
       }, '-=0.3');
   }
 
@@ -471,8 +533,8 @@ export class FaceCaptureComponent implements AfterViewInit, OnDestroy {
       const consigne = this.query('.fc-instruction');
       if (consigne) {
         gsap.fromTo(consigne,
-          { y: 16, opacity: 0, scale: 0.92 },
-          { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' });
+          { y: 16, opacity: 0, scale: this.enrolment ? 0.92 : 0.97 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.5 * this.tempo, ease: this.elan });
       }
 
       const guide = this.query('.fc-guide');

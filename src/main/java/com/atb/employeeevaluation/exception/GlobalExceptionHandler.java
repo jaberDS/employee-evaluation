@@ -84,6 +84,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
+    /**
+     * L'assistant est en panne, pas la requête. Un 503 le dit clairement et
+     * n'entraîne ni déconnexion ni invitation à corriger la question.
+     */
+    @ExceptionHandler(AssistantUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAssistantUnavailable(AssistantUnavailableException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error("Service Unavailable")
+                .message(ex.getMessage())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
     @ExceptionHandler(RateLimitExceededException.class)
     public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitExceededException ex) {
         ErrorResponse error = ErrorResponse.builder()
