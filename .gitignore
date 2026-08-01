@@ -1,4 +1,4 @@
-﻿# Backend
+# Backend
 target/
 *.class
 *.jar
@@ -28,9 +28,7 @@ desktop.ini
 
 # Environnement
 *.properties
-!src/main/resources/application.properties
 !.mvn/wrapper/maven-wrapper.properties
-!src/test/resources/application.properties
 application-local.properties
 application-dev.properties
 .env
