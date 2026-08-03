@@ -5,9 +5,32 @@ import {
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import gsap from 'gsap';
-import { AssistantService } from '../../services/assistant.service';
+import { AssistantChart, AssistantPoint, AssistantService } from '../../services/assistant.service';
 import { VoiceService } from '../../services/voice.service';
 import { AuthService } from '../../services/auth.service';
+
+/** Une part de donut, prête à être posée dans un attribut SVG. */
+interface Part {
+  point: AssistantPoint;
+  /** Longueur de l'arc et longueur restante, pour `stroke-dasharray`. */
+  arc: number;
+  reste: number;
+  /** Décalage du départ de l'arc sur le cercle. */
+  depart: number;
+  pourcentage: number;
+}
+
+/** Un graphique préparé pour le gabarit : géométrie déjà calculée. */
+interface Trace {
+  source: AssistantChart;
+  parts: Part[];
+  /** Hauteur relative de chaque barre, en pourcentage du maximum. */
+  hauteurs: number[];
+  /** Points de la polyligne, au format « x,y x,y ». */
+  polyligne: string;
+  /** Repères de la courbe, pour poser un cercle à chaque mesure. */
+  reperes: { x: number; y: number }[];
+}
 
 /** Un tour de conversation. */
 interface Message {
@@ -15,6 +38,8 @@ interface Message {
   texte: string;
   /** Destination annoncée, pour afficher la pastille de redirection. */
   destination?: string | null;
+  /** Graphique joint à la réponse, s'il y en a un. */
+  trace?: Trace | null;
 }
 
 /**
@@ -28,6 +53,14 @@ const DELAI_NAVIGATION = 1600;
 
 /** Garde-fou : si la synthèse ne signale jamais sa fin, on navigue quand même. */
 const DELAI_SECOURS = 15_000;
+
+/** Rayon du donut dans le repère SVG. La circonférence en découle. */
+const RAYON = 42;
+const CIRCONFERENCE = 2 * Math.PI * RAYON;
+
+/** Repère de la courbe : large, peu haut — le panneau est étroit. */
+const LARGEUR_COURBE = 260;
+const HAUTEUR_COURBE = 90;
 
 @Component({
   selector: 'app-assistant',
@@ -62,8 +95,17 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   private cheminEnAttente: string | null = null;
   private minuteurSecours: any = null;
 
-  /** Exemples proposés tant que la conversation est vide. */
+  /** Accueil : salutation, alertes et amorces, calculées par le serveur. */
+  salutation = '';
+  alertes: string[] = [];
   suggestions: string[] = [];
+
+  /** Questions de suivi proposées après la dernière réponse. */
+  relances: string[] = [];
+
+  readonly rayon = RAYON;
+  readonly largeurCourbe = LARGEUR_COURBE;
+  readonly hauteurCourbe = HAUTEUR_COURBE;
 
   private abonnements = new Subscription();
 
@@ -88,7 +130,7 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     const memoire = localStorage.getItem('assistant-voix');
     this.vocalActif = memoire === null ? true : memoire === '1';
 
-    this.suggestions = this.suggestionsPourRole();
+    this.suggestions = this.suggestionsParDefaut();
     this.brancherVoix();
   }
 
@@ -174,8 +216,28 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     this.erreur = '';
     this.cdr.detectChanges();
     this.animerOuverture();
+    this.chargerApercu();
 
     setTimeout(() => this.champRef?.nativeElement.focus(), 260);
+  }
+
+  /**
+   * Alertes et amorces, rafraîchies à chaque ouverture.
+   *
+   * L'appel ne passe pas par le modèle : il est immédiat et sans effet sur le
+   * quota, donc rien n'interdit de le rejouer aussi souvent.
+   */
+  private chargerApercu(): void {
+    this.abonnements.add(
+      this.assistant.apercu().subscribe(apercu => {
+        this.salutation = apercu.salutation || '';
+        this.alertes = apercu.alertes || [];
+        if (apercu.suggestions?.length) {
+          this.suggestions = apercu.suggestions;
+        }
+        this.cdr.detectChanges();
+      })
+    );
   }
 
   /**
@@ -205,12 +267,21 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Vide le fil, ici et côté serveur.
+   *
+   * La mémoire de conversation vit sur le serveur : l'effacer seulement à
+   * l'écran laisserait l'assistant répondre à la lumière d'un échange que
+   * l'utilisateur croit avoir supprimé.
+   */
   effacer(): void {
     this.messages = [];
+    this.relances = [];
     this.erreur = '';
     this.annulerAttente();
     this.voix.arreterLecture();
     this.parle = false;
+    this.abonnements.add(this.assistant.oublier().subscribe());
   }
 
   /** Coupe la lecture en cours sans fermer le panneau. */
@@ -269,6 +340,7 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     this.messages.push({ auteur: 'user', texte });
     this.question = '';
     this.erreur = '';
+    this.relances = [];
     this.occupe = true;
     this.cdr.detectChanges();
     this.defiler();
@@ -280,8 +352,10 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
           this.messages.push({
             auteur: 'ia',
             texte: reponse.reponse,
-            destination: reponse.libelle ?? null
+            destination: reponse.libelle ?? null,
+            trace: this.preparer(reponse.graphique)
           });
+          this.relances = reponse.relances ?? [];
           this.cdr.detectChanges();
           this.animerDernierMessage();
           this.defiler();
@@ -351,18 +425,88 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 60);
   }
 
-  /** Amorces adaptées au rôle : ce que la personne peut réellement demander. */
-  private suggestionsPourRole(): string[] {
+  /**
+   * Amorces de secours, le temps que l'aperçu du serveur arrive.
+   *
+   * Le serveur en propose de meilleures — il connaît les données — mais le
+   * panneau doit pouvoir s'ouvrir avant, et sans réseau.
+   */
+  private suggestionsParDefaut(): string[] {
     switch (this.auth.getRole()) {
       case 'ADMIN':
-        return ['Combien d\'employés actifs ?', 'Ouvre la liste des employés', 'Quelle est la note moyenne ?'];
+        return ['Où en sont les campagnes ?', 'Compare l\'agence et le siège', 'Quelle est la note moyenne ?'];
       case 'N1':
-        return ['Évaluer mon équipe', 'Combien d\'évaluations en attente ?', 'Voir mon historique'];
+        return ['Où en est mon équipe ?', 'Qu\'est-ce qu\'il me reste à évaluer ?', 'Montre-moi les notes'];
       case 'N2':
-        return ['Les évaluations à valider', 'Quelle est la note moyenne ?', 'Voir les campagnes'];
+        return ['Qu\'ai-je à valider ?', 'Montre-moi la répartition par statut', 'Voir les campagnes'];
       default:
-        return ['Mes évaluations', 'Quelle est la prochaine campagne ?', 'Ouvre mon profil'];
+        return ['Où en sont mes évaluations ?', 'Quelle est la prochaine campagne ?', 'Ouvre mon profil'];
     }
+  }
+
+  // ═══ Graphiques ════════════════════════════════════════════════════════
+
+  /**
+   * Calcule la géométrie du tracé.
+   *
+   * Les valeurs viennent du serveur et ne sont pas retouchées ici : ce bloc ne
+   * fait que les convertir en longueurs d'arc, en hauteurs et en coordonnées.
+   * Aucun chiffre affiché n'est produit par le navigateur.
+   */
+  private preparer(graphique?: AssistantChart | null): Trace | null {
+    if (!graphique?.points?.length) return null;
+
+    const valeurs = graphique.points.map(p => p.valeur);
+    const total = valeurs.reduce((somme, v) => somme + v, 0);
+    const maximum = Math.max(...valeurs);
+
+    return {
+      source: graphique,
+      parts: this.parts(graphique.points, total),
+      // Division par le maximum, jamais par le total : une barre représente sa
+      // valeur face à la plus grande, pas sa part d'un ensemble.
+      hauteurs: valeurs.map(v => (maximum > 0 ? (v / maximum) * 100 : 0)),
+      polyligne: this.polyligne(valeurs, maximum),
+      reperes: this.reperes(valeurs, maximum)
+    };
+  }
+
+  /** Arcs du donut, chacun décalé de la somme des précédents. */
+  private parts(points: AssistantPoint[], total: number): Part[] {
+    let parcouru = 0;
+    return points.map(point => {
+      const fraction = total > 0 ? point.valeur / total : 0;
+      const arc = fraction * CIRCONFERENCE;
+      const part: Part = {
+        point,
+        arc,
+        reste: CIRCONFERENCE - arc,
+        // Le décalage est négatif : SVG fait reculer le tiret quand il croît.
+        depart: -parcouru,
+        pourcentage: Math.round(fraction * 100)
+      };
+      parcouru += arc;
+      return part;
+    });
+  }
+
+  private polyligne(valeurs: number[], maximum: number): string {
+    return this.reperes(valeurs, maximum).map(p => `${p.x},${p.y}`).join(' ');
+  }
+
+  private reperes(valeurs: number[], maximum: number): { x: number; y: number }[] {
+    if (!valeurs.length) return [];
+
+    // Marge haute et basse : sans elle, un point à zéro ou au maximum se fait
+    // rogner de moitié par le bord du cadre.
+    const marge = 8;
+    const utile = HAUTEUR_COURBE - marge * 2;
+    const pas = valeurs.length > 1 ? LARGEUR_COURBE / (valeurs.length - 1) : 0;
+
+    return valeurs.map((valeur, i) => ({
+      x: Math.round((valeurs.length > 1 ? i * pas : LARGEUR_COURBE / 2) * 10) / 10,
+      y: Math.round((marge + utile - (maximum > 0 ? valeur / maximum : 0) * utile) * 10) / 10
+    }));
   }
 
   // ═══ Animations ════════════════════════════════════════════════════════
@@ -398,9 +542,37 @@ export class AssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     requestAnimationFrame(() => {
       const bulles = this.filRef?.nativeElement.querySelectorAll('.ia-msg');
       if (!bulles?.length) return;
-      gsap.fromTo(bulles[bulles.length - 1],
+      const derniere = bulles[bulles.length - 1];
+      gsap.fromTo(derniere,
         { opacity: 0, y: 14, scale: 0.97 },
         { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'back.out(1.6)' });
+
+      // Les barres montent depuis leur base : c'est le sens de lecture d'un
+      // histogramme, et cela évite qu'elles apparaissent déjà pleines.
+      const barres = derniere.querySelectorAll('.ia-bar-fill');
+      if (barres.length) {
+        gsap.from(barres, {
+          scaleY: 0, transformOrigin: 'bottom center',
+          duration: 0.5, stagger: 0.05, ease: 'power3.out', delay: 0.15
+        });
+      }
+
+      const arcs = derniere.querySelectorAll('.ia-donut-arc');
+      if (arcs.length) {
+        gsap.from(arcs, { opacity: 0, duration: 0.4, stagger: 0.07, ease: 'power2.out', delay: 0.15 });
+      }
+
+      const courbe = derniere.querySelector('.ia-line-path') as SVGPolylineElement | null;
+      if (courbe) {
+        // Le tracé se dessine de gauche à droite : la longueur du trait sert de
+        // course à l'animation, comme pour un chemin qu'on parcourt.
+        const longueur = courbe.getTotalLength?.() ?? 0;
+        if (longueur) {
+          gsap.fromTo(courbe,
+            { strokeDasharray: longueur, strokeDashoffset: longueur },
+            { strokeDashoffset: 0, duration: 0.8, ease: 'power2.out', delay: 0.15 });
+        }
+      }
     });
   }
 

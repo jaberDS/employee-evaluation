@@ -105,8 +105,17 @@ export class FicheDetailComponent implements OnInit {
 
   trackById(_: number, item: QuestionRow): number { return item.question.id!; }
 
+  /**
+   * L'accusé de réception d'une évaluation n'appartient qu'à son sujet : un N+1
+   * ou un N+2 qui ouvre la fiche d'un subordonné ne doit pas pouvoir accepter à
+   * sa place. Le serveur applique désormais cette règle ; sans le même contrôle
+   * ici, le bouton s'afficherait pour ne renvoyer qu'un refus d'accès.
+   */
   get canDecide(): boolean {
-    return this.fiche?.statut === 'EN_ATTENTE_EMPLOYE';
+    const fiche = this.fiche;
+    if (!fiche || fiche.statut !== 'EN_ATTENTE_EMPLOYE') return false;
+    if (this.authService.getRole() === 'ADMIN') return true;
+    return this.authService.getUser()?.id === fiche.employeId;
   }
 
   // ─── Decision modal ──────────────────────────────────────────────────────

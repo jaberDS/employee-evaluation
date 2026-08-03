@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,6 +31,21 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
+    /**
+     * Origines autorisées à appeler l'API depuis un navigateur.
+     *
+     * La liste était écrite en dur sur `localhost`. En ligne, il aurait fallu
+     * modifier ce fichier et recompiler pour que le client fonctionne — la
+     * tentation étant alors d'ajouter un joker, lequel, avec
+     * `allowCredentials(true)`, laisserait n'importe quel site lire les réponses
+     * en portant la session de la victime.
+     *
+     * À renseigner au déploiement via `app.cors.allowed-origins`, avec le
+     * domaine exact et le schéma `https`. Le développement garde ses deux ports.
+     */
+    @Value("${app.cors.allowed-origins:http://localhost:4200,http://localhost:3000}")
+    private String originesAutorisees;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -43,7 +59,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.stream(originesAutorisees.split(","))
+                .map(String::trim)
+                .filter(origine -> !origine.isEmpty())
+                // Le joker est refusé quelles que soient les instructions de
+                // déploiement : associé aux identifiants, il vaut « aucune
+                // restriction ». Une configuration hâtive ne peut pas l'imposer.
+                .filter(origine -> !"*".equals(origine))
+                .toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -86,12 +109,19 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/evaluations/**").hasAnyRole("ADMIN", "N1", "N2", "EMPLOYE")
                         .requestMatchers("/api/evaluations/**").hasAnyRole("ADMIN", "N1", "N2")
 
-                        // ==================== TOUS LES UTILISATEURS AUTHENTIFIÉS ====================
+                        // ==================== FICHES ====================
+                        // L'ORDRE EST SIGNIFICATIF : Spring Security retient la PREMIÈRE
+                        // règle qui correspond, pas la plus spécifique. Les règles de rôle
+                        // ci-dessous doivent donc précéder le « /api/fiches/** authenticated() ».
+                        // Elles étaient placées après : elles ne s'appliquaient jamais, et un
+                        // EMPLOYE obtenait un 201 en saisissant sa propre note N+1.
+                        .requestMatchers(HttpMethod.POST, "/api/fiches/evaluer").hasAnyRole("ADMIN", "N1")
+                        .requestMatchers(HttpMethod.PATCH, "/api/fiches/*/n2").hasAnyRole("ADMIN", "N2")
                         .requestMatchers(HttpMethod.DELETE, "/api/fiches/**").hasAnyRole("ADMIN", "N1")
+                        // Le reste exige une session ; la propriété de la ressource est
+                        // vérifiée dans FicheEvaluationController, un matcher d'URL ne
+                        // pouvant pas exprimer « seulement mes subordonnés ».
                         .requestMatchers("/api/fiches/**").authenticated()
-                        .requestMatchers("/api/fiches/evaluer").hasAnyRole("ADMIN", "N1")
-                        .requestMatchers("/api/fiches/*/n2").hasAnyRole("ADMIN", "N2")
-                        .requestMatchers("/api/fiches/employe/**").authenticated()
 
                         // ==================== ACTIVITÉS ====================
                         .requestMatchers(HttpMethod.DELETE, "/api/activites").hasRole("ADMIN")

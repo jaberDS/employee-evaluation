@@ -31,21 +31,30 @@ public enum AssistantRoute {
     MES_FICHES("Mes fiches d'évaluation reçues",
             "/fiches", Set.of("ADMIN", "N1", "N2", "EMPLOYE")),
 
+    FICHE_DETAIL("Détail d'une fiche d'évaluation précise — indiquer laquelle dans « parametre »",
+            "/fiches", Cible.FICHE, Set.of("ADMIN", "N1", "N2", "EMPLOYE")),
+
     // ─── Administration ───────────────────────────────────────────────────────
     EMPLOYES_LISTE("Liste des employés",
             "/employees", Set.of("ADMIN")),
     EMPLOYE_CREER("Créer un nouvel employé",
             "/employees/create", Set.of("ADMIN")),
+    EMPLOYE_DETAIL("Fiche d'un employé précis — indiquer son nom dans « parametre »",
+            "/employees", Cible.EMPLOYE, Set.of("ADMIN")),
 
     // ─── Campagnes d'évaluation ───────────────────────────────────────────────
     CAMPAGNES_LISTE("Liste des campagnes d'évaluation",
             "/evaluations", Set.of("ADMIN", "N1", "N2")),
     CAMPAGNE_CREER("Créer une campagne d'évaluation",
             "/evaluations/create", Set.of("ADMIN")),
+    CAMPAGNE_DETAIL("Détail d'une campagne précise — indiquer son nom dans « parametre »",
+            "/evaluations", Cible.CAMPAGNE, Set.of("ADMIN", "N1", "N2")),
 
     // ─── Espace manager (N1) ──────────────────────────────────────────────────
     N1_EVALUER("Évaluer les employés de mon équipe",
             "/n1/evaluer", Set.of("N1")),
+    N1_EVALUER_CAMPAGNE("Évaluer mon équipe sur une campagne précise — indiquer son nom dans « parametre »",
+            "/n1/evaluer", Cible.CAMPAGNE, Set.of("N1")),
     N1_HISTORIQUE("Historique des évaluations que j'ai soumises",
             "/n1/historique", Set.of("N1")),
 
@@ -53,13 +62,27 @@ public enum AssistantRoute {
     N2_VALIDER("Valider les évaluations remontées",
             "/n2/valider", Set.of("N2"));
 
+    /**
+     * Nature de l'enregistrement qu'une route paramétrée désigne.
+     *
+     * Elle indique au serveur dans quelle liste du périmètre chercher la
+     * correspondance. `AUCUNE` couvre les écrans fixes, qui n'attendent rien.
+     */
+    public enum Cible { AUCUNE, CAMPAGNE, FICHE, EMPLOYE }
+
     private final String description;
     private final String chemin;
+    private final Cible cible;
     private final Set<String> roles;
 
     AssistantRoute(String description, String chemin, Set<String> roles) {
+        this(description, chemin, Cible.AUCUNE, roles);
+    }
+
+    AssistantRoute(String description, String chemin, Cible cible, Set<String> roles) {
         this.description = description;
         this.chemin = chemin;
+        this.cible = cible;
         this.roles = roles;
     }
 
@@ -69,6 +92,15 @@ public enum AssistantRoute {
 
     public String getChemin() {
         return chemin;
+    }
+
+    public Cible getCible() {
+        return cible;
+    }
+
+    /** Vrai si cette route ne mène nulle part sans un enregistrement désigné. */
+    public boolean estParametree() {
+        return cible != Cible.AUCUNE;
     }
 
     /**
@@ -83,6 +115,21 @@ public enum AssistantRoute {
             return "/dashboard/" + role.toLowerCase();
         }
         return chemin;
+    }
+
+    /**
+     * Chemin vers un enregistrement précis.
+     *
+     * L'identifiant vient toujours d'une correspondance trouvée dans le
+     * périmètre de l'appelant, jamais de la sortie du modèle : celui-ci ne
+     * manipule que des libellés et n'a donc aucun moyen de désigner un
+     * enregistrement qu'il n'a pas le droit de voir.
+     */
+    public String cheminPour(String role, Long identifiant) {
+        if (!estParametree() || identifiant == null) {
+            return cheminPour(role);
+        }
+        return chemin + "/" + identifiant;
     }
 
     public boolean autorisePour(String role) {

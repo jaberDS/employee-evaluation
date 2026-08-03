@@ -2,6 +2,7 @@ package com.atb.employeeevaluation.service.impl;
 
 import com.atb.employeeevaluation.dto.EvaluationDTO;
 import com.atb.employeeevaluation.dto.QuestionDTO;
+import com.atb.employeeevaluation.entity.Employe;
 import com.atb.employeeevaluation.entity.Evaluation;
 import com.atb.employeeevaluation.entity.Question;
 import com.atb.employeeevaluation.enums.StatutCampagne;
@@ -12,17 +13,22 @@ import com.atb.employeeevaluation.exception.ResourceNotFoundException;
 import com.atb.employeeevaluation.exception.UnauthorizedOperationException;
 import com.atb.employeeevaluation.mapper.EvaluationMapper;
 import com.atb.employeeevaluation.mapper.QuestionMapper;
+import com.atb.employeeevaluation.repository.EmployeRepository;
 import com.atb.employeeevaluation.repository.EvaluationRepository;
 import com.atb.employeeevaluation.repository.QuestionRepository;
 import com.atb.employeeevaluation.service.ActiviteLogService;
 import com.atb.employeeevaluation.service.EvaluationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +37,7 @@ import java.util.stream.Collectors;
 public class EvaluationServiceImpl implements EvaluationService {
 
     private final EvaluationRepository evaluationRepository;
+    private final EmployeRepository employeRepository;
     private final QuestionRepository questionRepository;
     private final EvaluationMapper evaluationMapper;
     private final QuestionMapper questionMapper;
@@ -131,16 +138,54 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     @Override
     public List<EvaluationDTO> getAllEvaluations() {
-        return evaluationRepository.findAll().stream()
+        return perimetre()
+                .map(evaluationRepository::findByTypeAffectation)
+                .orElseGet(evaluationRepository::findAll)
+                .stream()
                 .map(evaluationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<EvaluationDTO> getEvaluationsByTypeAffectation(TypeAffectation typeAffectation) {
+        // Le paramètre vient du client : il peut restreindre le périmètre, jamais
+        // l'élargir. Un N1 d'agence qui demanderait « type=SIEGE » n'obtient rien.
+        Optional<TypeAffectation> perimetre = perimetre();
+        if (perimetre.isPresent() && perimetre.get() != typeAffectation) {
+            return List.of();
+        }
         return evaluationRepository.findByTypeAffectation(typeAffectation).stream()
                 .map(evaluationMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Périmètre de campagnes visible par l'appelant.
+     *
+     * Une campagne est propre à une affectation : celles du siège n'ont aucun
+     * sens pour un manager d'agence, qui n'y a personne à évaluer. Chacun ne
+     * voit donc que les campagnes de sa propre affectation — vide signifie
+     * « aucune restriction », le cas de l'administrateur.
+     *
+     * L'affectation est relue depuis le compte de l'appelant, à chaque appel.
+     * La déduire d'un paramètre de requête reviendrait à laisser le client
+     * choisir son propre périmètre.
+     */
+    private Optional<TypeAffectation> perimetre() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return Optional.empty();
+        }
+
+        boolean administrateur = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_ADMIN"::equals);
+        if (administrateur) {
+            return Optional.empty();
+        }
+
+        return employeRepository.findByMatricule(auth.getName())
+                .map(Employe::getTypeAffectation);
     }
 
     @Override

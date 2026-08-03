@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Réponse de l'assistant.
  *
@@ -29,4 +31,10 @@ public class AssistantResponse {
 
     /** Libellé de la destination, pour annoncer la redirection. */
     private String libelle;
+
+    /** Graphique à tracer, chiffré par le serveur. Nul si aucun. */
+    private AssistantChartDTO graphique;
+
+    /** Questions de suivi proposées en un clic. Éventuellement vide. */
+    private List<String> relances;
 }

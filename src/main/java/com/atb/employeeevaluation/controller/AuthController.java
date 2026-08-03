@@ -18,10 +18,12 @@ import com.atb.employeeevaluation.service.MfaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,13 @@ public class AuthController {
 
     private final AuthService authService;
     private final MfaService mfaService;
+
+    /**
+     * Adresses des relais autorisés à renseigner `X-Forwarded-For`. Vide par
+     * défaut : en l'absence de reverse proxy déclaré, l'en-tête est ignoré.
+     */
+    @Value("${security.trusted-proxies:}")
+    private String proxiesDeConfiance;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request,
@@ -148,12 +157,38 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    /** Derrière un reverse proxy, X-Forwarded-For porte l'IP réelle du client. */
+    /**
+     * IP du client, pour le compteur de tentatives par adresse.
+     *
+     * `X-Forwarded-For` est un en-tête que le client écrit lui-même. Le croire
+     * sans condition rendait le compteur par IP inopérant : il suffisait de
+     * changer sa valeur à chaque essai pour repartir d'un compteur neuf, et
+     * balayer ainsi les matricules sans jamais être ralenti.
+     *
+     * L'en-tête n'est donc retenu que si la connexion arrive d'un relais déclaré
+     * de confiance. Sans `security.trusted-proxies`, seule l'adresse réelle de
+     * la socket compte — celle-là, personne ne la choisit. En production derrière
+     * un reverse proxy, renseigner cette propriété avec son adresse.
+     */
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
+        String pair = request.getRemoteAddr();
+
+        if (estRelaisDeConfiance(pair)) {
+            String forwarded = request.getHeader("X-Forwarded-For");
+            if (forwarded != null && !forwarded.isBlank()) {
+                return forwarded.split(",")[0].trim();
+            }
         }
-        return request.getRemoteAddr();
+        return pair;
+    }
+
+    private boolean estRelaisDeConfiance(String adresse) {
+        if (proxiesDeConfiance == null || proxiesDeConfiance.isBlank() || adresse == null) {
+            return false;
+        }
+        return Arrays.stream(proxiesDeConfiance.split(","))
+                .map(String::trim)
+                .filter(p -> !p.isEmpty())
+                .anyMatch(adresse::equals);
     }
 }

@@ -75,11 +75,19 @@
         <div class="ia-welcome-icon" aria-hidden="true">
           <i class="fas fa-comments"></i>
         </div>
-        <strong>Que puis-je faire pour vous ?</strong>
+        <strong>{{ salutation || 'Que puis-je faire pour vous ?' }}</strong>
         <p>
-          Posez une question sur vos chiffres, ou demandez-moi de vous emmener
-          sur un écran.
+          Posez une question sur vos chiffres, demandez un graphique, ou
+          laissez-moi vous emmener sur un écran.
         </p>
+
+        <!-- Alertes : calculées par le serveur, sans passer par le modèle -->
+        <div class="ia-alerts" *ngIf="alertes.length">
+          <div class="ia-alert" *ngFor="let a of alertes">
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+            <span>{{ a }}</span>
+          </div>
+        </div>
 
         <div class="ia-chips">
           <button
@@ -100,9 +108,93 @@
         <!-- Interpolation et non innerHTML : le texte du modèle ne doit
              jamais pouvoir injecter de balise. -->
         <p>{{ m.texte }}</p>
+
+        <!-- ═══ Graphique ═══════════════════════════════════════════════
+             Les valeurs, libellés et couleurs viennent tous du serveur.
+             Le modèle n'a fait que désigner le jeu de données. -->
+        <figure class="ia-chart" *ngIf="m.trace as t">
+          <figcaption class="ia-chart-head">
+            <strong>{{ t.source.titre }}</strong>
+            <small *ngIf="t.source.soustitre">{{ t.source.soustitre }}</small>
+          </figcaption>
+
+          <!-- Donut -->
+          <div class="ia-donut" *ngIf="t.source.type === 'DONUT'">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="ia-donut-track" cx="50" cy="50" [attr.r]="rayon"></circle>
+              <circle
+                class="ia-donut-arc"
+                *ngFor="let p of t.parts"
+                cx="50" cy="50" [attr.r]="rayon"
+                [attr.stroke]="p.point.couleur"
+                [attr.stroke-dasharray]="p.arc + ' ' + p.reste"
+                [attr.stroke-dashoffset]="p.depart">
+              </circle>
+            </svg>
+            <ul class="ia-legend">
+              <li *ngFor="let p of t.parts">
+                <span class="ia-legend-dot" [style.background]="p.point.couleur"></span>
+                <span class="ia-legend-text">{{ p.point.libelle }}</span>
+                <b>{{ p.point.valeur }}</b>
+                <small>{{ p.pourcentage }}%</small>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Barres -->
+          <div class="ia-bars" *ngIf="t.source.type === 'BARRES'">
+            <div class="ia-bar" *ngFor="let p of t.source.points; let i = index">
+              <span class="ia-bar-value">{{ p.valeur }}</span>
+              <div class="ia-bar-track">
+                <div
+                  class="ia-bar-fill"
+                  [style.height.%]="t.hauteurs[i]"
+                  [style.background]="p.couleur">
+                </div>
+              </div>
+              <span class="ia-bar-label" [attr.title]="p.libelle">{{ p.libelle }}</span>
+            </div>
+          </div>
+
+          <!-- Courbe -->
+          <div class="ia-line" *ngIf="t.source.type === 'LIGNE'">
+            <svg
+              [attr.viewBox]="'0 0 ' + largeurCourbe + ' ' + hauteurCourbe"
+              preserveAspectRatio="none"
+              aria-hidden="true">
+              <polyline class="ia-line-path" [attr.points]="t.polyligne"></polyline>
+              <circle
+                class="ia-line-dot"
+                *ngFor="let r of t.reperes"
+                [attr.cx]="r.x" [attr.cy]="r.y" r="3">
+              </circle>
+            </svg>
+            <div class="ia-line-labels">
+              <span *ngFor="let p of t.source.points">{{ p.libelle }}</span>
+            </div>
+          </div>
+
+          <!-- Le tableau porte l'information pour qui n'accède pas au tracé. -->
+          <span class="ia-sr-only">
+            <ng-container *ngFor="let p of t.source.points">
+              {{ p.libelle }} : {{ p.valeur }}.
+            </ng-container>
+          </span>
+        </figure>
+
         <span class="ia-goto" *ngIf="m.destination">
           <i class="fas fa-arrow-right-long"></i> {{ m.destination }}
         </span>
+      </div>
+
+      <!-- Relances : ce que l'on peut demander ensuite, en un clic -->
+      <div class="ia-followups" *ngIf="relances.length && !occupe">
+        <button
+          class="ia-followup"
+          *ngFor="let r of relances"
+          (click)="utiliserSuggestion(r)">
+          <i class="fas fa-arrow-turn-up" aria-hidden="true"></i> {{ r }}
+        </button>
       </div>
 
       <!-- Réflexion en cours -->

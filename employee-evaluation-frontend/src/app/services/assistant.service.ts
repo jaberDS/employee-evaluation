@@ -4,6 +4,22 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
+/** Un point d'un graphique. Valeur et couleur viennent du serveur. */
+export interface AssistantPoint {
+  libelle: string;
+  valeur: number;
+  couleur: string;
+}
+
+/** Jeu de données prêt à être tracé, chiffré par le serveur. */
+export interface AssistantChart {
+  cle: string;
+  type: 'DONUT' | 'BARRES' | 'LIGNE';
+  titre: string;
+  soustitre?: string | null;
+  points: AssistantPoint[];
+}
+
 /** Réponse de l'assistant. Le chemin est déjà validé par le serveur. */
 export interface AssistantReply {
   /** Texte à afficher et à lire à voix haute. */
@@ -14,6 +30,17 @@ export interface AssistantReply {
   chemin?: string | null;
   /** Libellé de la destination, pour annoncer la redirection. */
   libelle?: string | null;
+  /** Graphique à tracer, ou absent. */
+  graphique?: AssistantChart | null;
+  /** Questions de suivi proposées en un clic. */
+  relances?: string[] | null;
+}
+
+/** Ce qui attend l'utilisateur à l'ouverture du panneau. */
+export interface AssistantApercu {
+  salutation: string;
+  alertes: string[];
+  suggestions: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +51,25 @@ export class AssistantService {
 
   ask(question: string): Observable<AssistantReply> {
     return this.http.post<AssistantReply>(`${this.apiUrl}/ask`, { question });
+  }
+
+  /**
+   * Alertes et amorces, calculées sans passer par le modèle.
+   *
+   * Sur erreur on rend un aperçu vide : le panneau doit s'ouvrir même si ce
+   * complément d'information n'a pas pu être obtenu.
+   */
+  apercu(): Observable<AssistantApercu> {
+    return this.http.get<AssistantApercu>(`${this.apiUrl}/apercu`).pipe(
+      catchError(() => of({ salutation: '', alertes: [], suggestions: [] }))
+    );
+  }
+
+  /** Efface aussi la conversation retenue côté serveur. */
+  oublier(): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/conversation`).pipe(
+      catchError(() => of(void 0))
+    );
   }
 
   /**

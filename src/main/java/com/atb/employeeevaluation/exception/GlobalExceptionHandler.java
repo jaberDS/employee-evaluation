@@ -3,6 +3,7 @@ package com.atb.employeeevaluation.exception;
 import com.atb.employeeevaluation.security.FaceRecognitionClient;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.jsonwebtoken.JwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -169,7 +171,9 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .error("Unauthorized")
-                .message("Token JWT invalide ou expiré: " + ex.getMessage())
+                // Le détail (algorithme refusé, signature, expiration) renseignerait
+                // qui sonde le format des jetons. Le client n'a qu'à réauthentifier.
+                .message("Token JWT invalide ou expiré")
                 .timestamp(System.currentTimeMillis())
                 .build();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -294,12 +298,22 @@ public class GlobalExceptionHandler {
 
     // ===================== Gestion des exceptions génériques =====================
 
+    /**
+     * Le message d'une exception inattendue était recopié dans la réponse. Or
+     * personne ne contrôle ce qu'il contient : un fragment de requête SQL, un nom
+     * de table, un chemin de fichier du serveur. C'est exactement la matière
+     * qu'un attaquant cherche pour cartographier l'application.
+     *
+     * Le détail va donc au journal, où l'exploitation le trouvera ; le client, lui,
+     * reçoit une phrase neutre.
+     */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+        log.error("Exception non maîtrisée", ex);
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Internal Server Error")
-                .message("Une erreur inattendue est survenue: " + ex.getMessage())
+                .message("Une erreur inattendue est survenue. Veuillez réessayer plus tard.")
                 .timestamp(System.currentTimeMillis())
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

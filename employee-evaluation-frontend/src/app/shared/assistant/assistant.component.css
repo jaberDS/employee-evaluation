@@ -61,14 +61,16 @@
 
 /* ─── Panneau ────────────────────────────────────────────────────────────── */
 
+/* La largeur laisse respirer les graphiques : en deçà, les libellés d'un
+   histogramme à six barres se réduisent à une ellipse. */
 .ia-panel {
   position: fixed;
   bottom: 98px;
   right: 26px;
   z-index: var(--ia-z);
-  width: 384px;
+  width: 420px;
   max-width: calc(100vw - 36px);
-  height: 540px;
+  height: 580px;
   max-height: calc(100vh - 140px);
   display: flex;
   flex-direction: column;
@@ -310,6 +312,307 @@
   color: #16a34a;
   background: rgba(22, 163, 74, 0.1);
   border: 1px solid rgba(22, 163, 74, 0.24);
+}
+
+/* ─── Alertes d'accueil ──────────────────────────────────────────────────── */
+
+/* Ce qui attend la personne, calculé par le serveur sans passer par le modèle.
+   Distinct des amorces : ce n'est pas une proposition, c'est un constat. */
+.ia-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.9rem;
+}
+
+.ia-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.79rem;
+  line-height: 1.45;
+  text-align: left;
+  color: var(--atb-text);
+  background: rgba(198, 40, 40, 0.06);
+  border: 1px solid rgba(198, 40, 40, 0.18);
+}
+
+.ia-alert i {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  color: var(--atb-primary);
+  flex-shrink: 0;
+}
+
+/* ─── Relances ───────────────────────────────────────────────────────────── */
+
+.ia-followups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-self: flex-start;
+  max-width: 92%;
+}
+
+.ia-followup {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--atb-primary);
+  background: transparent;
+  border: 1px dashed rgba(139, 0, 0, 0.32);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ia-followup i {
+  font-size: 0.68rem;
+  opacity: 0.7;
+}
+
+.ia-followup:hover {
+  color: #fff;
+  background: var(--atb-primary);
+  border-style: solid;
+  border-color: var(--atb-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GRAPHIQUES
+
+   Tracés à la main : le projet n'embarque aucune bibliothèque de graphiques et
+   s'en tient à cette ligne. Les procédés repris sont ceux du tableau de bord
+   administrateur — arcs en stroke-dasharray, barres en hauteur relative.
+
+   Les valeurs et les couleurs viennent du serveur. Le modèle a seulement
+   désigné le jeu de données.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Une bulle portant un graphique déborde la largeur des bulles de texte : un
+   tracé compressé à 86 % du panneau devient illisible. */
+.ia-msg-ia:has(.ia-chart) {
+  max-width: 97%;
+  width: 97%;
+}
+
+.ia-chart {
+  margin: 0.75rem 0 0;
+  padding: 0.7rem 0.6rem 0.55rem;
+  border-radius: 12px;
+  background: var(--atb-card);
+  border: 1px solid var(--atb-border);
+}
+
+.ia-chart-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 0.7rem;
+  padding: 0 0.2rem;
+}
+
+.ia-chart-head strong {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--atb-text);
+}
+
+.ia-chart-head small {
+  font-size: 0.69rem;
+  color: var(--atb-text-secondary);
+}
+
+/* ─── Donut ──────────────────────────────────────────────────────────────── */
+
+.ia-donut {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ia-donut svg {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  /* Le premier arc démarre en haut plutôt qu'à droite : c'est le repère
+     habituel de lecture d'un camembert. */
+  transform: rotate(-90deg);
+}
+
+.ia-donut circle {
+  fill: none;
+  stroke-width: 13;
+}
+
+.ia-donut-track {
+  stroke: var(--atb-border);
+  opacity: 0.5;
+}
+
+.ia-legend {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.ia-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  color: var(--atb-text);
+}
+
+.ia-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ia-legend-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--atb-text-secondary);
+}
+
+.ia-legend b {
+  font-weight: 800;
+}
+
+.ia-legend small {
+  font-size: 0.68rem;
+  color: var(--atb-text-secondary);
+  min-width: 2.4em;
+  text-align: right;
+}
+
+/* ─── Barres ─────────────────────────────────────────────────────────────── */
+
+.ia-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  padding: 0 0.2rem;
+}
+
+.ia-bar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ia-bar-value {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--atb-text);
+}
+
+.ia-bar-track {
+  width: 100%;
+  height: 74px;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 5px;
+  background: var(--atb-bg);
+}
+
+.ia-bar-fill {
+  width: 100%;
+  border-radius: 5px;
+  /* Une valeur nulle laisserait une case vide, qui se lit comme une donnée
+     manquante. Un filet visible dit « zéro », ce qui est différent. */
+  min-height: 3px;
+}
+
+.ia-bar-label {
+  width: 100%;
+  font-size: 0.63rem;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--atb-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Courbe ─────────────────────────────────────────────────────────────── */
+
+.ia-line svg {
+  width: 100%;
+  height: 90px;
+  display: block;
+  overflow: visible;
+}
+
+.ia-line-path {
+  fill: none;
+  stroke: var(--atb-primary);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  /* preserveAspectRatio="none" étire le repère : sans cela l'épaisseur du
+     trait se déformerait avec la largeur du panneau. */
+  vector-effect: non-scaling-stroke;
+}
+
+.ia-line-dot {
+  fill: #fff;
+  stroke: var(--atb-accent);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.ia-line-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.2rem;
+  margin-top: 0.35rem;
+  padding: 0 0.1rem;
+}
+
+.ia-line-labels span {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.62rem;
+  text-align: center;
+  color: var(--atb-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Équivalent textuel du tracé, pour les lecteurs d'écran. */
+.ia-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Réflexion — les halos du spinner débordent de son disque : d'où le retrait
@@ -591,7 +894,8 @@
   .ia-fab,
   .ia-chip,
   .ia-send,
-  .ia-mic { transition: none; }
+  .ia-mic,
+  .ia-followup { transition: none; }
   .ia-fab:hover { transform: none; }
   .ia-fab-open:hover { transform: rotate(90deg); }
   .ia-chip:hover { transform: none; }

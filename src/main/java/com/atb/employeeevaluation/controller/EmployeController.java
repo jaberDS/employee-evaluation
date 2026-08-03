@@ -30,9 +30,49 @@ public class EmployeController {
         return ResponseEntity.ok(employeService.updateEmploye(id, dto));
     }
 
+    /**
+     * Ce point n'exigeait qu'une authentification : n'importe quel employé
+     * parcourait le répertoire en incrémentant l'identifiant. Le DTO ne porte
+     * pas de mot de passe, mais l'adresse électronique, le rôle et la hiérarchie
+     * suffisent à reconstituer l'organigramme et à cibler un hameçonnage.
+     *
+     * Chacun voit donc ce que son travail suppose : l'ADMIN tout le monde, un
+     * responsable ses subordonnés, un employé lui-même et ses deux supérieurs
+     * (que l'interface affiche sur son profil).
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(employeService.getEmployeById(id));
+    public ResponseEntity<EmployeDTO> getById(@PathVariable Long id, Authentication authentication) {
+        EmployeDTO cible = employeService.getEmployeById(id);
+        if (!peutVoirEmploye(cible, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(cible);
+    }
+
+    private boolean peutVoirEmploye(EmployeDTO cible, Authentication authentication) {
+        if (authentication == null) {
+            return false;
+        }
+        if (aRole(authentication, "ADMIN")) {
+            return true;
+        }
+        EmployeDTO moi = employeService.getEmployeByMatricule(authentication.getName());
+        if (cible.getId().equals(moi.getId())) {
+            return true;
+        }
+        if (aRole(authentication, "N1")) {
+            return moi.getId().equals(cible.getN1Id());
+        }
+        if (aRole(authentication, "N2")) {
+            return moi.getId().equals(cible.getN2Id());
+        }
+        return cible.getId().equals(moi.getN1Id()) || cible.getId().equals(moi.getN2Id());
+    }
+
+    /** Le rôle tel que la chaîne de filtres l'a établi, jamais une donnée du client. */
+    private boolean aRole(Authentication authentication, String role) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> ("ROLE_" + role).equals(a.getAuthority()));
     }
 
     @GetMapping("/matricule/{matricule}")
