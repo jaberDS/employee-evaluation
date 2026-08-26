@@ -1,0 +1,296 @@
+<div class="enterprise-page n1-hist-page">
+
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <header class="page-hero">
+    <div class="page-hero-left">
+      <div class="page-hero-icon">
+        <app-lucide-icon name="clock" [size]="28"></app-lucide-icon>
+      </div>
+      <div>
+        <h1>Historique des évaluations</h1>
+        <p>{{ fiches.length }} évaluation{{ fiches.length > 1 ? 's' : '' }} soumise{{ fiches.length > 1 ? 's' : '' }}</p>
+      </div>
+    </div>
+    <div class="page-hero-actions">
+      <button class="btn-clear-history" *ngIf="eligibleForDeletion.length > 0" (click)="askDeleteAll()">
+        <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
+        Effacer l'historique ({{ eligibleForDeletion.length }})
+      </button>
+      <a routerLink="/dashboard/n1" class="n1-dashboard-link">
+        <app-lucide-icon name="layout-dashboard" [size]="16"></app-lucide-icon>
+        Tableau de bord
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Filters ─────────────────────────────────────────────────────── -->
+  <div class="filters-bar">
+    <div class="search-field">
+      <app-lucide-icon name="search" [size]="18" className="search-icon-pos"></app-lucide-icon>
+      <input type="search" placeholder="Rechercher un employé ou une campagne..."
+             [(ngModel)]="searchTerm" (ngModelChange)="currentPage=1"
+             aria-label="Rechercher"/>
+    </div>
+    <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="currentPage=1">
+      <option value="ALL">Tous les statuts</option>
+      <option value="EN_ATTENTE_N2">En attente N+2</option>
+      <option value="EN_ATTENTE_EMPLOYE">En attente employé</option>
+      <option value="A_REVISER">À réviser</option>
+      <option value="CLOTUREE">Clôturée</option>
+    </select>
+    <button class="btn-filter-clear" (click)="clearFilters()">
+      <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+      Effacer
+    </button>
+  </div>
+
+  <!-- ── Table panel ─────────────────────────────────────────────────── -->
+  <section class="data-panel">
+
+    <!-- Skeleton -->
+    <div *ngIf="loading" class="state-loading">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-block" style="width:42px;height:42px;border-radius:12px"></div>
+        <div class="skeleton-block" style="flex:2;height:16px"></div>
+        <div class="skeleton-block" style="flex:1;height:16px"></div>
+        <div class="skeleton-block" style="width:70px;height:24px;border-radius:20px"></div>
+        <div class="skeleton-block" style="width:60px;height:24px;border-radius:20px"></div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && filtered.length === 0" class="state-empty">
+      <div class="state-empty-icon">
+        <app-lucide-icon name="clock" [size]="40"></app-lucide-icon>
+      </div>
+      <h3>Aucune évaluation trouvée</h3>
+      <p *ngIf="searchTerm || statusFilter !== 'ALL'">Modifiez vos filtres.</p>
+      <p *ngIf="!searchTerm && statusFilter === 'ALL'">
+        Vos évaluations soumises apparaîtront ici.
+      </p>
+    </div>
+
+    <!-- Table -->
+    <div class="data-table-wrap" *ngIf="!loading && filtered.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><span class="th-inner"><app-lucide-icon name="user" [size]="14"></app-lucide-icon> Employé</span></th>
+            <th><span class="th-inner"><app-lucide-icon name="megaphone" [size]="14"></app-lucide-icon> Campagne</span></th>
+            <th><span class="th-inner"><app-lucide-icon name="calendar" [size]="14"></app-lucide-icon> Date</span></th>
+            <th><span class="th-inner"><app-lucide-icon name="star" [size]="14"></app-lucide-icon> Note N1</span></th>
+            <th><span class="th-inner">Statut</span></th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of paginated; trackBy: trackById; let i = index"
+              class="animate-fade-in" [style.animation-delay.ms]="i * 40">
+            <td>
+              <div class="row-identity">
+                <div class="row-avatar hist-avatar">{{ getInitials(f.employePrenom, f.employeNom) }}</div>
+                <div>
+                  <div class="row-name">{{ f.employePrenom }} {{ f.employeNom }}</div>
+                  <app-affectation-badge *ngIf="f.typeAffectation"
+                                         [type]="f.typeAffectation" size="sm"></app-affectation-badge>
+                </div>
+              </div>
+            </td>
+            <td><span class="hist-campaign-name">{{ f.evaluationNom }}</span></td>
+            <td><span class="hist-date">{{ formatDate(f.dateCreation) }}</span></td>
+            <td>
+              <span class="hist-note-badge" [ngClass]="getNoteClass(f.noteN1)">
+                {{ f.noteN1 | number:'1.1-1' }}<span class="hist-note-max">/10</span>
+              </span>
+            </td>
+            <td>
+              <span class="badge-status hist-status-badge" [ngClass]="getStatusClass(f.statut)">
+                <span class="status-dot"></span>
+                {{ getStatusLabel(f.statut) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="hist-action-group">
+                <button class="btn-icon-action btn-icon-revise" *ngIf="canRevise(f)"
+                        (click)="reviseFiche(f)" title="Modifier l'évaluation (à réviser)">
+                  <app-lucide-icon name="pen-square" [size]="16"></app-lucide-icon>
+                </button>
+                <button class="btn-icon-action btn-icon-view" (click)="openDetail(f)" title="Voir les détails">
+                  <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
+                </button>
+                <button class="btn-icon-action btn-icon-questions"
+                        (click)="questionsFicheId = f.id" title="Voir les questions">
+                  <app-lucide-icon name="list-checks" [size]="16"></app-lucide-icon>
+                </button>
+                <button class="btn-icon-action btn-icon-delete" *ngIf="canDelete(f)"
+                        (click)="askDelete(f)" title="Supprimer de l'historique">
+                  <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer / pagination -->
+    <div class="panel-footer" *ngIf="!loading && filtered.length > 0">
+      <span>
+        <app-lucide-icon name="clock" [size]="14"></app-lucide-icon>
+        {{ filtered.length }} évaluation(s) affichée(s)
+      </span>
+      <nav class="pagination" aria-label="Pagination">
+        <button (click)="goToPage(currentPage-1)" [disabled]="currentPage===1">
+          <app-lucide-icon name="chevron-left" [size]="16"></app-lucide-icon>
+        </button>
+        <button *ngFor="let p of pageNumbers" (click)="goToPage(p)" [class.active]="p===currentPage">{{ p }}</button>
+        <button (click)="goToPage(currentPage+1)" [disabled]="currentPage===totalPages">
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </button>
+      </nav>
+    </div>
+  </section>
+</div>
+
+<!-- Detail modal -->
+<div class="hist-detail-backdrop" *ngIf="showDetail && selectedFiche" (click)="closeDetail()" role="dialog" aria-modal="true">
+  <section class="hist-detail-dialog" (click)="$event.stopPropagation()" aria-label="Détails de l'évaluation">
+    <header class="hist-detail-header">
+      <div class="hist-detail-identity">
+        <div class="hist-modal-avatar">
+          {{ getInitials(selectedFiche.employePrenom, selectedFiche.employeNom) }}
+        </div>
+        <div class="hist-detail-title-wrap">
+          <span class="hist-detail-kicker">Détails de l'évaluation</span>
+          <h2>{{ selectedFiche.employePrenom }} {{ selectedFiche.employeNom }}</h2>
+          <p>{{ selectedFiche.evaluationNom }}</p>
+          <app-affectation-badge *ngIf="selectedFiche.typeAffectation"
+                                 [type]="selectedFiche.typeAffectation" size="sm"></app-affectation-badge>
+        </div>
+      </div>
+      <button class="hist-detail-close" type="button" (click)="closeDetail()" aria-label="Fermer les détails">
+        <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+      </button>
+    </header>
+
+    <div class="hist-detail-summary">
+      <article class="hist-summary-card hist-summary-note">
+        <span class="hist-summary-label">
+          <app-lucide-icon name="bar-chart-3" [size]="15"></app-lucide-icon>
+          Note N+1
+        </span>
+        <strong>{{ selectedFiche.noteN1 | number:'1.1-1' }}<small>/10</small></strong>
+      </article>
+      <article class="hist-summary-card">
+        <span class="hist-summary-label">
+          <app-lucide-icon name="calendar" [size]="15"></app-lucide-icon>
+          Date
+        </span>
+        <strong class="hist-summary-date">{{ formatDate(selectedFiche.dateCreation) }}</strong>
+      </article>
+      <article class="hist-summary-card">
+        <span class="hist-summary-label">Statut</span>
+        <span class="badge-status hist-detail-status" [ngClass]="getStatusClass(selectedFiche.statut)">
+          <span class="status-dot"></span>
+          {{ getStatusLabel(selectedFiche.statut) }}
+        </span>
+      </article>
+    </div>
+
+    <div class="hist-detail-content">
+      <section class="hist-detail-section" *ngIf="selectedFiche.commentaireN1; else noCommentN1">
+        <div class="hist-section-heading">
+          <app-lucide-icon name="message-square" [size]="16"></app-lucide-icon>
+          <h3>Commentaire N+1</h3>
+        </div>
+        <p class="hist-comment-box">{{ selectedFiche.commentaireN1 }}</p>
+      </section>
+
+      <ng-template #noCommentN1>
+        <section class="hist-detail-section hist-muted-section">
+          <div class="hist-section-heading">
+            <app-lucide-icon name="message-square" [size]="16"></app-lucide-icon>
+            <h3>Commentaire N+1</h3>
+          </div>
+          <p class="hist-empty-comment">Aucun commentaire renseigné.</p>
+        </section>
+      </ng-template>
+
+      <div class="hist-detail-grid">
+        <section class="hist-detail-section" *ngIf="selectedFiche.decisionN2">
+          <div class="hist-section-heading">
+            <app-lucide-icon name="shield" [size]="16"></app-lucide-icon>
+            <h3>Décision N+2</h3>
+          </div>
+          <p class="hist-detail-value">{{ selectedFiche.decisionN2 }}</p>
+        </section>
+
+        <section class="hist-detail-section" *ngIf="selectedFiche.noteFinale !== null">
+          <div class="hist-section-heading">
+            <app-lucide-icon name="award" [size]="16"></app-lucide-icon>
+            <h3>Note finale</h3>
+          </div>
+          <span class="hist-note-badge" [ngClass]="getNoteClass(selectedFiche.noteFinale)">
+            {{ selectedFiche.noteFinale | number:'1.1-1' }}<span class="hist-note-max">/10</span>
+          </span>
+        </section>
+      </div>
+
+      <section class="hist-detail-section" *ngIf="selectedFiche.commentaireN2">
+        <div class="hist-section-heading">
+          <app-lucide-icon name="message-square" [size]="16"></app-lucide-icon>
+          <h3>Commentaire N+2</h3>
+        </div>
+        <p class="hist-comment-box">{{ selectedFiche.commentaireN2 }}</p>
+      </section>
+    </div>
+
+    <footer class="hist-detail-footer">
+      <button class="hist-detail-secondary" type="button" (click)="closeDetail()">
+        <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+        Fermer
+      </button>
+      <button class="hist-detail-questions" type="button" (click)="questionsFicheId = selectedFiche.id">
+        <app-lucide-icon name="list-checks" [size]="16"></app-lucide-icon>
+        Voir les questions
+      </button>
+      <button class="hist-detail-revise" type="button"
+              *ngIf="canRevise(selectedFiche)"
+              (click)="reviseFiche(selectedFiche)">
+        <app-lucide-icon name="pen-square" [size]="16"></app-lucide-icon>
+        Modifier l'évaluation
+      </button>
+    </footer>
+  </section>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="hist-detail-backdrop" *ngIf="confirmTarget" (click)="cancelDelete()" role="dialog" aria-modal="true">
+  <section class="hist-confirm-dialog" (click)="$event.stopPropagation()" aria-label="Confirmer la suppression">
+    <div class="hist-confirm-icon">
+      <app-lucide-icon name="trash-2" [size]="26"></app-lucide-icon>
+    </div>
+    <h3 class="hist-confirm-title">
+      {{ confirmTarget === 'ALL' ? 'Effacer l\'historique clôturé ?' : 'Supprimer cette évaluation ?' }}
+    </h3>
+    <p class="hist-confirm-sub" *ngIf="confirmTarget === 'ALL'">
+      {{ eligibleForDeletion.length }} évaluation(s) clôturée(s), avec campagne clôturée et validées par le N+2 et l'employé, seront supprimées définitivement.
+    </p>
+    <p class="hist-confirm-sub" *ngIf="confirmTarget !== 'ALL'">
+      Cette évaluation clôturée sera supprimée définitivement de l'historique. Cette action est irréversible.
+    </p>
+    <div class="hist-confirm-actions">
+      <button class="hist-detail-secondary" type="button" (click)="cancelDelete()" [disabled]="deleting">
+        Annuler
+      </button>
+      <button class="hist-confirm-delete" type="button" (click)="confirmDelete()" [disabled]="deleting">
+        <span class="hist-confirm-spinner" *ngIf="deleting"></span>
+        <app-lucide-icon *ngIf="!deleting" name="trash-2" [size]="16"></app-lucide-icon>
+        Supprimer
+      </button>
+    </div>
+  </section>
+</div>
+
+<app-fiche-questions-modal [ficheId]="questionsFicheId"
+                           (closed)="questionsFicheId = null"></app-fiche-questions-modal>

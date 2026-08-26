@@ -1,0 +1,227 @@
+<div class="login-container">
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="isLoading" @fadeInOut>
+    <div class="loader-wrapper">
+      <span class="loader-letter">L</span>
+      <span class="loader-letter">o</span>
+      <span class="loader-letter">a</span>
+      <span class="loader-letter">d</span>
+      <span class="loader-letter">i</span>
+      <span class="loader-letter">n</span>
+      <span class="loader-letter">g</span>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="brand-panel">
+    <div class="decorative-circles">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="brand-content">
+      <img class="logo" src="assets/atb-logo.png" alt="ATB logo" />
+
+      <h1>ATB</h1>
+      <p class="tagline">Employee Evaluation Platform</p>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-card" #formCard>
+
+      <!-- ══ Étape 1 — Identifiants ═══════════════════════════════════════ -->
+      <div *ngIf="step === 'CREDENTIALS'" @stepSwap>
+        <div *ngIf="successMessage" class="status-banner success-banner" @slideDown role="status">
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="status-banner error-banner" @slideDown role="alert">
+          {{ errorMessage }}
+        </div>
+
+        <div class="form-header">
+          <h2>Connexion</h2>
+          <p>Veuillez vous authentifier</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()">
+          <div class="form-group" @staggerIn>
+            <label for="matricule">Matricule</label>
+            <div class="input-icon">
+              <input
+                id="matricule"
+                type="text"
+                name="matricule"
+                [(ngModel)]="matricule"
+                required
+                autocomplete="username"
+                placeholder="Votre matricule"
+                [disabled]="isLoading"
+              />
+            </div>
+          </div>
+
+          <div class="form-group" @staggerIn>
+            <label for="password">Mot de passe</label>
+            <div class="input-icon">
+              <input
+                id="password"
+                type="password"
+                name="password"
+                [(ngModel)]="password"
+                required
+                autocomplete="current-password"
+                placeholder="Votre mot de passe"
+                [disabled]="isLoading"
+              />
+            </div>
+          </div>
+
+          <button class="btn-primary" type="submit" [disabled]="isLoading">
+            Se connecter
+          </button>
+        </form>
+
+        <a class="mfa-link-forgot" routerLink="/mot-de-passe-oublie">
+          Mot de passe oublié ?
+        </a>
+      </div>
+
+      <!-- ══ Étape 2 — Choix du facteur ═══════════════════════════════════ -->
+      <div *ngIf="step === 'FACTOR_CHOICE'" @stepSwap>
+        <div class="mfa-head">
+          <span class="mfa-badge">
+            <app-lucide-icon name="shield-check" [size]="13"></app-lucide-icon>
+            Vérification en deux étapes
+          </span>
+          <h2>Confirmez votre identité</h2>
+          <p>Choisissez votre méthode de vérification.</p>
+        </div>
+
+        <div class="mfa-factors">
+          <button type="button" class="mfa-factor" *ngIf="factors.includes('WEBAUTHN')"
+                  (click)="chooseFactor('WEBAUTHN')">
+            <span class="mfa-factor-icon">
+              <app-lucide-icon name="fingerprint" [size]="22"></app-lucide-icon>
+            </span>
+            <span class="mfa-factor-text">
+              <strong>Empreinte de cet ordinateur</strong>
+              <em>Windows Hello — empreinte, visage ou code PIN</em>
+            </span>
+            <app-lucide-icon name="chevron-right" [size]="18" class="mfa-factor-chevron"></app-lucide-icon>
+          </button>
+
+          <!-- Sans hint explicite, Windows n'affiche que Windows Hello et cache
+               le QR sous un sous-menu que peu d'utilisateurs trouvent. -->
+          <button type="button" class="mfa-factor" *ngIf="factors.includes('WEBAUTHN')"
+                  (click)="chooseFactor('PHONE')">
+            <span class="mfa-factor-icon">
+              <app-lucide-icon name="qr-code" [size]="22"></app-lucide-icon>
+            </span>
+            <span class="mfa-factor-text">
+              <strong>Empreinte de mon téléphone</strong>
+              <em>Scannez un QR code, puis validez avec votre doigt</em>
+            </span>
+            <app-lucide-icon name="chevron-right" [size]="18" class="mfa-factor-chevron"></app-lucide-icon>
+          </button>
+
+          <button type="button" class="mfa-factor" *ngIf="factors.includes('FACE')"
+                  (click)="chooseFactor('FACE')">
+            <span class="mfa-factor-icon">
+              <app-lucide-icon name="scan-face" [size]="22"></app-lucide-icon>
+            </span>
+            <span class="mfa-factor-text">
+              <strong>Reconnaissance faciale</strong>
+              <em>Votre visage, avec détection de vivacité</em>
+            </span>
+            <app-lucide-icon name="chevron-right" [size]="18" class="mfa-factor-chevron"></app-lucide-icon>
+          </button>
+        </div>
+
+        <button type="button" class="mfa-cancel" (click)="annuler()">Annuler</button>
+      </div>
+
+      <!-- ══ Étape 3 — Attente de la clé d'accès ══════════════════════════ -->
+      <div *ngIf="step === 'WEBAUTHN_PENDING'" @stepSwap>
+        <div class="mfa-head">
+          <span class="mfa-badge">
+            <app-lucide-icon name="shield-check" [size]="13"></app-lucide-icon>
+            Vérification en deux étapes
+          </span>
+        </div>
+
+        <div class="mfa-stage">
+          <div class="mfa-rings" aria-hidden="true">
+            <span class="mfa-ring"></span>
+            <span class="mfa-ring"></span>
+            <div class="mfa-core">
+              <app-lucide-icon [name]="mfaDevice === 'PHONE' ? 'qr-code' : 'fingerprint'"
+                               [size]="34"></app-lucide-icon>
+            </div>
+          </div>
+
+          <h2>
+            {{ mfaDevice === 'PHONE'
+                ? 'Scannez le code avec votre téléphone'
+                : 'En attente de votre clé d\'accès' }}
+          </h2>
+          <p class="mfa-hint">
+            {{ mfaDevice === 'PHONE'
+                ? 'Votre navigateur affiche un QR code. Scannez-le avec l\'appareil photo, puis validez avec votre empreinte. Le Bluetooth doit être activé des deux côtés.'
+                : 'Touchez le capteur d\'empreinte, ou validez avec Windows Hello.' }}
+          </p>
+        </div>
+
+        <div *ngIf="mfaError" class="status-banner error-banner" @slideDown role="alert">
+          {{ mfaError }}
+        </div>
+
+        <div class="mfa-actions">
+          <button type="button" class="btn-primary" (click)="startWebauthn(mfaDevice)" [disabled]="verifying">
+            <app-lucide-icon name="refresh-cw" [size]="16"></app-lucide-icon>
+            {{ verifying ? 'Vérification en cours...' : 'Réessayer' }}
+          </button>
+          <button type="button" class="mfa-cancel" (click)="basculerAppareil()" [disabled]="verifying">
+            {{ mfaDevice === 'PHONE' ? 'Utiliser cet ordinateur' : 'Utiliser mon téléphone' }}
+          </button>
+          <button type="button" class="mfa-cancel" (click)="annuler()">
+            Utiliser un autre compte
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ Étape 3 bis — Reconnaissance faciale ═════════════════════════ -->
+      <div *ngIf="step === 'FACE_PENDING'" @stepSwap>
+        <div class="mfa-head">
+          <span class="mfa-badge">
+            <app-lucide-icon name="shield-check" [size]="13"></app-lucide-icon>
+            Vérification en deux étapes
+          </span>
+        </div>
+
+        <app-face-capture
+          mode="LOGIN"
+          [mfaToken]="mfaTokenPublic"
+          (authenticated)="onFaceAuthenticated($event)"
+          (cancelled)="annuler()"
+          (expired)="onFaceExpired()">
+        </app-face-capture>
+      </div>
+
+      <!-- ══ Étape 4 — Succès ═════════════════════════════════════════════ -->
+      <div *ngIf="step === 'SUCCESS'" @stepSwap>
+        <div class="mfa-stage">
+          <div class="mfa-success">
+            <svg viewBox="0 0 52 52" aria-hidden="true">
+              <circle class="mfa-success-circle" cx="26" cy="26" r="24" />
+              <path class="mfa-success-check" d="M15 27l8 8 15-16" />
+            </svg>
+          </div>
+          <h2>Identité confirmée</h2>
+          <p class="mfa-hint">Ouverture de votre espace...</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

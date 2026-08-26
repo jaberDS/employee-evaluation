@@ -1,0 +1,189 @@
+<div class="emp-dash enterprise-page">
+
+  <!-- ── Loading skeleton ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="emp-skeleton">
+    <div class="skel-hero"></div>
+    <div class="skel-stats">
+      <div class="skel-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+    <div class="skel-list">
+      <div class="skel-row" *ngFor="let i of [1,2]" style="height:120px"></div>
+    </div>
+  </div>
+
+  <!-- ── Main content ──────────────────────────────────────────────────── -->
+  <div *ngIf="!loading" class="emp-content">
+
+    <!-- ── Hero ────────────────────────────────────────────────────────── -->
+    <div class="emp-hero">
+      <div class="emp-hero-bg"></div>
+      <div class="emp-hero-inner">
+        <div class="emp-hero-text">
+          <div class="emp-greeting-badge">
+            <app-lucide-icon name="user-circle" [size]="14"></app-lucide-icon>
+            Employé
+          </div>
+          <h1 class="emp-hero-title">
+            {{ greeting }}, {{ currentUser?.prenom }} {{ currentUser?.nom }} 👋
+          </h1>
+          <p class="emp-hero-sub" *ngIf="pendingFiches.length > 0">
+            Vous avez <strong>{{ pendingFiches.length }} évaluation{{ pendingFiches.length > 1 ? 's' : '' }} à consulter</strong>.
+          </p>
+          <p class="emp-hero-sub emp-hero-all-done" *ngIf="pendingFiches.length === 0">
+            🎉 Aucune évaluation en attente de votre décision.
+          </p>
+          <div class="emp-hero-actions">
+            <a class="btn-emp-primary" [routerLink]="pendingFiches.length ? ['/fiches', pendingFiches[0].id] : ['/fiches']">
+              <app-lucide-icon name="file-text" [size]="18"></app-lucide-icon>
+              Mes évaluations
+            </a>
+          </div>
+        </div>
+        <div class="emp-hero-visual">
+          <div class="emp-progress-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="50" class="ring-track"/>
+              <circle cx="60" cy="60" r="50" class="ring-fill"
+                [style.stroke-dasharray]="314"
+                [style.stroke-dashoffset]="314 - (314 * display.avgNote / 10)"/>
+            </svg>
+            <div class="ring-label">
+              <span class="ring-pct">{{ display.avgNote }}</span>
+              <span class="ring-sub">/ 10 moyenne</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Stat cards ─────────────────────────────────────────────────── -->
+    <div class="emp-stats-grid">
+
+      <div class="emp-stat-card emp-stat-avg" style="animation-delay:0.05s">
+        <div class="esc-icon"><app-lucide-icon name="star" [size]="24"></app-lucide-icon></div>
+        <div class="esc-body">
+          <span class="esc-value">{{ display.avgNote }}<span class="esc-unit">/10</span></span>
+          <span class="esc-label">Note moyenne</span>
+        </div>
+        <div class="esc-glow"></div>
+      </div>
+
+      <div class="emp-stat-card emp-stat-closed" style="animation-delay:0.1s">
+        <div class="esc-icon"><app-lucide-icon name="clipboard-check" [size]="24"></app-lucide-icon></div>
+        <div class="esc-body">
+          <span class="esc-value">{{ display.closed }}</span>
+          <span class="esc-label">Évaluations clôturées</span>
+        </div>
+        <div class="esc-glow"></div>
+      </div>
+
+      <div class="emp-stat-card emp-stat-pending" style="animation-delay:0.15s">
+        <div class="esc-icon"><app-lucide-icon name="clock" [size]="24"></app-lucide-icon></div>
+        <div class="esc-body">
+          <span class="esc-value">{{ display.pending }}</span>
+          <span class="esc-label">En attente de ma décision</span>
+        </div>
+        <div class="esc-glow"></div>
+      </div>
+
+      <div class="emp-stat-card emp-stat-campaigns" style="animation-delay:0.2s">
+        <div class="esc-icon"><app-lucide-icon name="megaphone" [size]="24"></app-lucide-icon></div>
+        <div class="esc-body">
+          <span class="esc-value">{{ display.openCampaigns }}</span>
+          <span class="esc-label">Campagnes ouvertes</span>
+        </div>
+        <div class="esc-glow"></div>
+      </div>
+
+    </div>
+
+    <!-- ── Mes responsables ───────────────────────────────────────────── -->
+    <section class="emp-section">
+      <div class="emp-section-header">
+        <div class="emp-section-title">
+          <app-lucide-icon name="users" [size]="20"></app-lucide-icon>
+          <h2>Mes responsables</h2>
+        </div>
+      </div>
+
+      <div class="emp-managers-grid">
+        <div class="emp-manager-card">
+          <div class="emc-avatar" *ngIf="employee?.n1Nom">{{ getInitials(employee?.n1Prenom, employee?.n1Nom) }}</div>
+          <div class="emc-avatar emc-avatar-empty" *ngIf="!employee?.n1Nom">
+            <app-lucide-icon name="user" [size]="18"></app-lucide-icon>
+          </div>
+          <div class="emc-info">
+            <span class="emc-role">Responsable N+1</span>
+            <span class="emc-name" *ngIf="employee?.n1Nom">{{ employee?.n1Prenom }} {{ employee?.n1Nom }}</span>
+            <span class="emc-name emc-name-empty" *ngIf="!employee?.n1Nom">Non assigné</span>
+          </div>
+        </div>
+
+        <div class="emp-manager-card">
+          <div class="emc-avatar" *ngIf="employee?.n2Nom">{{ getInitials(employee?.n2Prenom, employee?.n2Nom) }}</div>
+          <div class="emc-avatar emc-avatar-empty" *ngIf="!employee?.n2Nom">
+            <app-lucide-icon name="user" [size]="18"></app-lucide-icon>
+          </div>
+          <div class="emc-info">
+            <span class="emc-role">Responsable N+2</span>
+            <span class="emc-name" *ngIf="employee?.n2Nom">{{ employee?.n2Prenom }} {{ employee?.n2Nom }}</span>
+            <span class="emc-name emc-name-empty" *ngIf="!employee?.n2Nom">Non assigné</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Évaluations en attente ─────────────────────────────────────── -->
+    <section class="emp-section">
+      <div class="emp-section-header">
+        <div class="emp-section-title">
+          <app-lucide-icon name="alert-circle" [size]="20"></app-lucide-icon>
+          <h2>Évaluations en attente</h2>
+          <span class="emp-count-pill" *ngIf="pendingFiches.length > 0">{{ pendingFiches.length }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="pendingFiches.length === 0" class="emp-empty emp-empty-inline">
+        <div class="emp-empty-icon">
+          <app-lucide-icon name="check-circle" [size]="36"></app-lucide-icon>
+        </div>
+        <h3>Tout est à jour</h3>
+        <p>Aucune évaluation n'attend votre décision pour le moment.</p>
+      </div>
+
+      <div class="emp-pending-list" *ngIf="pendingFiches.length > 0">
+        <a class="emp-pending-row" *ngFor="let f of pendingFiches; trackBy: trackById" [routerLink]="['/fiches', f.id]">
+          <div class="epr-icon"><app-lucide-icon name="clipboard-check" [size]="18"></app-lucide-icon></div>
+          <div class="epr-info">
+            <span class="epr-name">{{ f.evaluationNom }}</span>
+            <span class="epr-date">Évalué le {{ formatDate(f.dateCreation) }}</span>
+          </div>
+          <div class="epr-note" [ngClass]="noteClass(f.noteN1)">{{ f.noteN1 }}/10</div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="epr-arrow"></app-lucide-icon>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Historique récent ──────────────────────────────────────────── -->
+    <section class="emp-section" *ngIf="recentClosed.length > 0">
+      <div class="emp-section-header">
+        <div class="emp-section-title">
+          <app-lucide-icon name="clipboard-list" [size]="20"></app-lucide-icon>
+          <h2>Historique récent</h2>
+        </div>
+      </div>
+
+      <div class="emp-history-list">
+        <a class="emp-history-row" *ngFor="let f of recentClosed; trackBy: trackById" [routerLink]="['/fiches', f.id]">
+          <div class="ehr-avatar"><app-lucide-icon name="check" [size]="16"></app-lucide-icon></div>
+          <div class="ehr-info">
+            <span class="ehr-name">{{ f.evaluationNom }}</span>
+            <span class="ehr-date">Clôturée le {{ formatDate(f.dateCreation) }}</span>
+          </div>
+          <div class="ehr-note" [ngClass]="noteClass(f.noteFinale)">{{ f.noteFinale }}/10</div>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</div>

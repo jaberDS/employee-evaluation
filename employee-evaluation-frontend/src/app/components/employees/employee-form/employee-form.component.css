@@ -1,0 +1,178 @@
+:host {
+  display: block;
+}
+
+.emp-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.emp-field-group {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.emp-field-group:hover {
+  transform: translateY(-1px);
+}
+
+.emp-field-toggle {
+  grid-column: 1 / -1;
+}
+
+/* ── Affectation : Agence / Siège ─────────────────────────────────────────
+   Deux cartes plutôt qu'un select : c'est le choix qui détermine le modèle
+   de fiche d'évaluation, il doit se voir. Les couleurs reprennent celles
+   des deux designs de fiche (turquoise agence, indigo siège). */
+.emp-field-affectation {
+  grid-column: 1 / -1;
+}
+.emp-field-affectation:hover {
+  transform: none; /* la carte a sa propre animation, pas le groupe */
+}
+
+.emp-affectation-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+  color: var(--atb-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.emp-affectation-choice {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+}
+
+.emp-affectation-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border: 2px solid var(--atb-border);
+  border-radius: 14px;
+  background: var(--atb-card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease,
+              box-shadow 0.2s ease, transform 0.2s ease;
+}
+.emp-affectation-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--atb-text-secondary);
+}
+.emp-affectation-card:focus-visible {
+  outline: 2px solid var(--atb-primary);
+  outline-offset: 2px;
+}
+
+.emp-affectation-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--atb-bg);
+  color: var(--atb-text-secondary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.emp-affectation-text { display: flex; flex-direction: column; min-width: 0; }
+.emp-affectation-text strong {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--atb-text);
+  line-height: 1.2;
+}
+.emp-affectation-text small {
+  margin-top: 0.2rem;
+  font-size: 0.73rem;
+  color: var(--atb-text-secondary);
+  line-height: 1.35;
+}
+
+.emp-affectation-check {
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.emp-affectation-card.is-selected .emp-affectation-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Agence — carmin vif, comme la fiche réseau */
+.emp-affectation-agence.is-selected {
+  border-color: #C62828;
+  background: rgba(198, 40, 40, 0.07);
+  box-shadow: 0 6px 18px rgba(139, 0, 0, 0.16);
+}
+.emp-affectation-agence.is-selected .emp-affectation-icon {
+  background: linear-gradient(135deg, #8B0000, #C62828);
+  color: #fff;
+}
+.emp-affectation-agence.is-selected .emp-affectation-check { color: #C62828; }
+
+/* Siège — bordeaux profond, comme la fiche institutionnelle */
+.emp-affectation-siege.is-selected {
+  border-color: #8B0000;
+  background: rgba(139, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(74, 14, 14, 0.18);
+}
+.emp-affectation-siege.is-selected .emp-affectation-icon {
+  background: linear-gradient(135deg, #4A0E0E, #8B0000);
+  color: #fff;
+}
+.emp-affectation-siege.is-selected .emp-affectation-check { color: #8B0000; }
+
+.emp-affectation-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--atb-text-secondary);
+}
+.emp-affectation-hint app-lucide-icon { flex-shrink: 0; margin-top: 1px; }
+
+[data-theme="dark"] .emp-affectation-agence.is-selected {
+  background: rgba(198, 40, 40, 0.14);
+}
+[data-theme="dark"] .emp-affectation-siege.is-selected {
+  background: rgba(139, 0, 0, 0.16);
+}
+
+@media (max-width: 640px) {
+  .emp-affectation-choice { grid-template-columns: 1fr; }
+}
+
+.emp-form-actions {
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.emp-select {
+  cursor: pointer;
+}
+
+.emp-input:focus {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .emp-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

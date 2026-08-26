@@ -1,0 +1,244 @@
+<div class="enterprise-page campaign-page">
+
+  <!-- Hero -->
+  <header class="page-hero">
+    <div class="page-hero-left">
+      <div class="page-hero-icon">
+        <app-lucide-icon name="megaphone" [size]="28" ariaLabel="Campagnes"></app-lucide-icon>
+      </div>
+      <div>
+        <h1>Gestion des campagnes</h1>
+        <p>Gérez le cycle de vie de vos campagnes d'évaluation</p>
+      </div>
+    </div>
+    <a routerLink="/evaluations/create" class="btn-enterprise-primary">
+      <app-lucide-icon name="rocket" [size]="18"></app-lucide-icon>
+      Nouvelle campagne
+    </a>
+  </header>
+
+  <!-- Stats -->
+  <section class="stats-row stats-row-5" aria-label="Statistiques campagnes">
+    <article class="stat-card-enterprise" style="animation-delay: 0.05s">
+      <div class="stat-card-icon stat-icon-primary">
+        <app-lucide-icon name="layers" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.total }}</span>
+        <span class="stat-card-label">Total</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.1s">
+      <div class="stat-card-icon stat-icon-muted">
+        <app-lucide-icon name="pen" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.draft }}</span>
+        <span class="stat-card-label">Brouillon</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.15s">
+      <div class="stat-card-icon stat-icon-success">
+        <app-lucide-icon name="play" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.open }}</span>
+        <span class="stat-card-label">Ouvertes</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.2s">
+      <div class="stat-card-icon stat-icon-warning">
+        <app-lucide-icon name="pause" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.closed }}</span>
+        <span class="stat-card-label">Fermées</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.25s">
+      <div class="stat-card-icon stat-icon-info">
+        <app-lucide-icon name="check-circle" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.done }}</span>
+        <span class="stat-card-label">Clôturées</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Filters -->
+  <div class="filters-bar" role="search">
+    <div class="search-field">
+      <app-lucide-icon name="search" [size]="18" className="search-icon-pos"></app-lucide-icon>
+      <input
+        type="search"
+        placeholder="Rechercher une campagne par nom..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="currentPage = 1"
+        aria-label="Rechercher une campagne" />
+    </div>
+    <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par statut">
+      <option value="ALL">Tous les statuts</option>
+      <option value="BROUILLON">Brouillon</option>
+      <option value="OUVERTE">Ouverte</option>
+      <option value="FERMEE">Fermée</option>
+      <option value="CLOTUREE">Clôturée</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="affectationFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par affectation">
+      <option value="ALL">Toutes les affectations</option>
+      <option value="AGENCE">Agence</option>
+      <option value="SIEGE">Siège</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="dateFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par période">
+      <option value="ALL">Toutes les dates</option>
+      <option value="ACTIVE">En cours</option>
+      <option value="UPCOMING">À venir</option>
+      <option value="PAST">Terminées</option>
+    </select>
+    <button class="btn-filter-clear" (click)="clearFilters()" aria-label="Effacer les filtres">
+      <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+      Effacer
+    </button>
+  </div>
+
+  <!-- Table Panel -->
+  <section class="data-panel" aria-label="Liste des campagnes">
+
+    <div *ngIf="loading" class="state-loading">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton-block" style="width:40px;height:40px;border-radius:12px"></div>
+        <div class="skeleton-block" style="flex:2;height:16px"></div>
+        <div class="skeleton-block" style="flex:1;height:16px"></div>
+        <div class="skeleton-block" style="width:80px;height:24px;border-radius:20px"></div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && filteredEvaluations.length === 0" class="state-empty">
+      <div class="state-empty-icon">
+        <app-lucide-icon name="clipboard-list" [size]="36"></app-lucide-icon>
+      </div>
+      <h3>Aucune campagne trouvée</h3>
+      <p>Modifiez vos filtres ou créez une nouvelle campagne</p>
+    </div>
+
+    <div class="data-table-wrap" *ngIf="!loading && filteredEvaluations.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th (click)="sortBy('nomEvaluation')">
+              <span class="th-inner"><app-lucide-icon name="megaphone" [size]="14"></app-lucide-icon> Campagne
+                <app-lucide-icon *ngIf="sortColumn === 'nomEvaluation'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('dateDebut')">
+              <span class="th-inner"><app-lucide-icon name="calendar" [size]="14"></app-lucide-icon> Début
+                <app-lucide-icon *ngIf="sortColumn === 'dateDebut'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('dateFin')">
+              <span class="th-inner"><app-lucide-icon name="calendar" [size]="14"></app-lucide-icon> Fin
+                <app-lucide-icon *ngIf="sortColumn === 'dateFin'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('statut')">
+              <span class="th-inner">Statut &amp; Progression
+                <app-lucide-icon *ngIf="sortColumn === 'statut'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ev of paginatedEvaluations; let i = index" class="animate-fade-in" [style.animation-delay.ms]="i * 50">
+            <td>
+              <div class="row-identity">
+                <div class="row-avatar">{{ getInitials(ev.nomEvaluation) }}</div>
+                <div>
+                  <div class="row-name">{{ ev.nomEvaluation }}</div>
+                  <div class="row-sub">
+                    <app-affectation-badge [type]="ev.typeAffectation" size="sm"></app-affectation-badge>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="row-name">{{ ev.dateDebut | date:'dd/MM/yyyy' }}</div>
+              <div class="row-sub">{{ ev.dateDebut | date:'HH:mm' }}</div>
+            </td>
+            <td>
+              <div class="row-name">{{ ev.dateFin | date:'dd/MM/yyyy' }}</div>
+              <div class="row-sub">{{ ev.dateFin | date:'HH:mm' }}</div>
+            </td>
+            <td>
+              <span class="badge-status" [ngClass]="getStatusClass(ev.statut)">
+                {{ getStatusLabel(ev.statut) }}
+              </span>
+              <div class="campaign-progress" *ngIf="ev.statut === 'OUVERTE'">
+                <div class="campaign-progress-track" role="progressbar" [attr.aria-valuenow]="getProgress(ev)" aria-valuemin="0" aria-valuemax="100">
+                  <div class="campaign-progress-fill" [style.width.%]="getProgress(ev)"></div>
+                </div>
+                <span class="campaign-progress-label">{{ getProgress(ev) }}% du temps écoulé</span>
+              </div>
+            </td>
+            <td>
+              <div class="action-group">
+                <a [routerLink]="['/evaluations', ev.id]" class="btn-icon-action btn-icon-view" title="Voir les détails" aria-label="Voir">
+                  <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
+                </a>
+                <a *ngIf="ev.statut === 'BROUILLON'" [routerLink]="['/evaluations/edit', ev.id]" class="btn-icon-action btn-icon-edit" title="Modifier" aria-label="Modifier">
+                  <app-lucide-icon name="pen" [size]="16"></app-lucide-icon>
+                </a>
+                <a [routerLink]="['/evaluations', ev.id, 'questions']"
+                   class="btn-icon-action"
+                   [ngClass]="isQuestionsFull(ev) ? 'btn-icon-questions-full' : 'btn-icon-list'"
+                   [title]="isQuestionsFull(ev) ? 'Questions complètes (10/10)' : 'Gérer les questions (' + getQuestionCount(ev) + '/10)'"
+                   aria-label="Questions">
+                  <app-lucide-icon [name]="isQuestionsFull(ev) ? 'check-square' : 'list'" [size]="16"></app-lucide-icon>
+                  <span class="q-count-badge" *ngIf="getQuestionCount(ev) > 0">{{ getQuestionCount(ev) }}</span>
+                </a>
+                <button *ngIf="ev.statut === 'BROUILLON'" class="btn-icon-action btn-icon-open" (click)="ouvrir(ev.id!)" title="Ouvrir la campagne" aria-label="Ouvrir">
+                  <app-lucide-icon name="play" [size]="16"></app-lucide-icon>
+                </button>
+                <button *ngIf="ev.statut === 'OUVERTE'" class="btn-icon-action btn-icon-close" (click)="fermer(ev.id!)" title="Fermer la campagne" aria-label="Fermer">
+                  <app-lucide-icon name="pause" [size]="16"></app-lucide-icon>
+                </button>
+                <button *ngIf="ev.statut === 'FERMEE'" class="btn-icon-action btn-icon-done" (click)="cloturer(ev.id!)" title="Clôturer la campagne" aria-label="Clôturer">
+                  <app-lucide-icon name="check-circle" [size]="16"></app-lucide-icon>
+                </button>
+                <button *ngIf="ev.statut === 'BROUILLON'" class="btn-icon-action btn-icon-delete" (click)="deleteEvaluation(ev)" title="Supprimer" aria-label="Supprimer">
+                  <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-footer" *ngIf="!loading && filteredEvaluations.length > 0">
+      <span>
+        <app-lucide-icon name="clipboard-list" [size]="14"></app-lucide-icon>
+        {{ filteredEvaluations.length }} campagne(s) affichée(s)
+        <span *ngIf="searchTerm || statusFilter !== 'ALL' || affectationFilter !== 'ALL' || dateFilter !== 'ALL'">
+          ({{ evaluations.length }} au total)
+        </span>
+      </span>
+      <nav class="pagination" aria-label="Pagination">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Page précédente">
+          <app-lucide-icon name="chevron-left" [size]="16"></app-lucide-icon>
+        </button>
+        <button
+          *ngFor="let p of pageNumbers"
+          (click)="goToPage(p)"
+          [class.active]="p === currentPage"
+          [attr.aria-label]="'Page ' + p"
+          [attr.aria-current]="p === currentPage ? 'page' : null">
+          {{ p }}
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" aria-label="Page suivante">
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </button>
+      </nav>
+    </div>
+  </section>
+</div>

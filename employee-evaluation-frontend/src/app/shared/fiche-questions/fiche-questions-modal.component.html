@@ -1,0 +1,80 @@
+<div class="fqm-backdrop" *ngIf="ficheId !== null" (click)="close()" role="presentation">
+  <section class="fqm-dialog" (click)="$event.stopPropagation()"
+           role="dialog" aria-modal="true" aria-label="Détail par question">
+
+    <button type="button" class="fqm-close" (click)="close()" aria-label="Fermer">
+      <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+    </button>
+
+    <!-- Chargement -->
+    <div class="fqm-state" *ngIf="loading">
+      <div class="fqm-spinner" aria-hidden="true"></div>
+      <p>Chargement des questions…</p>
+    </div>
+
+    <!-- Erreur -->
+    <div class="fqm-state fqm-state-error" *ngIf="!loading && error">
+      <app-lucide-icon name="alert-circle" [size]="32"></app-lucide-icon>
+      <p>{{ error }}</p>
+    </div>
+
+    <ng-container *ngIf="!loading && !error && fiche as f">
+      <header class="fqm-header">
+        <div class="fqm-avatar">{{ getInitials(f.employePrenom, f.employeNom) }}</div>
+        <div class="fqm-title-wrap">
+          <span class="fqm-kicker">Détail par question</span>
+          <h2>{{ f.employePrenom }} {{ f.employeNom }}</h2>
+          <p>{{ f.evaluationNom }}</p>
+        </div>
+        <div class="fqm-note" *ngIf="f.noteN1 !== null" [ngClass]="noteClass(f.noteN1)">
+          <span class="fqm-note-val">{{ f.noteN1 | number:'1.1-1' }}</span>
+          <span class="fqm-note-max">/ 10</span>
+        </div>
+      </header>
+
+      <div class="fqm-body">
+        <div class="fqm-questions" *ngIf="rows.length > 0">
+          <div class="fqm-question-row" *ngFor="let r of rows; trackBy: trackById">
+            <div class="fqm-q-icon">
+              <app-lucide-icon [name]="getTypeIcon(r.question.typeQuestion)" [size]="16"></app-lucide-icon>
+            </div>
+            <div class="fqm-q-info">
+              <span class="fqm-q-label">{{ r.question.libelle }}</span>
+              <span class="fqm-q-desc" *ngIf="r.question.description">{{ r.question.description }}</span>
+            </div>
+            <div class="fqm-q-mark" *ngIf="r.question.typeQuestion === 'NOTE'" [ngClass]="noteClass(r.mark)">
+              {{ r.mark !== null ? r.mark : '—' }} / {{ r.question.noteMax }}
+            </div>
+            <div class="fqm-q-mark fqm-q-mark-text" *ngIf="r.question.typeQuestion === 'OUI_NON'">
+              {{ ouiNonLabel(r) }}
+            </div>
+            <div class="fqm-q-mark fqm-q-mark-muted"
+                 *ngIf="r.question.typeQuestion === 'TEXTE' || r.question.typeQuestion === 'COMMENTAIRE'">
+              Non noté
+            </div>
+          </div>
+        </div>
+
+        <div class="fqm-state fqm-state-empty" *ngIf="rows.length === 0">
+          <app-lucide-icon name="list-x" [size]="32"></app-lucide-icon>
+          <p>Aucune question n'est rattachée à cette campagne.</p>
+        </div>
+
+        <div class="fqm-comment" *ngIf="f.commentaireN1">
+          <div class="fqm-comment-label">
+            <app-lucide-icon name="message-square" [size]="13"></app-lucide-icon>
+            Commentaire N+1
+          </div>
+          <p>{{ f.commentaireN1 }}</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <footer class="fqm-footer">
+      <button type="button" class="fqm-btn-secondary" (click)="close()">
+        <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+        Fermer
+      </button>
+    </footer>
+  </section>
+</div>

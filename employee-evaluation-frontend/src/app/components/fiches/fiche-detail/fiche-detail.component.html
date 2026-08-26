@@ -1,0 +1,191 @@
+<div class="fd-page enterprise-page">
+
+  <!-- ── Loading skeleton ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="fd-skeleton">
+    <div class="skel-hero"></div>
+    <div class="skel-row" *ngFor="let i of [1,2,3]"></div>
+  </div>
+
+  <!-- ── Not found ─────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading && notFound" class="fd-empty">
+    <div class="fd-empty-icon"><app-lucide-icon name="alert-circle" [size]="44"></app-lucide-icon></div>
+    <h3>Évaluation introuvable</h3>
+    <p>Cette fiche d'évaluation n'existe pas ou vous n'y avez pas accès.</p>
+    <button class="btn-fd-secondary" (click)="goBack()">Retour à mes évaluations</button>
+  </div>
+
+  <!-- ── Content ───────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !notFound && fiche" class="fd-content">
+
+    <button class="fd-back" (click)="goBack()">
+      <app-lucide-icon name="arrow-left" [size]="16"></app-lucide-icon>
+      Mes évaluations
+    </button>
+
+    <!-- Header -->
+    <div class="fd-header">
+      <div class="fd-header-main">
+        <h1>{{ fiche.evaluationNom }}</h1>
+        <div class="fd-header-meta">
+          <span class="fd-header-date">
+            <app-lucide-icon name="calendar" [size]="14"></app-lucide-icon>
+            Évalué le {{ formatDate(fiche.dateCreation) }}
+          </span>
+          <app-affectation-badge *ngIf="fiche.typeAffectation"
+                                 [type]="fiche.typeAffectation" size="sm"></app-affectation-badge>
+        </div>
+      </div>
+      <div class="fd-header-note" *ngIf="fiche.noteN1 !== null" [ngClass]="noteClass(fiche.noteN1)">
+        <span class="fdn-val">{{ fiche.noteN1 }}</span>
+        <span class="fdn-max">/ 10</span>
+      </div>
+    </div>
+
+    <!-- Status banners -->
+    <div class="fd-banner fd-banner-accent" *ngIf="fiche.statut === 'EN_ATTENTE_EMPLOYE'">
+      <app-lucide-icon name="alert-circle" [size]="18"></app-lucide-icon>
+      Cette évaluation attend votre décision : acceptez-la ou renvoyez-la en révision.
+    </div>
+    <div class="fd-banner fd-banner-warning" *ngIf="fiche.statut === 'A_REVISER'">
+      <app-lucide-icon name="clock" [size]="18"></app-lucide-icon>
+      Cette évaluation est en cours de révision par votre N+1.
+    </div>
+    <div class="fd-banner fd-banner-success" *ngIf="fiche.statut === 'CLOTUREE'">
+      <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+      Évaluation clôturée — note finale : <strong>{{ fiche.noteFinale }}/10</strong>.
+    </div>
+    <div class="fd-banner fd-banner-info" *ngIf="fiche.statut !== 'EN_ATTENTE_EMPLOYE' && fiche.statut !== 'A_REVISER' && fiche.statut !== 'CLOTUREE'">
+      <app-lucide-icon name="info" [size]="18"></app-lucide-icon>
+      Cette évaluation n'est pas encore prête pour votre validation.
+    </div>
+
+    <!-- Per-question breakdown -->
+    <section class="fd-section">
+      <div class="fd-section-header">
+        <div class="fd-section-title">
+          <app-lucide-icon name="list-checks" [size]="20"></app-lucide-icon>
+          <h2>Détail par question</h2>
+        </div>
+      </div>
+
+      <div class="fd-questions">
+        <div class="fd-question-row" *ngFor="let r of rows; trackBy: trackById">
+          <div class="fdq-icon"><app-lucide-icon [name]="getTypeIcon(r.question.typeQuestion)" [size]="16"></app-lucide-icon></div>
+          <div class="fdq-info">
+            <span class="fdq-label">{{ r.question.libelle }}</span>
+            <span class="fdq-desc" *ngIf="r.question.description">{{ r.question.description }}</span>
+          </div>
+          <div class="fdq-mark" *ngIf="r.question.typeQuestion === 'NOTE'" [ngClass]="noteClass(r.mark)">
+            {{ r.mark !== null ? r.mark : '—' }} / {{ r.question.noteMax }}
+          </div>
+          <div class="fdq-mark fdq-mark-text" *ngIf="r.question.typeQuestion === 'OUI_NON'">
+            {{ ouiNonLabel(r) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="fd-comment" *ngIf="fiche.commentaireN1">
+        <div class="fd-comment-label">
+          <app-lucide-icon name="message-square" [size]="13"></app-lucide-icon>
+          Commentaire de votre N+1
+        </div>
+        <p>{{ fiche.commentaireN1 }}</p>
+      </div>
+    </section>
+
+    <!-- N+2 decision -->
+    <section class="fd-section" *ngIf="fiche.decisionN2">
+      <div class="fd-section-header">
+        <div class="fd-section-title">
+          <app-lucide-icon name="shield" [size]="20"></app-lucide-icon>
+          <h2>Décision du N+2</h2>
+        </div>
+      </div>
+      <div class="fd-n2-card">
+        <span class="fd-n2-badge" [ngClass]="fiche.decisionN2 === 'ACCEPTEE' ? 'note-good' : 'note-low'">
+          <app-lucide-icon [name]="fiche.decisionN2 === 'ACCEPTEE' ? 'check-circle' : 'x-circle'" [size]="14"></app-lucide-icon>
+          {{ fiche.decisionN2 === 'ACCEPTEE' ? 'Validée' : 'Refusée' }}
+        </span>
+        <p *ngIf="fiche.commentaireN2">{{ fiche.commentaireN2 }}</p>
+      </div>
+    </section>
+
+    <!-- Employee decision (once made) -->
+    <section class="fd-section" *ngIf="fiche.decisionEmploye">
+      <div class="fd-section-header">
+        <div class="fd-section-title">
+          <app-lucide-icon name="user-circle" [size]="20"></app-lucide-icon>
+          <h2>Votre décision</h2>
+        </div>
+      </div>
+      <div class="fd-n2-card">
+        <span class="fd-n2-badge" [ngClass]="fiche.decisionEmploye === 'ACCEPTEE' ? 'note-good' : 'note-low'">
+          <app-lucide-icon [name]="fiche.decisionEmploye === 'ACCEPTEE' ? 'thumbs-up' : 'thumbs-down'" [size]="14"></app-lucide-icon>
+          {{ fiche.decisionEmploye === 'ACCEPTEE' ? 'Acceptée' : 'Refusée' }}
+        </span>
+        <p *ngIf="fiche.commentaireEmploye">{{ fiche.commentaireEmploye }}</p>
+      </div>
+    </section>
+
+    <!-- Decision actions -->
+    <div class="fd-actions" *ngIf="canDecide">
+      <button class="btn-fd-reject" (click)="openDecision('REJECT')">
+        <app-lucide-icon name="x-circle" [size]="16"></app-lucide-icon>
+        Refuser
+      </button>
+      <button class="btn-fd-accept" (click)="openDecision('ACCEPT')">
+        <app-lucide-icon name="check-circle" [size]="16"></app-lucide-icon>
+        Accepter l'évaluation
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Decision modal ─────────────────────────────────────────────────── -->
+  <div class="fd-modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="fd-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="fd-modal-accent" [class.accent-reject]="modalDecision === 'REJECT'"></div>
+
+      <div class="fd-modal-icon" [ngClass]="modalDecision === 'ACCEPT' ? 'modal-icon-accept' : 'modal-icon-reject'">
+        <app-lucide-icon [name]="modalDecision === 'ACCEPT' ? 'check-circle' : 'x-circle'" [size]="28"></app-lucide-icon>
+      </div>
+
+      <h3 class="fd-modal-title">
+        {{ modalDecision === 'ACCEPT' ? 'Accepter l\'évaluation' : 'Refuser l\'évaluation' }}
+      </h3>
+      <p class="fd-modal-sub">
+        {{ modalDecision === 'ACCEPT'
+            ? 'Vous acceptez cette évaluation. Elle sera clôturée définitivement.'
+            : 'Vous renvoyez cette évaluation en révision auprès de votre N+1.' }}
+      </p>
+
+      <div class="fd-modal-field">
+        <label for="fd-comment">
+          Commentaire {{ modalDecision === 'REJECT' ? '(requis)' : '(optionnel)' }}
+        </label>
+        <textarea
+          id="fd-comment"
+          [(ngModel)]="modalComment"
+          rows="3"
+          [placeholder]="modalDecision === 'ACCEPT'
+            ? 'Ajoutez une remarque (facultatif)…'
+            : 'Expliquez la raison du refus…'"></textarea>
+      </div>
+
+      <div class="fd-modal-actions">
+        <button type="button" class="btn-fd-cancel" (click)="closeModal()" [disabled]="submitting">
+          Annuler
+        </button>
+        <button type="button"
+                [ngClass]="modalDecision === 'ACCEPT' ? 'btn-fd-accept' : 'btn-fd-reject'"
+                (click)="confirmDecision()"
+                [disabled]="submitting">
+          <span class="fd-spinner" *ngIf="submitting"></span>
+          <app-lucide-icon *ngIf="!submitting"
+            [name]="modalDecision === 'ACCEPT' ? 'check-circle' : 'x-circle'" [size]="16"></app-lucide-icon>
+          {{ modalDecision === 'ACCEPT' ? 'Confirmer' : 'Confirmer le refus' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

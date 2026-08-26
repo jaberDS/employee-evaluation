@@ -1,0 +1,22 @@
+<div class="atb-app-bg" *ngIf="authService.isAuthenticated()">
+  <app-header></app-header>
+
+  <div class="atb-layout">
+    <app-sidebar></app-sidebar>
+    <div class="atb-content-col">
+      <main class="atb-main">
+        <router-outlet></router-outlet>
+      </main>
+      <app-footer></app-footer>
+    </div>
+  </div>
+
+  <!-- Assistant : flottant, présent sur tous les écrans authentifiés. -->
+  <app-assistant></app-assistant>
+</div>
+
+  <router-outlet *ngIf="!authService.isAuthenticated()"></router-outlet>
+
+  @if (confirmService.request$ | async) {
+    <app-confirm-dialog></app-confirm-dialog>
+  }

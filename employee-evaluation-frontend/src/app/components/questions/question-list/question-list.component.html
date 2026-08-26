@@ -1,0 +1,419 @@
+<div class="enterprise-page question-page">
+
+  <!-- Hero -->
+  <header class="page-hero">
+    <div class="page-hero-left">
+      <div class="page-hero-icon">
+        <app-lucide-icon name="list-checks" [size]="28" ariaLabel="Questions"></app-lucide-icon>
+      </div>
+      <div>
+        <h1>Gestion des questions</h1>
+        <p *ngIf="evaluation">
+          Campagne : <strong>{{ evaluation.nomEvaluation }}</strong>
+          <span class="badge-campaign-inline" [ngClass]="'badge-campaign-' + (evaluation.statut?.toLowerCase() === 'brouillon' ? 'draft' : evaluation.statut?.toLowerCase() === 'ouverte' ? 'open' : evaluation.statut?.toLowerCase() === 'fermee' ? 'closed' : 'done')">
+            {{ evaluation.statut }}
+          </span>
+        </p>
+        <p *ngIf="!evaluation">Chargement de la campagne...</p>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <!-- Capacity bar -->
+      <div class="capacity-wrap" [class.capacity-full]="capacityFull">
+        <div class="capacity-label">
+          <app-lucide-icon name="list" [size]="14"></app-lucide-icon>
+          <span>{{ questions.length }}/{{ MAX_QUESTIONS }} questions</span>
+        </div>
+        <div class="capacity-track" role="progressbar" [attr.aria-valuenow]="questions.length" [attr.aria-valuemax]="MAX_QUESTIONS">
+          <div class="capacity-fill" [style.width.%]="capacityPercent" [class.capacity-fill-full]="capacityFull"></div>
+        </div>
+      </div>
+
+      <a *ngIf="evaluation?.statut === 'BROUILLON' && !capacityFull"
+         [routerLink]="['/questions/create', evaluationId]"
+         class="btn-enterprise-primary">
+        <app-lucide-icon name="plus" [size]="18"></app-lucide-icon>
+        Nouvelle question
+      </a>
+      <button *ngIf="capacityFull" class="btn-capacity-full" disabled title="Limite de 10 questions atteinte">
+        <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+        Complet (10/10)
+      </button>
+
+      <a [routerLink]="['/evaluations']" class="btn-back-hero">
+        <app-lucide-icon name="arrow-left" [size]="16"></app-lucide-icon>
+        Retour campagne
+      </a>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <section class="stats-row stats-row-4" aria-label="Statistiques questions">
+    <article class="stat-card-enterprise" style="animation-delay:0.05s">
+      <div class="stat-card-icon stat-icon-primary">
+        <app-lucide-icon name="list-checks" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.total }}</span>
+        <span class="stat-card-label">Total</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay:0.1s">
+      <div class="stat-card-icon stat-icon-success">
+        <app-lucide-icon name="check-circle" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.active }}</span>
+        <span class="stat-card-label">Actives</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay:0.15s">
+      <div class="stat-card-icon stat-icon-danger">
+        <app-lucide-icon name="eye-off" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.inactive }}</span>
+        <span class="stat-card-label">Inactives</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay:0.2s">
+      <div class="stat-card-icon stat-icon-warning">
+        <app-lucide-icon name="alert-circle" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.required }}</span>
+        <span class="stat-card-label">Obligatoires</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Filters -->
+  <div class="filters-bar" role="search">
+    <div class="search-field">
+      <app-lucide-icon name="search" [size]="18" className="search-icon-pos"></app-lucide-icon>
+      <input
+        type="search"
+        placeholder="Rechercher une question..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="currentPage = 1"
+        aria-label="Rechercher une question" />
+    </div>
+    <select class="filter-select" [(ngModel)]="typeFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par type">
+      <option value="ALL">Tous les types</option>
+      <option value="NOTE">Note 1-10</option>
+      <option value="OUI_NON">Oui / Non</option>
+      <option value="TEXTE">Texte libre</option>
+      <option value="COMMENTAIRE">Commentaire</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par statut">
+      <option value="ALL">Tous les statuts</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+    <button class="btn-filter-clear" (click)="clearFilters()" aria-label="Effacer les filtres">
+      <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+      Effacer
+    </button>
+  </div>
+
+  <!-- Table Panel -->
+  <section class="data-panel" aria-label="Liste des questions">
+
+    <!-- Loading skeleton -->
+    <div *ngIf="loading" class="state-loading">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-block" style="width:36px;height:36px;border-radius:10px"></div>
+        <div class="skeleton-block" style="flex:2;height:16px"></div>
+        <div class="skeleton-block" style="width:90px;height:22px;border-radius:20px"></div>
+        <div class="skeleton-block" style="width:60px;height:22px;border-radius:20px"></div>
+        <div class="skeleton-block" style="width:100px;height:16px"></div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && filteredQuestions.length === 0" class="state-empty">
+      <div class="state-empty-icon">
+        <app-lucide-icon name="list-x" [size]="40"></app-lucide-icon>
+      </div>
+      <h3>Aucune question trouvée</h3>
+      <p *ngIf="searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL'">
+        Modifiez vos filtres ou
+        <button class="link-btn" (click)="clearFilters()">effacez-les</button>
+      </p>
+      <p *ngIf="!searchTerm && typeFilter === 'ALL' && statusFilter === 'ALL'">
+        Ajoutez la première question à cette campagne
+      </p>
+      <a *ngIf="evaluation?.statut === 'BROUILLON' && !capacityFull && !searchTerm && typeFilter === 'ALL' && statusFilter === 'ALL'"
+         [routerLink]="['/questions/create', evaluationId]"
+         class="btn-enterprise-primary mt-empty">
+        <app-lucide-icon name="plus" [size]="18"></app-lucide-icon>
+        Ajouter une question
+      </a>
+    </div>
+
+    <!-- Table -->
+    <div class="data-table-wrap" *ngIf="!loading && filteredQuestions.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th (click)="sortBy('ordre')" style="width:60px">
+              <span class="th-inner">
+                <app-lucide-icon name="hash" [size]="14"></app-lucide-icon> N°
+                <app-lucide-icon *ngIf="sortColumn==='ordre'" [name]="sortDirection==='asc'?'chevron-up':'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('libelle')">
+              <span class="th-inner">
+                <app-lucide-icon name="help-circle" [size]="14"></app-lucide-icon> Question
+                <app-lucide-icon *ngIf="sortColumn==='libelle'" [name]="sortDirection==='asc'?'chevron-up':'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('typeQuestion')">
+              <span class="th-inner">
+                Type
+                <app-lucide-icon *ngIf="sortColumn==='typeQuestion'" [name]="sortDirection==='asc'?'chevron-up':'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('noteMax')" style="width:90px">
+              <span class="th-inner">
+                <app-lucide-icon name="star" [size]="14"></app-lucide-icon> Note max
+                <app-lucide-icon *ngIf="sortColumn==='noteMax'" [name]="sortDirection==='asc'?'chevron-up':'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('obligatoire')" style="width:110px">
+              <span class="th-inner">
+                Obligatoire
+                <app-lucide-icon *ngIf="sortColumn==='obligatoire'" [name]="sortDirection==='asc'?'chevron-up':'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('actif')" style="width:100px">
+              <span class="th-inner">
+                Statut
+                <app-lucide-icon *ngIf="sortColumn==='actif'" [name]="sortDirection==='asc'?'chevron-up':'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th class="text-center" style="width:140px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let q of paginatedQuestions; let i = index"
+              class="animate-fade-in"
+              [style.animation-delay.ms]="i * 45"
+              [class.row-inactive]="!q.actif">
+
+            <!-- Order badge -->
+            <td>
+              <span class="ordre-badge">{{ getOrdreLabel(q.ordre) }}</span>
+            </td>
+
+            <!-- Question title + description -->
+            <td>
+              <div class="question-identity">
+                <div class="question-icon-wrap" [ngClass]="getTypeClass(q.typeQuestion)">
+                  <app-lucide-icon [name]="getTypeIcon(q.typeQuestion)" [size]="16"></app-lucide-icon>
+                </div>
+                <div class="question-text">
+                  <div class="q-libelle">{{ q.libelle }}</div>
+                  <div class="q-desc" *ngIf="q.description">{{ q.description }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Type badge -->
+            <td>
+              <span class="badge-type" [ngClass]="getTypeClass(q.typeQuestion)">
+                <app-lucide-icon [name]="getTypeIcon(q.typeQuestion)" [size]="12"></app-lucide-icon>
+                {{ getTypeLabel(q.typeQuestion) }}
+              </span>
+            </td>
+
+            <!-- Note max (only meaningful for NOTE type) -->
+            <td class="text-center">
+              <span *ngIf="q.typeQuestion === 'NOTE'" class="note-max-badge">
+                /{{ q.noteMax }}
+              </span>
+              <span *ngIf="q.typeQuestion !== 'NOTE'" class="text-muted-sm">—</span>
+            </td>
+
+            <!-- Obligatoire -->
+            <td class="text-center">
+              <span class="badge-bool" [ngClass]="q.obligatoire ? 'badge-bool-yes' : 'badge-bool-no'">
+                <app-lucide-icon [name]="q.obligatoire ? 'check-circle' : 'x'" [size]="12"></app-lucide-icon>
+                {{ q.obligatoire ? 'Oui' : 'Non' }}
+              </span>
+            </td>
+
+            <!-- Actif toggle -->
+            <td class="text-center">
+              <button class="toggle-actif-btn"
+                      [class.toggle-active]="q.actif"
+                      [class.toggle-inactive]="!q.actif"
+                      (click)="toggleActif(q)"
+                      [disabled]="evaluation?.statut !== 'BROUILLON'"
+                      [title]="q.actif ? 'Désactiver la question' : 'Activer la question'"
+                      [attr.aria-label]="q.actif ? 'Désactiver' : 'Activer'">
+                <span class="toggle-dot"></span>
+                {{ q.actif ? 'Active' : 'Inactive' }}
+              </button>
+            </td>
+
+            <!-- Actions -->
+            <td>
+              <div class="action-group">
+                <button class="btn-icon-action btn-icon-view" (click)="openDetail(q)" title="Voir les détails" aria-label="Voir">
+                  <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
+                </button>
+                <a *ngIf="evaluation?.statut === 'BROUILLON'"
+                   [routerLink]="['/questions/edit', q.id]"
+                   class="btn-icon-action btn-icon-edit" title="Modifier" aria-label="Modifier">
+                  <app-lucide-icon name="pen" [size]="16"></app-lucide-icon>
+                </a>
+                <button *ngIf="evaluation?.statut === 'BROUILLON'"
+                        class="btn-icon-action btn-icon-delete"
+                        (click)="deleteQuestion(q)"
+                        title="Supprimer" aria-label="Supprimer">
+                  <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer + Pagination -->
+    <div class="panel-footer" *ngIf="!loading && filteredQuestions.length > 0">
+      <span>
+        <app-lucide-icon name="list-checks" [size]="14"></app-lucide-icon>
+        {{ filteredQuestions.length }} question(s) affichée(s)
+        <span *ngIf="searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL'">
+          ({{ questions.length }} au total)
+        </span>
+      </span>
+      <nav class="pagination" aria-label="Pagination">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Page précédente">
+          <app-lucide-icon name="chevron-left" [size]="16"></app-lucide-icon>
+        </button>
+        <button
+          *ngFor="let p of pageNumbers"
+          (click)="goToPage(p)"
+          [class.active]="p === currentPage"
+          [attr.aria-label]="'Page ' + p"
+          [attr.aria-current]="p === currentPage ? 'page' : null">
+          {{ p }}
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" aria-label="Page suivante">
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </button>
+      </nav>
+    </div>
+  </section>
+</div>
+
+<!-- ─── Detail Modal ─────────────────────────────────────────────────────── -->
+<div class="qmodal-backdrop" *ngIf="showDetailModal" (click)="closeDetail()" role="dialog" aria-modal="true" aria-label="Détails de la question">
+  <div class="qmodal-card" (click)="$event.stopPropagation()">
+    <div class="qmodal-header">
+      <div class="qmodal-header-left">
+        <div class="qmodal-icon" [ngClass]="getTypeClass(selectedQuestion!.typeQuestion)">
+          <app-lucide-icon [name]="getTypeIcon(selectedQuestion!.typeQuestion)" [size]="22"></app-lucide-icon>
+        </div>
+        <div>
+          <h2 class="qmodal-title">Détails de la question</h2>
+          <span class="badge-type" [ngClass]="getTypeClass(selectedQuestion!.typeQuestion)">
+            {{ getTypeLabel(selectedQuestion!.typeQuestion) }}
+          </span>
+        </div>
+      </div>
+      <button class="qmodal-close" (click)="closeDetail()" aria-label="Fermer">
+        <app-lucide-icon name="x" [size]="20"></app-lucide-icon>
+      </button>
+    </div>
+
+    <div class="qmodal-body" *ngIf="selectedQuestion">
+      <div class="qmodal-row">
+        <span class="qmodal-label">
+          <app-lucide-icon name="hash" [size]="14"></app-lucide-icon> Ordre
+        </span>
+        <span class="qmodal-value">
+          <span class="ordre-badge">{{ getOrdreLabel(selectedQuestion.ordre) }}</span>
+        </span>
+      </div>
+
+      <div class="qmodal-row qmodal-row-full">
+        <span class="qmodal-label">
+          <app-lucide-icon name="help-circle" [size]="14"></app-lucide-icon> Libellé
+        </span>
+        <span class="qmodal-value qmodal-libelle">{{ selectedQuestion.libelle }}</span>
+      </div>
+
+      <div class="qmodal-row qmodal-row-full" *ngIf="selectedQuestion.description">
+        <span class="qmodal-label">
+          <app-lucide-icon name="align-left" [size]="14"></app-lucide-icon> Description
+        </span>
+        <span class="qmodal-value">{{ selectedQuestion.description }}</span>
+      </div>
+
+      <div class="qmodal-row">
+        <span class="qmodal-label">
+          <app-lucide-icon name="star" [size]="14"></app-lucide-icon> Note maximale
+        </span>
+        <span class="qmodal-value">
+          <span *ngIf="selectedQuestion.typeQuestion === 'NOTE'" class="note-max-badge">/{{ selectedQuestion.noteMax }}</span>
+          <span *ngIf="selectedQuestion.typeQuestion !== 'NOTE'" class="text-muted-sm">Non applicable</span>
+        </span>
+      </div>
+
+      <div class="qmodal-row">
+        <span class="qmodal-label">
+          <app-lucide-icon name="alert-circle" [size]="14"></app-lucide-icon> Obligatoire
+        </span>
+        <span class="qmodal-value">
+          <span class="badge-bool" [ngClass]="selectedQuestion.obligatoire ? 'badge-bool-yes' : 'badge-bool-no'">
+            <app-lucide-icon [name]="selectedQuestion.obligatoire ? 'check-circle' : 'x'" [size]="12"></app-lucide-icon>
+            {{ selectedQuestion.obligatoire ? 'Oui' : 'Non' }}
+          </span>
+        </span>
+      </div>
+
+      <div class="qmodal-row">
+        <span class="qmodal-label">
+          <app-lucide-icon name="activity" [size]="14"></app-lucide-icon> Statut
+        </span>
+        <span class="qmodal-value">
+          <span class="badge-status" [ngClass]="selectedQuestion.actif ? 'badge-status-active' : 'badge-status-inactive'">
+            <span class="status-dot"></span>
+            {{ selectedQuestion.actif ? 'Active' : 'Inactive' }}
+          </span>
+        </span>
+      </div>
+
+      <div class="qmodal-row">
+        <span class="qmodal-label">
+          <app-lucide-icon name="calendar" [size]="14"></app-lucide-icon> Créée le
+        </span>
+        <span class="qmodal-value">{{ formatDate(selectedQuestion.createdAt) }}</span>
+      </div>
+
+      <div class="qmodal-row">
+        <span class="qmodal-label">
+          <app-lucide-icon name="clock" [size]="14"></app-lucide-icon> Modifiée le
+        </span>
+        <span class="qmodal-value">{{ formatDate(selectedQuestion.updatedAt) }}</span>
+      </div>
+    </div>
+
+    <div class="qmodal-footer">
+      <a *ngIf="evaluation?.statut === 'BROUILLON'"
+         [routerLink]="['/questions/edit', selectedQuestion!.id]"
+         class="btn-enterprise-primary" (click)="closeDetail()">
+        <app-lucide-icon name="pen" [size]="16"></app-lucide-icon>
+        Modifier
+      </a>
+      <button class="emp-btn-secondary" (click)="closeDetail()">
+        <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>

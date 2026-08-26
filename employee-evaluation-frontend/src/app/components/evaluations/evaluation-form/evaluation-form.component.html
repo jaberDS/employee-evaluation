@@ -1,0 +1,183 @@
+<div class="camp-form-wrapper">
+  <!-- SVG Background Pattern -->
+  <svg class="camp-bg-pattern" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id="camp-grid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.06"/>
+      </pattern>
+      <linearGradient id="camp-grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#8B0000;stop-opacity:0.06"/>
+        <stop offset="100%" style="stop-color:#C62828;stop-opacity:0.02"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#camp-grid)"/>
+    <circle cx="700" cy="100" r="220" fill="url(#camp-grad1)"/>
+    <circle cx="100" cy="500" r="280" fill="url(#camp-grad1)"/>
+  </svg>
+
+  <div class="camp-form-container">
+    <!-- Page Header -->
+    <div class="camp-form-page-header">
+      <div class="camp-header-left">
+        <div class="camp-header-icon-box">
+          <app-lucide-icon [name]="isEdit ? 'pen-square' : 'megaphone'" [size]="26"></app-lucide-icon>
+        </div>
+        <div>
+          <h1 class="camp-page-title">{{ isEdit ? 'Modifier la campagne' : 'Nouvelle campagne' }}</h1>
+          <p class="camp-page-subtitle">
+            {{ isEdit ? 'Modifiez les informations de la campagne' : 'Créez une nouvelle campagne d\'évaluation' }}
+          </p>
+        </div>
+      </div>
+      <a routerLink="/evaluations" class="camp-btn-back">
+        <app-lucide-icon name="arrow-left" [size]="18"></app-lucide-icon>
+        <span>Retour</span>
+      </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="camp-form-card">
+      <div class="camp-card-accent-line"></div>
+
+      <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()" class="camp-form-body" autocomplete="off">
+
+        <!-- Campaign Name -->
+        <div class="camp-field-group" [class.camp-field-error]="submitted && f['nomEvaluation'].errors" [class.camp-field-success]="submitted && !f['nomEvaluation'].errors && f['nomEvaluation'].value">
+          <div class="camp-input-wrap">
+            <span class="camp-input-icon">
+              <app-lucide-icon name="megaphone" [size]="18"></app-lucide-icon>
+            </span>
+            <input type="text" id="camp-name" formControlName="nomEvaluation" placeholder=" " class="camp-input">
+            <label for="camp-name" class="camp-float-label">Nom de la campagne</label>
+            <span class="camp-focus-line"></span>
+          </div>
+          <div class="camp-field-feedback" *ngIf="submitted && f['nomEvaluation'].errors">
+            <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+            Le nom de la campagne est obligatoire
+          </div>
+        </div>
+
+        <!-- Création : aperçu du couple de campagnes qui sera généré -->
+        <div class="camp-paire" *ngIf="!isEdit">
+          <span class="camp-paire-legend">
+            <app-lucide-icon name="layers" [size]="15"></app-lucide-icon>
+            Deux campagnes seront créées
+          </span>
+          <div class="camp-paire-grid">
+            <div class="camp-paire-card camp-paire-agence">
+              <span class="camp-paire-icon">
+                <app-lucide-icon name="building" [size]="20"></app-lucide-icon>
+              </span>
+              <span class="camp-paire-text">
+                <strong>{{ (f['nomEvaluation'].value || 'Nouvelle campagne') }} — Agence</strong>
+                <small>Employés du réseau commercial</small>
+              </span>
+            </div>
+            <div class="camp-paire-card camp-paire-siege">
+              <span class="camp-paire-icon">
+                <app-lucide-icon name="landmark" [size]="20"></app-lucide-icon>
+              </span>
+              <span class="camp-paire-text">
+                <strong>{{ (f['nomEvaluation'].value || 'Nouvelle campagne') }} — Siège</strong>
+                <small>Employés des fonctions support</small>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Édition : la population est fixée à la création, on la rappelle seulement -->
+        <div class="camp-paire camp-paire-readonly" *ngIf="isEdit">
+          <span class="camp-paire-legend">
+            <app-lucide-icon name="building" [size]="15"></app-lucide-icon>
+            Population ciblée
+          </span>
+          <div class="camp-paire-card"
+               [class.camp-paire-agence]="typeAffectation === 'AGENCE'"
+               [class.camp-paire-siege]="typeAffectation !== 'AGENCE'">
+            <span class="camp-paire-icon">
+              <app-lucide-icon [name]="typeAffectation === 'AGENCE' ? 'building' : 'landmark'" [size]="20"></app-lucide-icon>
+            </span>
+            <span class="camp-paire-text">
+              <strong>{{ typeAffectation === 'AGENCE' ? 'Agence' : 'Siège' }}</strong>
+              <small>Définie à la création, non modifiable</small>
+            </span>
+          </div>
+        </div>
+
+        <!-- Dates Row -->
+        <div class="camp-dates-grid">
+          <!-- Start Date -->
+          <div class="camp-field-group" [class.camp-field-error]="submitted && f['dateDebut'].errors" [class.camp-field-success]="submitted && !f['dateDebut'].errors && f['dateDebut'].value">
+            <div class="camp-input-wrap">
+              <span class="camp-input-icon">
+                <app-lucide-icon name="calendar" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="datetime-local" id="camp-start" formControlName="dateDebut" class="camp-input camp-date-input">
+              <label for="camp-start" class="camp-float-label camp-float-label-date">Date de début</label>
+              <span class="camp-focus-line"></span>
+            </div>
+            <div class="camp-field-feedback" *ngIf="submitted && f['dateDebut'].errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              La date de début est obligatoire
+            </div>
+          </div>
+
+          <!-- End Date -->
+          <div class="camp-field-group" [class.camp-field-error]="submitted && f['dateFin'].errors" [class.camp-field-success]="submitted && !f['dateFin'].errors && f['dateFin'].value">
+            <div class="camp-input-wrap">
+              <span class="camp-input-icon">
+                <app-lucide-icon name="clock" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="datetime-local" id="camp-end" formControlName="dateFin" class="camp-input camp-date-input">
+              <label for="camp-end" class="camp-float-label camp-float-label-date">Date de fin</label>
+              <span class="camp-focus-line"></span>
+            </div>
+            <div class="camp-field-feedback" *ngIf="submitted && f['dateFin'].errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              La date de fin est obligatoire
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="camp-info-card">
+          <div class="camp-info-icon">
+            <app-lucide-icon name="info" [size]="20"></app-lucide-icon>
+          </div>
+          <div class="camp-info-content">
+            <span class="camp-info-title">Information</span>
+            <span class="camp-info-text" *ngIf="!isEdit">
+              Les deux populations de la banque sont évaluées sur des référentiels distincts :
+              cette saisie génère <strong>une campagne Agence et une campagne Siège</strong>,
+              partageant le même nom et les mêmes dates. Vous ajouterez ensuite
+              les questions propres à chacune.
+            </span>
+            <span class="camp-info-text" *ngIf="isEdit">
+              Cette campagne ne concerne que les employés affectés
+              <strong>{{ typeAffectation === 'AGENCE' ? 'en Agence' : 'au Siège' }}</strong>.
+              Sa campagne jumelle se modifie séparément.
+            </span>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="camp-form-actions">
+          <button type="submit" class="camp-btn-primary" [disabled]="loading" (click)="createRipple($event)">
+            <span class="camp-btn-content" *ngIf="!loading">
+              <app-lucide-icon [name]="isEdit ? 'save' : 'megaphone'" [size]="18"></app-lucide-icon>
+              {{ isEdit ? 'Modifier la campagne' : 'Créer la campagne' }}
+            </span>
+            <span class="camp-btn-loading" *ngIf="loading">
+              <span class="camp-spinner"></span>
+              Traitement...
+            </span>
+          </button>
+          <a routerLink="/evaluations" class="camp-btn-secondary">
+            <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+            Annuler
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

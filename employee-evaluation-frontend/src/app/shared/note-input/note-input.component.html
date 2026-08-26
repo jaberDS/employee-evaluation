@@ -1,0 +1,51 @@
+<div class="ni" [ngClass]="['ni-' + variant, 'ni-tier-' + tier]"
+     [class.ni-filled]="hasValue"
+     [class.ni-invalid]="invalid">
+
+  <!-- Ligne de saisie : stepper − / champ réel / stepper + -->
+  <div class="ni-row">
+    <button type="button" class="ni-step ni-step-minus"
+            (click)="adjust(-step)"
+            [disabled]="!canDecrement"
+            [attr.aria-label]="'Diminuer la note de ' + step">
+      <app-lucide-icon name="minus" [size]="16"></app-lucide-icon>
+    </button>
+
+    <div class="ni-field-wrap">
+      <input #field
+             type="text"
+             class="ni-field"
+             inputmode="decimal"
+             autocomplete="off"
+             placeholder="—"
+             [value]="rawValue"
+             (input)="onInput($event)"
+             (keydown)="onKeydown($event)"
+             [attr.aria-label]="label || 'Note'"
+             [attr.aria-valuemin]="0"
+             [attr.aria-valuemax]="noteMax"
+             [attr.aria-valuenow]="value" />
+      <span class="ni-max">/ {{ noteMax }}</span>
+    </div>
+
+    <button type="button" class="ni-step ni-step-plus"
+            (click)="adjust(step)"
+            [disabled]="!canIncrement"
+            [attr.aria-label]="'Augmenter la note de ' + step">
+      <app-lucide-icon name="plus" [size]="16"></app-lucide-icon>
+    </button>
+
+    <span class="ni-tier">{{ tierLabel }}</span>
+  </div>
+
+  <!-- Jauge : proportion note / barème, cliquable pour positionner -->
+  <div class="ni-track"
+       (click)="onTrackClick($event)"
+       role="presentation"
+       [attr.title]="'Cliquer pour noter sur ' + noteMax">
+    <span #fill class="ni-fill"></span>
+    <span class="ni-ticks">
+      <i *ngFor="let t of [0,1,2,3]"></i>
+    </span>
+  </div>
+</div>

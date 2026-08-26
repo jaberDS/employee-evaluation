@@ -1,0 +1,287 @@
+<div class="emp-form-wrapper">
+  <!-- SVG Background Pattern -->
+  <svg class="emp-bg-pattern" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id="emp-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.08"/>
+      </pattern>
+      <linearGradient id="emp-grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#8B0000;stop-opacity:0.05"/>
+        <stop offset="100%" style="stop-color:#C62828;stop-opacity:0.02"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#emp-dots)"/>
+    <circle cx="150" cy="100" r="200" fill="url(#emp-grad1)"/>
+    <circle cx="650" cy="450" r="250" fill="url(#emp-grad1)"/>
+  </svg>
+
+  <div class="emp-form-container">
+    <!-- Page Header -->
+    <div class="emp-form-page-header" [@fadeSlideIn]>
+      <div class="emp-header-left">
+        <div class="emp-header-icon-box">
+          <app-lucide-icon [name]="isEdit ? 'pen-square' : 'user-plus'" [size]="26"></app-lucide-icon>
+        </div>
+        <div>
+          <h1 class="emp-page-title">{{ isEdit ? 'Modifier l\'employé' : 'Nouvel employé' }}</h1>
+          <p class="emp-page-subtitle">{{ isEdit ? 'Modifiez les informations de l\'employé' : 'Ajoutez un nouveau membre à l\'équipe' }}</p>
+        </div>
+      </div>
+      <a routerLink="/employees" class="emp-btn-back">
+        <app-lucide-icon name="arrow-left" [size]="18"></app-lucide-icon>
+        <span>Retour</span>
+      </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="emp-form-card" [@fadeSlideIn]>
+      <div class="emp-card-accent-line"></div>
+
+      <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="emp-form-body" autocomplete="off">
+        <div class="emp-form-grid">
+
+          <!-- Matricule -->
+          <div class="emp-field-group" [class.emp-field-error]="submitted && employeeForm.get('matricule')?.errors" [class.emp-field-success]="submitted && !employeeForm.get('matricule')?.errors && employeeForm.get('matricule')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="badge" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="text" id="emp-matricule" formControlName="matricule"
+                     placeholder=" " class="emp-input" maxlength="5">
+              <label for="emp-matricule" class="emp-float-label">Matricule</label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && employeeForm.get('matricule')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="employeeForm.get('matricule')?.errors?.['required']">Le matricule est obligatoire</span>
+              <span *ngIf="employeeForm.get('matricule')?.errors?.['pattern']">Le matricule doit contenir exactement 5 chiffres</span>
+            </div>
+          </div>
+
+          <!-- Nom -->
+          <div class="emp-field-group" [class.emp-field-error]="submitted && employeeForm.get('nom')?.errors" [class.emp-field-success]="submitted && !employeeForm.get('nom')?.errors && employeeForm.get('nom')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="user" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="text" id="emp-nom" formControlName="nom" placeholder=" " class="emp-input">
+              <label for="emp-nom" class="emp-float-label">Nom</label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && employeeForm.get('nom')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              Le nom est obligatoire
+            </div>
+          </div>
+
+          <!-- Prénom -->
+          <div class="emp-field-group" [class.emp-field-error]="submitted && employeeForm.get('prenom')?.errors" [class.emp-field-success]="submitted && !employeeForm.get('prenom')?.errors && employeeForm.get('prenom')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="user" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="text" id="emp-prenom" formControlName="prenom" placeholder=" " class="emp-input">
+              <label for="emp-prenom" class="emp-float-label">Prénom</label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && employeeForm.get('prenom')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              Le prénom est obligatoire
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="emp-field-group" [class.emp-field-error]="submitted && employeeForm.get('email')?.errors" [class.emp-field-success]="submitted && !employeeForm.get('email')?.errors && employeeForm.get('email')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="mail" [size]="18"></app-lucide-icon>
+              </span>
+              <input type="email" id="emp-email" formControlName="email" placeholder=" " class="emp-input">
+              <label for="emp-email" class="emp-float-label">Email</label>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && employeeForm.get('email')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="employeeForm.get('email')?.errors?.['required']">L'email est obligatoire</span>
+              <span *ngIf="employeeForm.get('email')?.errors?.['email']">Format d'email invalide</span>
+            </div>
+          </div>
+
+          <!-- Mot de passe (only on create) -->
+          <div class="emp-field-group" *ngIf="!isEdit" [class.emp-field-error]="submitted && employeeForm.get('motDePasse')?.errors" [class.emp-field-success]="submitted && !employeeForm.get('motDePasse')?.errors && employeeForm.get('motDePasse')?.value">
+            <div class="emp-input-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="lock" [size]="18"></app-lucide-icon>
+              </span>
+              <input [type]="showPassword ? 'text' : 'password'" id="emp-password" formControlName="motDePasse" placeholder=" " class="emp-input">
+              <label for="emp-password" class="emp-float-label">Mot de passe</label>
+              <button type="button" class="emp-password-toggle" (click)="showPassword = !showPassword" tabindex="-1">
+                <app-lucide-icon [name]="showPassword ? 'eye' : 'lock'" [size]="16"></app-lucide-icon>
+              </button>
+              <span class="emp-focus-line"></span>
+            </div>
+            <div class="emp-field-feedback" *ngIf="submitted && employeeForm.get('motDePasse')?.errors">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="employeeForm.get('motDePasse')?.errors?.['required']">Le mot de passe est obligatoire</span>
+              <span *ngIf="employeeForm.get('motDePasse')?.errors?.['minlength']">Minimum 4 caractères</span>
+            </div>
+          </div>
+
+          <!-- Rôle -->
+          <div class="emp-field-group">
+            <div class="emp-input-wrap emp-select-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="shield" [size]="18"></app-lucide-icon>
+              </span>
+              <select id="emp-role" formControlName="role" class="emp-input emp-select">
+                <option value="ADMIN">👑 Administrateur</option>
+                <option value="N1">🔷 Responsable N+1</option>
+                <option value="N2">🔶 Responsable N+2</option>
+                <option value="EMPLOYE">👤 Employé</option>
+              </select>
+              <label for="emp-role" class="emp-float-label emp-float-label-select">Rôle</label>
+              <span class="emp-select-chevron">
+                <app-lucide-icon name="chevron-down" [size]="16"></app-lucide-icon>
+              </span>
+              <span class="emp-focus-line"></span>
+            </div>
+          </div>
+
+          <!-- Affectation : détermine quel modèle de fiche d'évaluation
+               sera utilisé pour cet employé (Agence ou Siège) -->
+          <div class="emp-field-group emp-field-affectation">
+            <span class="emp-affectation-legend">
+              <app-lucide-icon name="building" [size]="15"></app-lucide-icon>
+              Affectation
+            </span>
+
+            <div class="emp-affectation-choice" role="radiogroup" aria-label="Affectation de l'employé">
+              <button type="button"
+                      class="emp-affectation-card emp-affectation-agence"
+                      [class.is-selected]="employeeForm.get('typeAffectation')?.value === 'AGENCE'"
+                      role="radio"
+                      [attr.aria-checked]="employeeForm.get('typeAffectation')?.value === 'AGENCE'"
+                      (click)="setAffectation('AGENCE')">
+                <span class="emp-affectation-icon">
+                  <app-lucide-icon name="building" [size]="22"></app-lucide-icon>
+                </span>
+                <span class="emp-affectation-text">
+                  <strong>Agence</strong>
+                  <small>Réseau commercial — fiche orientée performance</small>
+                </span>
+                <span class="emp-affectation-check">
+                  <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+                </span>
+              </button>
+
+              <button type="button"
+                      class="emp-affectation-card emp-affectation-siege"
+                      [class.is-selected]="employeeForm.get('typeAffectation')?.value === 'SIEGE'"
+                      role="radio"
+                      [attr.aria-checked]="employeeForm.get('typeAffectation')?.value === 'SIEGE'"
+                      (click)="setAffectation('SIEGE')">
+                <span class="emp-affectation-icon">
+                  <app-lucide-icon name="landmark" [size]="22"></app-lucide-icon>
+                </span>
+                <span class="emp-affectation-text">
+                  <strong>Siège</strong>
+                  <small>Fonctions support — fiche institutionnelle</small>
+                </span>
+                <span class="emp-affectation-check">
+                  <app-lucide-icon name="check-circle" [size]="18"></app-lucide-icon>
+                </span>
+              </button>
+            </div>
+
+            <div class="emp-affectation-hint">
+              <app-lucide-icon name="info" [size]="14"></app-lucide-icon>
+              <span *ngIf="!isEdit">
+                Cet employé ne sera évaluable que par les campagnes
+                <strong>{{ employeeForm.get('typeAffectation')?.value === 'AGENCE' ? 'Agence' : 'Siège' }}</strong>.
+              </span>
+              <span *ngIf="isEdit">
+                Changer l'affectation modifie les campagnes auxquelles cet employé est rattaché
+                ainsi que le modèle de fiche utilisé par son N+1.
+              </span>
+            </div>
+          </div>
+
+          <!-- N+1 -->
+          <div class="emp-field-group">
+            <div class="emp-input-wrap emp-select-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="users" [size]="18"></app-lucide-icon>
+              </span>
+              <select id="emp-n1" formControlName="n1Id" class="emp-input emp-select">
+                <option [ngValue]="null">-- Aucun N+1 --</option>
+                <option *ngFor="let emp of n1Candidates" [ngValue]="emp.id">
+                  {{ emp.nom }} {{ emp.prenom }} ({{ emp.matricule }})
+                </option>
+              </select>
+              <label for="emp-n1" class="emp-float-label emp-float-label-select">Responsable N+1</label>
+              <span class="emp-select-chevron">
+                <app-lucide-icon name="chevron-down" [size]="16"></app-lucide-icon>
+              </span>
+              <span class="emp-focus-line"></span>
+            </div>
+          </div>
+
+          <!-- N+2 -->
+          <div class="emp-field-group">
+            <div class="emp-input-wrap emp-select-wrap">
+              <span class="emp-input-icon">
+                <app-lucide-icon name="users" [size]="18"></app-lucide-icon>
+              </span>
+              <select id="emp-n2" formControlName="n2Id" class="emp-input emp-select">
+                <option [ngValue]="null">-- Aucun N+2 --</option>
+                <option *ngFor="let emp of n2Candidates" [ngValue]="emp.id">
+                  {{ emp.nom }} {{ emp.prenom }} ({{ emp.matricule }})
+                </option>
+              </select>
+              <label for="emp-n2" class="emp-float-label emp-float-label-select">Responsable N+2</label>
+              <span class="emp-select-chevron">
+                <app-lucide-icon name="chevron-down" [size]="16"></app-lucide-icon>
+              </span>
+              <span class="emp-focus-line"></span>
+            </div>
+          </div>
+
+          <!-- Actif (only on edit) -->
+          <div class="emp-field-group emp-field-toggle" *ngIf="isEdit">
+            <div class="emp-toggle-wrap">
+              <label class="emp-toggle">
+                <input type="checkbox" formControlName="actif">
+                <span class="emp-toggle-slider"></span>
+              </label>
+              <div class="emp-toggle-info">
+                <span class="emp-toggle-label">Statut du compte</span>
+                <span class="emp-toggle-status" [class.emp-status-active]="employeeForm.get('actif')?.value">
+                  {{ employeeForm.get('actif')?.value ? '● Actif' : '● Inactif' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Buttons -->
+        <div class="emp-form-actions">
+          <button type="submit" class="emp-btn-primary" [disabled]="loading" (click)="createRipple($event)">
+            <span class="emp-btn-content" *ngIf="!loading">
+              <app-lucide-icon [name]="isEdit ? 'save' : 'user-plus'" [size]="18"></app-lucide-icon>
+              {{ isEdit ? 'Modifier' : 'Créer l\'employé' }}
+            </span>
+            <span class="emp-btn-loading" *ngIf="loading">
+              <span class="emp-spinner"></span>
+              Traitement...
+            </span>
+          </button>
+          <a routerLink="/employees" class="emp-btn-secondary">
+            <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+            Annuler
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

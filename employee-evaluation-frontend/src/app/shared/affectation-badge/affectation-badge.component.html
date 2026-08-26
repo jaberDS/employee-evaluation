@@ -1,0 +1,7 @@
+<span class="aff-badge" [ngClass]="[
+      type === 'AGENCE' ? 'aff-agence' : 'aff-siege',
+      size === 'sm' ? 'aff-sm' : ''
+    ]">
+  <app-lucide-icon [name]="icon" [size]="size === 'sm' ? 11 : 13"></app-lucide-icon>
+  {{ label }}
+</span>

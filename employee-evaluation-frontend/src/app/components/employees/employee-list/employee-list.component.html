@@ -1,0 +1,214 @@
+<div class="enterprise-page employee-page">
+
+  <!-- Hero -->
+  <header class="page-hero">
+    <div class="page-hero-left">
+      <div class="page-hero-icon">
+        <app-lucide-icon name="users" [size]="28" ariaLabel="Employés"></app-lucide-icon>
+      </div>
+      <div>
+        <h1>Gestion des employés</h1>
+        <p>Gérez l'ensemble du personnel de la banque</p>
+      </div>
+    </div>
+    <a routerLink="/employees/create" class="btn-enterprise-primary">
+      <app-lucide-icon name="user-plus" [size]="18"></app-lucide-icon>
+      Nouvel employé
+    </a>
+  </header>
+
+  <!-- Stats -->
+  <section class="stats-row stats-row-4" aria-label="Statistiques employés">
+    <article class="stat-card-enterprise" style="animation-delay: 0.05s">
+      <div class="stat-card-icon stat-icon-primary">
+        <app-lucide-icon name="users" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.total }}</span>
+        <span class="stat-card-label">Total</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.1s">
+      <div class="stat-card-icon stat-icon-success">
+        <app-lucide-icon name="check-circle" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.active }}</span>
+        <span class="stat-card-label">Actifs</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.15s">
+      <div class="stat-card-icon stat-icon-danger">
+        <app-lucide-icon name="x" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.inactive }}</span>
+        <span class="stat-card-label">Inactifs</span>
+      </div>
+    </article>
+    <article class="stat-card-enterprise" style="animation-delay: 0.2s">
+      <div class="stat-card-icon stat-icon-warning">
+        <app-lucide-icon name="shield" [size]="22"></app-lucide-icon>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ displayCounts.admin }}</span>
+        <span class="stat-card-label">Admins</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Filters -->
+  <div class="filters-bar" role="search">
+    <div class="search-field">
+      <app-lucide-icon name="search" [size]="18" className="search-icon-pos"></app-lucide-icon>
+      <input
+        type="search"
+        placeholder="Rechercher un employé..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="currentPage = 1"
+        aria-label="Rechercher un employé" />
+    </div>
+    <select class="filter-select" [(ngModel)]="roleFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par rôle">
+      <option value="ALL">Tous les rôles</option>
+      <option value="ADMIN">Admin</option>
+      <option value="N1">N1</option>
+      <option value="N2">N2</option>
+      <option value="EMPLOYE">Employé</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="currentPage = 1" aria-label="Filtrer par statut">
+      <option value="ALL">Tous les statuts</option>
+      <option value="ACTIVE">Actif</option>
+      <option value="INACTIVE">Inactif</option>
+    </select>
+    <button class="btn-filter-clear" (click)="clearFilters()" aria-label="Effacer les filtres">
+      <app-lucide-icon name="x" [size]="16"></app-lucide-icon>
+      Effacer
+    </button>
+  </div>
+
+  <!-- Table Panel -->
+  <section class="data-panel" aria-label="Liste des employés">
+
+    <!-- Loading skeleton -->
+    <div *ngIf="loading" class="state-loading">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-block" style="width:40px;height:40px;border-radius:12px"></div>
+        <div class="skeleton-block" style="flex:1;height:16px"></div>
+        <div class="skeleton-block" style="width:80px;height:16px"></div>
+        <div class="skeleton-block" style="width:60px;height:24px;border-radius:20px"></div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && filteredEmployees.length === 0" class="state-empty">
+      <div class="state-empty-icon">
+        <app-lucide-icon name="users" [size]="36"></app-lucide-icon>
+      </div>
+      <h3>Aucun employé trouvé</h3>
+      <p>Modifiez vos filtres ou ajoutez un nouvel employé</p>
+    </div>
+
+    <!-- Table -->
+    <div class="data-table-wrap" *ngIf="!loading && filteredEmployees.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th (click)="sortBy('matricule')">
+              <span class="th-inner"><app-lucide-icon name="hash" [size]="14"></app-lucide-icon> Matricule
+                <app-lucide-icon *ngIf="sortColumn === 'matricule'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('nom')">
+              <span class="th-inner"><app-lucide-icon name="user" [size]="14"></app-lucide-icon> Employé
+                <app-lucide-icon *ngIf="sortColumn === 'nom'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('email')">
+              <span class="th-inner"><app-lucide-icon name="mail" [size]="14"></app-lucide-icon> Email
+                <app-lucide-icon *ngIf="sortColumn === 'email'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('role')">
+              <span class="th-inner">Rôle
+                <app-lucide-icon *ngIf="sortColumn === 'role'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th (click)="sortBy('actif')">
+              <span class="th-inner">Statut
+                <app-lucide-icon *ngIf="sortColumn === 'actif'" [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="14"></app-lucide-icon>
+              </span>
+            </th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of paginatedEmployees; let i = index" [style.animation-delay.ms]="i * 40" class="animate-fade-in">
+            <td><strong>{{ emp.matricule }}</strong></td>
+            <td>
+              <div class="row-identity">
+                <div class="row-avatar">{{ getInitials(emp) }}</div>
+                <div>
+                  <div class="row-name">{{ emp.prenom }} {{ emp.nom }}</div>
+                  <div class="row-sub">{{ emp.role }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ emp.email }}</td>
+            <td>
+              <span class="badge-role" [ngClass]="getRoleClass(emp.role)">
+                <app-lucide-icon [name]="getRoleIcon(emp.role)" [size]="12"></app-lucide-icon>
+                {{ emp.role }}
+              </span>
+            </td>
+            <td>
+              <span class="badge-status" [ngClass]="emp.actif ? 'badge-status-active' : 'badge-status-inactive'">
+                <span class="status-dot"></span>
+                {{ emp.actif ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <a [routerLink]="['/employees', emp.id]" class="btn-icon-action btn-icon-view" title="Voir les détails" aria-label="Voir">
+                  <app-lucide-icon name="eye" [size]="16"></app-lucide-icon>
+                </a>
+                <a [routerLink]="['/employees/edit', emp.id]" class="btn-icon-action btn-icon-edit" title="Modifier" aria-label="Modifier">
+                  <app-lucide-icon name="pen" [size]="16"></app-lucide-icon>
+                </a>
+                <button class="btn-icon-action btn-icon-delete" (click)="deleteEmployee(emp)" title="Supprimer" aria-label="Supprimer">
+                  <app-lucide-icon name="trash-2" [size]="16"></app-lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer + Pagination -->
+    <div class="panel-footer" *ngIf="!loading && filteredEmployees.length > 0">
+      <span>
+        <app-lucide-icon name="users" [size]="14"></app-lucide-icon>
+        {{ filteredEmployees.length }} employé(s) affiché(s)
+        <span *ngIf="searchTerm || roleFilter !== 'ALL' || statusFilter !== 'ALL'">
+          ({{ employees.length }} au total)
+        </span>
+      </span>
+      <nav class="pagination" aria-label="Pagination">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Page précédente">
+          <app-lucide-icon name="chevron-left" [size]="16"></app-lucide-icon>
+        </button>
+        <button
+          *ngFor="let p of pageNumbers"
+          (click)="goToPage(p)"
+          [class.active]="p === currentPage"
+          [attr.aria-label]="'Page ' + p"
+          [attr.aria-current]="p === currentPage ? 'page' : null">
+          {{ p }}
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" aria-label="Page suivante">
+          <app-lucide-icon name="chevron-right" [size]="16"></app-lucide-icon>
+        </button>
+      </nav>
+    </div>
+  </section>
+</div>

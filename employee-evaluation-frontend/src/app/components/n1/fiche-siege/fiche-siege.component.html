@@ -1,0 +1,212 @@
+<div class="sg-page">
+
+  <!-- ══ Colonne principale — le « document » ═══════════════════════════ -->
+  <div class="sg-doc">
+
+    <!-- ── En-tête administratif ───────────────────────────────────────── -->
+    <header class="sg-letterhead" #letterhead>
+      <div class="sg-rule" #rule></div>
+
+      <div class="sg-letterhead-top">
+        <button class="sg-back" (click)="cancel.emit()" aria-label="Retour">
+          <app-lucide-icon name="arrow-left" [size]="17"></app-lucide-icon>
+          <span>Retour</span>
+        </button>
+        <span class="sg-doc-type">
+          <app-lucide-icon name="landmark" [size]="12"></app-lucide-icon>
+          Fiche d'évaluation — Siège
+        </span>
+      </div>
+
+      <h1 class="sg-title">{{ campaign?.nomEvaluation }}</h1>
+
+      <!-- Métadonnées façon en-tête de document -->
+      <dl class="sg-meta">
+        <div class="sg-meta-item">
+          <dt>Collaborateur</dt>
+          <dd>{{ employee?.prenom }} {{ employee?.nom }}</dd>
+        </div>
+        <div class="sg-meta-item">
+          <dt>Matricule</dt>
+          <dd>{{ employee?.matricule || '—' }}</dd>
+        </div>
+        <div class="sg-meta-item">
+          <dt>Affectation</dt>
+          <dd>Siège</dd>
+        </div>
+        <div class="sg-meta-item">
+          <dt>Période</dt>
+          <dd>
+            {{ campaign?.dateDebut | date:'dd/MM/yyyy' }}
+            &ndash;
+            {{ campaign?.dateFin | date:'dd/MM/yyyy' }}
+          </dd>
+        </div>
+        <div class="sg-meta-item">
+          <dt>Articles renseignés</dt>
+          <dd>{{ answeredCount }} sur {{ questions.length }}</dd>
+        </div>
+      </dl>
+
+      <div class="sg-progress">
+        <div class="sg-progress-track">
+          <div class="sg-progress-fill"
+               #progressFill
+               [class.sg-progress-done]="progressPct === 100"></div>
+        </div>
+        <span class="sg-progress-pct">{{ progressPct }} %</span>
+      </div>
+
+      <div class="sg-autosave" *ngIf="autoSaveLabel" @fadeIn>
+        <app-lucide-icon name="save" [size]="12"></app-lucide-icon>
+        {{ autoSaveLabel }}
+      </div>
+    </header>
+
+    <!-- ── Corps du document : liste verticale d'articles ──────────────── -->
+    <section class="sg-articles" [@articlesStagger]="questions.length">
+      <article *ngFor="let q of questions; let i = index"
+               class="sg-article"
+               [id]="'q-' + q.id"
+               [class.sg-article-flag]="isUnanswered(q)">
+
+        <div class="sg-article-head">
+          <span class="sg-article-num">Article {{ i + 1 }}</span>
+          <span class="sg-article-type">
+            <app-lucide-icon [name]="getTypeIcon(q.typeQuestion)" [size]="11"></app-lucide-icon>
+            {{ getTypeLabel(q.typeQuestion) }}
+          </span>
+          <span class="sg-article-req" *ngIf="q.obligatoire">Obligatoire</span>
+          <span class="sg-article-state" *ngIf="isAnswered(q)">
+            <app-lucide-icon name="check" [size]="13"></app-lucide-icon>
+            Renseigné
+          </span>
+        </div>
+
+        <p class="sg-article-text">{{ q.libelle }}</p>
+        <p class="sg-article-desc" *ngIf="q.description">{{ q.description }}</p>
+
+        <div class="sg-article-flag-msg" *ngIf="isUnanswered(q)">
+          <app-lucide-icon name="alert-triangle" [size]="13"></app-lucide-icon>
+          Cet article doit être renseigné avant transmission.
+        </div>
+
+        <!-- ── NOTE : champ de saisie réel ────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'NOTE'" class="sg-note">
+          <span class="sg-note-label">Note portée au dossier</span>
+          <app-note-input variant="siege"
+                          [value]="getRatingValue(q.id!)"
+                          [rawValue]="scoreInputs[q.id!] || ''"
+                          [noteMax]="q.noteMax"
+                          [label]="'Note pour ' + q.libelle"
+                          [invalid]="isUnanswered(q)"
+                          (rawInput)="onScoreInput(q.id!, $event, q.noteMax)"
+                          (valueChange)="setAnswer(q.id!, $event)">
+          </app-note-input>
+        </div>
+
+        <!-- ── OUI / NON ─────────────────────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'OUI_NON'" class="sg-binary">
+          <label class="sg-radio" [class.sg-radio-on]="getOuiNonValue(q.id!) === true">
+            <input type="radio" [name]="'q' + q.id" [checked]="getOuiNonValue(q.id!) === true"
+                   (change)="setAnswer(q.id!, true)" />
+            <span class="sg-radio-mark"></span>
+            Satisfaisant
+          </label>
+          <label class="sg-radio" [class.sg-radio-off]="getOuiNonValue(q.id!) === false">
+            <input type="radio" [name]="'q' + q.id" [checked]="getOuiNonValue(q.id!) === false"
+                   (change)="setAnswer(q.id!, false)" />
+            <span class="sg-radio-mark"></span>
+            Non satisfaisant
+          </label>
+        </div>
+
+        <!-- ── TEXTE ─────────────────────────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'TEXTE'" class="sg-field">
+          <input type="text" class="sg-input"
+                 placeholder="Mention à porter au dossier..."
+                 [value]="getTextValue(q.id!)"
+                 (input)="setAnswer(q.id!, $any($event.target).value)"
+                 [attr.aria-label]="q.libelle" />
+        </div>
+
+        <!-- ── COMMENTAIRE ───────────────────────────────────────────── -->
+        <div *ngIf="q.typeQuestion === 'COMMENTAIRE'" class="sg-field">
+          <textarea class="sg-textarea" rows="4"
+                    placeholder="Développement..."
+                    [value]="getTextValue(q.id!)"
+                    (input)="setAnswer(q.id!, $any($event.target).value)"
+                    [attr.aria-label]="q.libelle"></textarea>
+        </div>
+
+      </article>
+    </section>
+
+    <!-- ── Appréciation générale ───────────────────────────────────────── -->
+    <section class="sg-closing">
+      <h2 class="sg-closing-title">Appréciation générale du responsable</h2>
+      <p class="sg-closing-hint">
+        Ce développement est facultatif. Il accompagne la fiche lors de la validation N+2.
+      </p>
+      <textarea class="sg-textarea sg-closing-area" rows="5"
+                placeholder="Appréciation d'ensemble, perspectives d'évolution, besoins en formation..."
+                [value]="commentaire"
+                (input)="commentaireChange.emit($any($event.target).value)"
+                aria-label="Appréciation générale"></textarea>
+    </section>
+
+    <!-- ── Pied de document ────────────────────────────────────────────── -->
+    <footer class="sg-footer">
+      <p class="sg-footer-note">
+        Après soumission, cette fiche est transmise au responsable N+2 pour validation,
+        puis au collaborateur pour prise de connaissance.
+      </p>
+      <div class="sg-footer-actions">
+        <button type="button" class="sg-btn-ghost" (click)="cancel.emit()">Annuler</button>
+        <button type="button" class="sg-btn-outline" (click)="saveDraft.emit()" [disabled]="submitting">
+          <app-lucide-icon name="save" [size]="16"></app-lucide-icon>
+          Enregistrer le brouillon
+        </button>
+        <button type="button" class="sg-btn-primary" (click)="submit.emit()" [disabled]="submitting">
+          <span *ngIf="!submitting" class="sg-btn-inner">
+            <app-lucide-icon name="file-check" [size]="17"></app-lucide-icon>
+            Transmettre au N+2
+          </span>
+          <span *ngIf="submitting" class="sg-btn-inner">
+            <span class="sg-spinner"></span>
+            Transmission...
+          </span>
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ══ Sommaire latéral (≥1200px) ═════════════════════════════════════ -->
+  <aside class="sg-toc" aria-label="Sommaire des articles">
+    <div class="sg-toc-inner">
+      <h3 class="sg-toc-title">Sommaire</h3>
+      <ol class="sg-toc-list">
+        <li *ngFor="let q of questions; let i = index">
+          <button type="button"
+                  class="sg-toc-item"
+                  [class.sg-toc-done]="isAnswered(q)"
+                  [class.sg-toc-flag]="isUnanswered(q)"
+                  (click)="scrollToQuestion(q.id!)">
+            <span class="sg-toc-dot"></span>
+            <span class="sg-toc-label">
+              <em>Art. {{ i + 1 }}</em>
+              {{ q.libelle }}
+            </span>
+          </button>
+        </li>
+      </ol>
+
+      <div class="sg-toc-summary">
+        <span>{{ answeredCount }} / {{ questions.length }}</span>
+        articles renseignés
+      </div>
+    </div>
+  </aside>
+
+</div>

@@ -1,0 +1,103 @@
+<div class="dashboard-wrapper">
+  <!-- En-tête ATB -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1>
+        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+      </h1>
+      <p class="welcome-text">
+        Bienvenue, <strong>{{ currentUser?.prenom }} {{ currentUser?.nom }}</strong>
+        <span class="role-badge">{{ currentUser?.role }}</span>
+      </p>
+    </div>
+    <div class="header-right">
+      <i class="fas fa-calendar-alt"></i>
+      {{ today | date:'dd/MM/yyyy' }}
+    </div>
+  </div>
+
+  <!-- Cartes statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card stat-blue">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Employés</span>
+        <span class="stat-value">{{ stats.totalEmployees || 0 }}</span>
+        <span class="stat-sub"><i class="fas fa-check-circle"></i> {{ stats.activeEmployees || 0 }} actifs</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-green">
+      <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Campagnes</span>
+        <span class="stat-value">{{ stats.totalEvaluations || 0 }}</span>
+        <span class="stat-sub"><i class="fas fa-play-circle"></i> {{ stats.openEvaluations || 0 }} ouvertes</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-cyan">
+      <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Évaluations</span>
+        <span class="stat-value">{{ stats.completedEvaluations || 0 }}</span>
+        <span class="stat-sub"><i class="fas fa-clock"></i> {{ stats.pendingEvaluations || 0 }} en attente</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-orange">
+      <div class="stat-icon"><i class="fas fa-star"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Note moyenne</span>
+        <span class="stat-value">{{ stats.averageNote || 0 }}/10</span>
+        <span class="stat-sub"><i class="fas fa-arrow-up"></i> +0.5 vs dernier</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ligne suivante -->
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card atb-card">
+        <div class="card-header">
+          <h5><i class="fas fa-rocket"></i> Actions rapides</h5>
+        </div>
+        <div class="card-body">
+          <a routerLink="/employees/create" class="action-btn">
+            <i class="fas fa-user-plus"></i> Nouvel employé
+          </a>
+          <a routerLink="/evaluations/create" class="action-btn">
+            <i class="fas fa-plus-circle"></i> Nouvelle campagne
+          </a>
+          <a routerLink="/fiches" class="action-btn">
+            <i class="fas fa-file-alt"></i> Voir les évaluations
+          </a>
+          <a routerLink="/employees" class="action-btn">
+            <i class="fas fa-users-cog"></i> Gérer les employés
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card atb-card">
+        <div class="card-header">
+          <h5><i class="fas fa-info-circle"></i> Informations</h5>
+        </div>
+        <div class="card-body">
+          <div class="info-box">
+            <p><strong>Total employés :</strong> {{ stats.totalEmployees || 0 }}</p>
+            <p><strong>Campagnes actives :</strong> {{ stats.totalEvaluations || 0 }}</p>
+            <p><strong>Évaluations terminées :</strong> {{ stats.completedEvaluations || 0 }}</p>
+            <p><strong>Note moyenne :</strong> {{ stats.averageNote || 0 }}/10</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pied de page -->
+  <div class="dashboard-footer">
+    &copy; {{ currentYear }} Arab Tunisian Bank - Tous droits réservés
+  </div>
+</div>

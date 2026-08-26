@@ -1,0 +1,440 @@
+<div class="dashboard-wrapper">
+
+  <!-- ===== HERO CARD ===== -->
+  <section class="hero-card animate-fade-in" aria-label="Bienvenue">
+    <div class="hero-bg-pattern" aria-hidden="true"></div>
+    <div class="hero-circle hero-circle-1" aria-hidden="true"></div>
+    <div class="hero-circle hero-circle-2" aria-hidden="true"></div>
+    <div class="hero-circle hero-circle-3" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <app-lucide-icon name="sparkles" [size]="14"></app-lucide-icon>
+          <span>Tableau de bord Administrateur</span>
+        </div>
+        <h1 class="hero-title">
+          <span class="wave" aria-hidden="true">👋</span>
+          {{ greeting }}, {{ currentUser?.prenom }} !
+        </h1>
+        <p class="hero-date">
+          <app-lucide-icon name="calendar" [size]="16"></app-lucide-icon>
+          <span class="text-capitalize">{{ today | date:'EEEE d MMMM yyyy' }}</span>
+        </p>
+        <p class="hero-summary">{{ quickSummary }}</p>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-avatar-block">
+          <div class="hero-avatar pulse-glow">
+            {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+          </div>
+          <div class="hero-user-info">
+            <span class="hero-user-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</span>
+            <span class="hero-role-badge">{{ currentUser?.role }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STATISTICS ===== -->
+  <section class="stats-grid" aria-label="Statistiques">
+
+    <article class="stat-card stat-employees animate-fade-in delay-1">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="users" [size]="26" ariaLabel="Employés"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Employés</span>
+        <span class="stat-value">{{ displayStats.totalEmployees }}</span>
+        <span class="stat-sub">
+          <app-lucide-icon name="check-circle" [size]="13"></app-lucide-icon>
+          {{ displayStats.activeEmployees }} actifs
+        </span>
+        <span class="stat-trend trend-up">
+          <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
+          {{ employeeProgress }}% actifs
+        </span>
+      </div>
+    </article>
+
+    <article class="stat-card stat-campaigns animate-fade-in delay-2">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="megaphone" [size]="26" ariaLabel="Campagnes"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Campagnes</span>
+        <span class="stat-value">{{ displayStats.totalEvaluations }}</span>
+        <span class="stat-sub">
+          <app-lucide-icon name="activity" [size]="13"></app-lucide-icon>
+          {{ displayStats.openEvaluations }} ouvertes
+        </span>
+        <span class="stat-trend" [class.trend-up]="displayStats.openEvaluations > 0" [class.trend-neutral]="displayStats.openEvaluations === 0">
+          {{ displayStats.openEvaluations > 0 ? 'En cours' : 'Aucune ouverte' }}
+        </span>
+      </div>
+    </article>
+
+    <article class="stat-card stat-evaluations animate-fade-in delay-3">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="clipboard-check" [size]="26" ariaLabel="Évaluations"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Évaluations</span>
+        <span class="stat-value">{{ displayStats.completedEvaluations }}</span>
+        <span class="stat-sub">
+          <app-lucide-icon name="clock" [size]="13"></app-lucide-icon>
+          {{ displayStats.pendingEvaluations }} en attente
+        </span>
+        <span class="stat-trend trend-up">
+          <app-lucide-icon name="trending-up" [size]="13"></app-lucide-icon>
+          {{ evaluationProgress }}% complété
+        </span>
+      </div>
+    </article>
+
+    <article class="stat-card stat-score animate-fade-in delay-4">
+      <div class="stat-icon-wrap">
+        <app-lucide-icon name="star" [size]="26" ariaLabel="Note moyenne"></app-lucide-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Note moyenne</span>
+        <span class="stat-value">
+          {{ displayStats.averageNote }}<small>/10</small>
+        </span>
+        <span class="stat-sub">
+          <app-lucide-icon name="award" [size]="13"></app-lucide-icon>
+          Performance globale
+        </span>
+        <span class="stat-trend" [class.trend-up]="displayStats.averageNote >= 5" [class.trend-neutral]="displayStats.averageNote < 5">
+          <app-lucide-icon name="star" [size]="13"></app-lucide-icon>
+          {{ displayStats.averageNote >= 7 ? 'Excellent' : displayStats.averageNote >= 5 ? 'Satisfaisant' : 'À améliorer' }}
+        </span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== MAIN GRID ===== -->
+  <div class="dashboard-grid">
+
+    <!-- Quick Actions -->
+    <section class="panel panel-actions animate-fade-in delay-2" aria-label="Actions rapides">
+      <header class="panel-header">
+        <app-lucide-icon name="zap" [size]="20"></app-lucide-icon>
+        <h2>Actions rapides</h2>
+      </header>
+      <div class="panel-body">
+        <a routerLink="/employees/create" class="action-card action-primary">
+          <div class="action-icon">
+            <app-lucide-icon name="user-plus" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Nouvel employé</span>
+            <span class="action-desc">Ajouter un membre à l'équipe</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+
+        <a routerLink="/evaluations/create" class="action-card action-success">
+          <div class="action-icon">
+            <app-lucide-icon name="rocket" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Nouvelle campagne</span>
+            <span class="action-desc">Lancer une évaluation</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+
+        <a routerLink="/fiches" class="action-card action-info">
+          <div class="action-icon">
+            <app-lucide-icon name="clipboard-list" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Voir les évaluations</span>
+            <span class="action-desc">Consulter les fiches</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+
+        <a routerLink="/employees" class="action-card action-warning">
+          <div class="action-icon">
+            <app-lucide-icon name="users" [size]="22"></app-lucide-icon>
+          </div>
+          <div class="action-text">
+            <span class="action-title">Gérer les employés</span>
+            <span class="action-desc">Liste complète du personnel</span>
+          </div>
+          <app-lucide-icon name="chevron-right" [size]="18" className="action-arrow"></app-lucide-icon>
+        </a>
+      </div>
+    </section>
+
+    <!-- Analytics Summary -->
+    <section class="panel panel-analytics animate-fade-in delay-3" aria-label="Résumé général">
+      <header class="panel-header">
+        <app-lucide-icon name="bar-chart-3" [size]="20"></app-lucide-icon>
+        <h2>Résumé général</h2>
+      </header>
+      <div class="panel-body">
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="users" [size]="18"></app-lucide-icon>
+            <span>Total employés</span>
+          </div>
+          <div class="analytics-value">{{ stats.totalEmployees }}</div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="employeeProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill fill-primary" [style.width.%]="employeeProgress"></div>
+          </div>
+          <span class="progress-label">{{ employeeProgress }}% actifs</span>
+        </div>
+
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="megaphone" [size]="18"></app-lucide-icon>
+            <span>Campagnes</span>
+          </div>
+          <div class="analytics-value">{{ stats.totalEvaluations }}</div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="campaignProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill fill-success" [style.width.%]="campaignProgress"></div>
+          </div>
+          <span class="progress-label">{{ stats.openEvaluations }} ouverte(s)</span>
+        </div>
+
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="clipboard-check" [size]="18"></app-lucide-icon>
+            <span>Évaluations terminées</span>
+          </div>
+          <div class="analytics-value">{{ stats.completedEvaluations }}</div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="evaluationProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill fill-info" [style.width.%]="evaluationProgress"></div>
+          </div>
+          <span class="progress-label">{{ evaluationProgress }}% complétion</span>
+        </div>
+
+        <div class="analytics-row">
+          <div class="analytics-label">
+            <app-lucide-icon name="clock" [size]="18"></app-lucide-icon>
+            <span>En attente de validation</span>
+          </div>
+          <div class="analytics-value">
+            {{ stats.pendingEvaluations }}
+            <span class="badge-pending" *ngIf="stats.pendingEvaluations > 0">En attente</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Circular Progress + Mini Chart -->
+    <section class="panel panel-performance animate-fade-in delay-4" aria-label="Performance">
+      <header class="panel-header">
+        <app-lucide-icon name="pie-chart" [size]="20"></app-lucide-icon>
+        <h2>Performance</h2>
+      </header>
+      <div class="panel-body performance-body">
+        <div class="circular-progress" role="img" [attr.aria-label]="'Taux de complétion ' + evaluationProgress + ' pourcent'">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
+            <circle
+              class="circle-fill"
+              cx="50" cy="50" r="42"
+              [style.stroke-dashoffset]="circularDashOffset">
+            </circle>
+          </svg>
+          <div class="circular-label">
+            <span class="circular-value">{{ evaluationProgress }}%</span>
+            <span class="circular-sub">Complétion</span>
+          </div>
+        </div>
+
+        <div class="mini-chart">
+          <div class="chart-bar" *ngFor="let h of [65, 80, 55, 90, 75, 85, 70]; let i = index"
+               [style.height.%]="h"
+               [style.animation-delay.ms]="i * 80">
+          </div>
+        </div>
+        <p class="chart-caption">Évolution des scores — 7 derniers mois</p>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="panel panel-activity animate-fade-in delay-5" aria-label="Activité récente" #activitySection>
+      <header class="panel-header">
+        <app-lucide-icon name="activity" [size]="20"></app-lucide-icon>
+        <h2>Activité récente</h2>
+      </header>
+      <div class="panel-body">
+        <ul class="activity-list" *ngIf="recentActivities.length > 0">
+          <li class="activity-item"
+              *ngFor="let item of recentActivities"
+              [id]="'activity-' + item.id"
+              [class.activity-item-highlighted]="highlightedActivityId === item.id"
+              (click)="clearHighlight()">
+            <div class="activity-icon" [style.background]="item.color + '18'" [style.color]="item.color">
+              <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
+            </div>
+            <div class="activity-content">
+              <span class="activity-text">{{ item.text }}</span>
+              <span class="activity-time">{{ item.time }}</span>
+            </div>
+            <button type="button" class="activity-detail-btn"
+                    *ngIf="highlightedActivityId === item.id && hasDetail(item)"
+                    (click)="openDetail(item, $event)">
+              <app-lucide-icon name="eye" [size]="13"></app-lucide-icon>
+              Voir les détails
+            </button>
+          </li>
+        </ul>
+        <div class="activity-empty" *ngIf="recentActivities.length === 0">
+          <app-lucide-icon name="activity" [size]="32"></app-lucide-icon>
+          <p>Aucune activité récente</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ongoing Campaign -->
+    <section class="panel panel-campaign animate-fade-in delay-5" aria-label="Campagne en cours">
+      <header class="panel-header">
+        <app-lucide-icon name="calendar" [size]="20"></app-lucide-icon>
+        <h2>Campagne en cours</h2>
+      </header>
+      <div class="panel-body campaign-body">
+        <div class="campaign-card" *ngIf="prochaineCampagne">
+          <div class="campaign-icon">
+            <app-lucide-icon name="megaphone" [size]="24"></app-lucide-icon>
+          </div>
+          <div>
+            <h3>{{ prochaineCampagne.nom }}</h3>
+            <p *ngIf="prochaineCampagne.dateDebut">Démarrée le {{ prochaineCampagne.dateDebut | date:'d MMMM yyyy' }}</p>
+            <div class="campaign-meta">
+              <span *ngIf="prochaineCampagne.participants != null"><app-lucide-icon name="users" [size]="14"></app-lucide-icon> {{ prochaineCampagne.participants }} participants</span>
+              <span *ngIf="prochaineCampagne.dureeJours != null"><app-lucide-icon name="clock" [size]="14"></app-lucide-icon> {{ prochaineCampagne.dureeJours }} jours</span>
+            </div>
+          </div>
+        </div>
+        <div class="activity-empty" *ngIf="!prochaineCampagne">
+          <app-lucide-icon name="calendar" [size]="32"></app-lucide-icon>
+          <p>Aucune campagne en cours</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Détail d'une activité : déroulé du workflow -->
+<div class="detail-overlay"
+     *ngIf="showDetail"
+     @backdropFade
+     (click)="closeDetail()"
+     role="presentation">
+  <div class="detail-modal"
+       @modalPop
+       (click)="$event.stopPropagation()"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="detail-modal-title">
+
+    <button type="button" class="detail-close" (click)="closeDetail()" aria-label="Fermer">
+      <app-lucide-icon name="x" [size]="18"></app-lucide-icon>
+    </button>
+
+    <!-- Chargement -->
+    <div class="detail-state" *ngIf="detailLoading">
+      <div class="detail-spinner" aria-hidden="true"></div>
+      <p>Chargement du détail…</p>
+    </div>
+
+    <!-- Erreur -->
+    <div class="detail-state detail-state-error" *ngIf="!detailLoading && detailError">
+      <app-lucide-icon name="alert-circle" [size]="32"></app-lucide-icon>
+      <p>{{ detailError }}</p>
+    </div>
+
+    <ng-container *ngIf="!detailLoading && !detailError && detail as d">
+      <header class="detail-header">
+        <h3 id="detail-modal-title">{{ d.titre }}</h3>
+        <p class="detail-subtitle" *ngIf="d.sousTitre">{{ d.sousTitre }}</p>
+        <span class="detail-status" *ngIf="d.statut">{{ statutLabel(d.statut) }}</span>
+      </header>
+
+      <!-- Enregistrement supprimé : rien à afficher au-delà du libellé -->
+      <div class="detail-state detail-state-empty" *ngIf="d.entiteSupprimee">
+        <app-lucide-icon name="trash-2" [size]="32"></app-lucide-icon>
+        <p>L'enregistrement concerné n'existe plus — seule la trace de l'action est conservée.</p>
+      </div>
+
+      <ng-container *ngIf="!d.entiteSupprimee">
+        <!-- Attributs de l'enregistrement -->
+        <div class="detail-infos" *ngIf="d.infos.length > 0">
+          <div class="detail-info" *ngFor="let info of d.infos">
+            <span class="detail-info-label">{{ info.label }}</span>
+            <span class="detail-info-value">{{ info.valeur }}</span>
+          </div>
+        </div>
+
+        <button type="button" class="detail-questions-btn"
+                *ngIf="detailFicheId"
+                (click)="questionsFicheId = detailFicheId">
+          <app-lucide-icon name="list-checks" [size]="15"></app-lucide-icon>
+          Voir les questions
+        </button>
+
+        <!-- Déroulé chronologique -->
+        <h4 class="detail-section-title" *ngIf="d.etapes.length > 0">
+          <app-lucide-icon name="activity" [size]="16"></app-lucide-icon>
+          Déroulé
+        </h4>
+
+        <ol class="timeline" *ngIf="d.etapes.length > 0">
+          <li class="timeline-step" *ngFor="let etape of d.etapes">
+            <div class="timeline-marker"
+                 [style.background]="(etape.couleur || '#8B0000') + '18'"
+                 [style.color]="etape.couleur || '#8B0000'"
+                 [style.border-color]="(etape.couleur || '#8B0000') + '40'">
+              <app-lucide-icon [name]="etapeIcon(etape)" [size]="15"></app-lucide-icon>
+            </div>
+            <div class="timeline-body">
+              <div class="timeline-head">
+                <span class="timeline-label">{{ etape.libelle }}</span>
+                <span class="timeline-date" *ngIf="etape.date">
+                  {{ etape.date | date:'d MMM yyyy, HH:mm' }}
+                </span>
+              </div>
+              <div class="timeline-actor" *ngIf="etape.acteur">
+                <app-lucide-icon name="user" [size]="12"></app-lucide-icon>
+                {{ etape.acteur }}
+                <span class="timeline-role" *ngIf="etape.acteurRole">{{ etape.acteurRole }}</span>
+              </div>
+              <div class="timeline-badges" *ngIf="etape.note != null || etape.decision">
+                <span class="timeline-note" [ngClass]="noteClass(etape.note)" *ngIf="etape.note != null">
+                  {{ etape.note }} / 10
+                </span>
+                <span class="timeline-decision"
+                      [class.decision-ok]="etape.decision === 'ACCEPTEE'"
+                      [class.decision-ko]="etape.decision === 'REFUSEE'"
+                      *ngIf="etape.decision">
+                  {{ etape.decision === 'ACCEPTEE' ? 'Acceptée' : 'Refusée' }}
+                </span>
+              </div>
+              <blockquote class="timeline-comment" *ngIf="etape.commentaire">
+                {{ etape.commentaire }}
+              </blockquote>
+            </div>
+          </li>
+        </ol>
+
+        <div class="detail-state detail-state-empty" *ngIf="d.etapes.length === 0">
+          <app-lucide-icon name="activity" [size]="32"></app-lucide-icon>
+          <p>Aucune étape enregistrée pour cet élément.</p>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>
+
+<app-fiche-questions-modal [ficheId]="questionsFicheId"
+                           (closed)="questionsFicheId = null"></app-fiche-questions-modal>
+

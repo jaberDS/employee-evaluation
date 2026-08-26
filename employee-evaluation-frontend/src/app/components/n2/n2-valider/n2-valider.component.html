@@ -1,0 +1,155 @@
+<div class="n2-dash enterprise-page">
+
+  <!-- ── Page header ─────────────────────────────────────────────────────── -->
+  <div class="n2v-header">
+    <div class="n2v-header-icon">
+      <app-lucide-icon name="check-double" [size]="26"></app-lucide-icon>
+    </div>
+    <div class="n2v-header-text">
+      <h1>Valider les évaluations</h1>
+      <p>Acceptez ou refusez les notes attribuées par les N+1 pour les campagnes ouvertes.</p>
+    </div>
+    <div class="n2v-header-count" *ngIf="!loading">
+      <span class="n2v-count-num">{{ pendingFiches.length }}</span>
+      <span class="n2v-count-label">en attente</span>
+    </div>
+  </div>
+
+  <!-- ── Loading skeleton ────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="n2-skeleton">
+    <div class="skel-list">
+      <div class="skel-row" *ngFor="let i of [1,2,3]" style="height:150px"></div>
+    </div>
+  </div>
+
+  <!-- ── Content ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading">
+
+    <!-- Empty state -->
+    <div *ngIf="pendingFiches.length === 0" class="n2-empty">
+      <div class="n2-empty-icon">
+        <app-lucide-icon name="check-circle" [size]="44"></app-lucide-icon>
+      </div>
+      <h3>Tout est à jour</h3>
+      <p>Aucune évaluation n'attend votre validation sur les campagnes ouvertes.</p>
+    </div>
+
+    <!-- Validation cards -->
+    <div class="n2-valid-grid" *ngIf="pendingFiches.length > 0">
+      <div class="n2-valid-card"
+           *ngFor="let f of pendingFiches; trackBy: trackById; let i = index"
+           [style.animation-delay.ms]="i * 70">
+
+        <div class="nvc-accent"></div>
+
+        <div class="nvc-header">
+          <div class="nvc-avatar" [ngClass]="'nvc-avatar-' + (i % 4)">
+            {{ getInitials(f.employePrenom, f.employeNom) }}
+          </div>
+          <div class="nvc-meta">
+            <h3 class="nvc-name">{{ f.employePrenom }} {{ f.employeNom }}</h3>
+            <span class="nvc-campaign">
+              <app-lucide-icon name="megaphone" [size]="12"></app-lucide-icon>
+              {{ f.evaluationNom }}
+            </span>
+            <app-affectation-badge *ngIf="f.typeAffectation"
+                                   [type]="f.typeAffectation" size="sm"></app-affectation-badge>
+          </div>
+          <div class="nvc-note" [ngClass]="noteClass(f.noteN1)">
+            <span class="nvc-note-val">{{ f.noteN1 }}</span>
+            <span class="nvc-note-max">/ 10</span>
+          </div>
+        </div>
+
+        <div class="nvc-comment" *ngIf="f.commentaireN1">
+          <div class="nvc-comment-label">
+            <app-lucide-icon name="message-square" [size]="13"></app-lucide-icon>
+            Commentaire N+1
+          </div>
+          <p>{{ f.commentaireN1 }}</p>
+        </div>
+        <div class="nvc-comment nvc-comment-empty" *ngIf="!f.commentaireN1">
+          <span>Aucun commentaire du N+1</span>
+        </div>
+
+        <div class="nvc-info-row">
+          <app-lucide-icon name="calendar" [size]="13"></app-lucide-icon>
+          <span>Évalué le {{ formatDate(f.dateCreation) }}</span>
+          <span class="badge-await">
+            <span class="badge-dot"></span>
+            En attente N+2
+          </span>
+        </div>
+
+        <div class="nvc-actions">
+          <button class="btn-n2-questions" (click)="questionsFicheId = f.id">
+            <app-lucide-icon name="list-checks" [size]="16"></app-lucide-icon>
+            Voir les questions
+          </button>
+          <button class="btn-n2-reject" (click)="openDecision(f, 'REJECT')">
+            <app-lucide-icon name="x-circle" [size]="16"></app-lucide-icon>
+            Refuser
+          </button>
+          <button class="btn-n2-accept" (click)="openDecision(f, 'ACCEPT')">
+            <app-lucide-icon name="check-circle" [size]="16"></app-lucide-icon>
+            Accepter la note
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Decision modal ─────────────────────────────────────────────────── -->
+  <div class="n2-modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="n2-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="n2-modal-accent" [class.accent-reject]="modalDecision === 'REJECT'"></div>
+
+      <div class="n2-modal-icon" [ngClass]="modalDecision === 'ACCEPT' ? 'modal-icon-accept' : 'modal-icon-reject'">
+        <app-lucide-icon [name]="modalDecision === 'ACCEPT' ? 'check-circle' : 'x-circle'" [size]="28"></app-lucide-icon>
+      </div>
+
+      <h3 class="n2-modal-title">
+        {{ modalDecision === 'ACCEPT' ? 'Valider l\'évaluation' : 'Refuser l\'évaluation' }}
+      </h3>
+      <p class="n2-modal-sub" *ngIf="modalFiche">
+        {{ modalDecision === 'ACCEPT'
+            ? 'Vous acceptez la note de'
+            : 'Vous renvoyez en révision l\'évaluation de' }}
+        <strong>{{ modalFiche.employePrenom }} {{ modalFiche.employeNom }}</strong>
+        (note <strong>{{ modalFiche.noteN1 }}/10</strong>).
+      </p>
+
+      <div class="n2-modal-field">
+        <label for="n2v-comment">
+          Commentaire {{ modalDecision === 'REJECT' ? '(requis)' : '(optionnel)' }}
+        </label>
+        <textarea
+          id="n2v-comment"
+          [(ngModel)]="modalComment"
+          rows="3"
+          [placeholder]="modalDecision === 'ACCEPT'
+            ? 'Ajoutez une remarque (facultatif)…'
+            : 'Expliquez la raison du refus…'"></textarea>
+      </div>
+
+      <div class="n2-modal-actions">
+        <button type="button" class="btn-n2-cancel" (click)="closeModal()" [disabled]="submitting">
+          Annuler
+        </button>
+        <button type="button"
+                [ngClass]="modalDecision === 'ACCEPT' ? 'btn-n2-accept' : 'btn-n2-reject'"
+                (click)="confirmDecision()"
+                [disabled]="submitting">
+          <span class="n2-spinner" *ngIf="submitting"></span>
+          <app-lucide-icon *ngIf="!submitting"
+            [name]="modalDecision === 'ACCEPT' ? 'check-circle' : 'x-circle'" [size]="16"></app-lucide-icon>
+          {{ modalDecision === 'ACCEPT' ? 'Confirmer la validation' : 'Confirmer le refus' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<app-fiche-questions-modal [ficheId]="questionsFicheId"
+                           (closed)="questionsFicheId = null"></app-fiche-questions-modal>

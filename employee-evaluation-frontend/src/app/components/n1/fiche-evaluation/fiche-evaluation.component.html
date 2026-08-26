@@ -1,0 +1,82 @@
+<div class="n1-eval-form-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="n1-form-skeleton">
+    <div class="skel-hero"></div>
+    <div class="skel-progress-bar"></div>
+    <div *ngFor="let i of [1,2,3]" class="skel-question"></div>
+  </div>
+
+  <!-- ── Success screen ────────────────────────────────────────────────── -->
+  <div *ngIf="showSuccess" class="n1-success-screen">
+    <div class="n1-success-card">
+      <div class="n1-success-anim">
+        <div class="success-ring"></div>
+        <div class="success-icon">
+          <app-lucide-icon name="check-circle" [size]="52"></app-lucide-icon>
+        </div>
+      </div>
+      <h2>Évaluation soumise avec succès !</h2>
+      <p>L'évaluation de <strong>{{ employee?.prenom }} {{ employee?.nom }}</strong>
+         a été transmise pour validation N+2.</p>
+      <div class="n1-success-actions">
+        <button class="btn-n1-primary" (click)="goBack()">
+          <app-lucide-icon name="arrow-left" [size]="16"></app-lucide-icon>
+          Continuer les évaluations
+        </button>
+        <button class="btn-n1-outline" (click)="goToHistory()">
+          <app-lucide-icon name="clock" [size]="16"></app-lucide-icon>
+          Voir l'historique
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Aiguillage : le design de la fiche dépend de l'affectation
+       de l'employé (réseau Agence ou Siège).
+       ══════════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="!loading && !showSuccess">
+
+    <app-fiche-agence *ngIf="typeAffectation === 'AGENCE'"
+                      [questions]="questions"
+                      [answers]="answers"
+                      [scoreInputs]="scoreInputs"
+                      [employee]="employee"
+                      [campaign]="campaign"
+                      [commentaire]="commentaire"
+                      [progressPct]="progressPct"
+                      [answeredCount]="answeredCount"
+                      [unansweredIds]="unansweredIds"
+                      [submitting]="submitting"
+                      [autoSaveLabel]="autoSaveLabel"
+                      (answerChange)="onAnswerChange($event)"
+                      (scoreInput)="onScoreInput($event)"
+                      (commentaireChange)="commentaire = $event"
+                      (submit)="submitEvaluation()"
+                      (saveDraft)="saveDraft()"
+                      (cancel)="goBack()">
+    </app-fiche-agence>
+
+    <app-fiche-siege *ngIf="typeAffectation === 'SIEGE'"
+                     [questions]="questions"
+                     [answers]="answers"
+                     [scoreInputs]="scoreInputs"
+                     [employee]="employee"
+                     [campaign]="campaign"
+                     [commentaire]="commentaire"
+                     [progressPct]="progressPct"
+                     [answeredCount]="answeredCount"
+                     [unansweredIds]="unansweredIds"
+                     [submitting]="submitting"
+                     [autoSaveLabel]="autoSaveLabel"
+                     (answerChange)="onAnswerChange($event)"
+                     (scoreInput)="onScoreInput($event)"
+                     (commentaireChange)="commentaire = $event"
+                     (submit)="submitEvaluation()"
+                     (saveDraft)="saveDraft()"
+                     (cancel)="goBack()">
+    </app-fiche-siege>
+
+  </ng-container>
+</div>

@@ -1,0 +1,36 @@
+package com.atb.employeeevaluation.service;
+
+import com.atb.employeeevaluation.dto.EvaluationN1Request;
+import com.atb.employeeevaluation.dto.FicheEvaluationDTO;
+import com.atb.employeeevaluation.dto.ValidationN2Request;
+import com.atb.employeeevaluation.enums.StatutFiche;
+
+import java.util.List;
+
+public interface FicheEvaluationService {
+
+    // Étape 1: N+1 évalue l'employé
+    FicheEvaluationDTO evaluerParN1(EvaluationN1Request request);
+
+    // Étape 2: N+2 valide ou refuse l'évaluation
+    FicheEvaluationDTO validerParN2(Long ficheId, ValidationN2Request request);
+
+    // Étape 3: Employé valide ou refuse son évaluation
+    FicheEvaluationDTO validerParEmploye(Long ficheId, boolean accepte, String commentaire);
+
+    // Consultation
+    FicheEvaluationDTO getFicheById(Long id);
+    List<FicheEvaluationDTO> getFichesByEmploye(Long employeId);
+    List<FicheEvaluationDTO> getFichesByEvaluation(Long evaluationId);
+    List<FicheEvaluationDTO> getFichesByStatut(StatutFiche statut);
+    List<FicheEvaluationDTO> getFichesByN1(Long n1Id);
+    List<FicheEvaluationDTO> getFichesByN2(Long n2Id);
+    List<FicheEvaluationDTO> getFichesByN2AndStatut(Long n2Id, StatutFiche statut);
+
+    // Utilitaires
+    void recalculerNoteFinale(Long ficheId);
+
+    // Suppression (uniquement fiches clôturées, campagne clôturée, N+2 et employé confirmatifs)
+    void deleteFiche(Long ficheId);
+    int deleteAllEligibleByN1(Long n1Id);
+}

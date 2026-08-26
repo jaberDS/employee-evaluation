@@ -1,0 +1,160 @@
+<header class="atb-header" role="banner">
+  <div class="container-fluid h-100 d-flex align-items-center justify-content-between gap-3">
+
+    <!-- Brand -->
+    <div class="d-flex align-items-center gap-2">
+      <a class="brand" [routerLink]="dashboardRoute" aria-label="ATB - Accueil">
+        <img src="/assets/atb-logo.png" alt="Logo ATB" />
+        <span class="brand-text">ATB · Évaluations RH</span>
+      </a>
+      <div class="header-greeting d-none d-lg-flex">
+        <span>{{ greeting }}</span>
+        <span>{{ authService.getUser()?.prenom }} {{ authService.getUser()?.nom }}</span>
+      </div>
+    </div>
+
+    <!-- Date & Time -->
+    <div class="header-datetime d-none d-md-flex">
+      <div class="header-datetime-item" aria-label="Date actuelle">
+        <app-lucide-icon name="calendar" [size]="15"></app-lucide-icon>
+        <span class="text-capitalize">{{ currentDate }}</span>
+      </div>
+      <div class="header-datetime-item" aria-live="polite" aria-label="Heure actuelle">
+        <app-lucide-icon name="clock" [size]="15"></app-lucide-icon>
+        <span>{{ currentTime }}</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="header-actions">
+
+      <!-- Search -->
+      <div class="header-search" role="search">
+        <app-lucide-icon name="search" [size]="16" className="header-search-icon"></app-lucide-icon>
+        <input
+          type="search"
+          placeholder="Rechercher..."
+          [(ngModel)]="searchQuery"
+          aria-label="Rechercher dans l'application" />
+      </div>
+
+      <!-- Dark mode -->
+      <button
+        class="header-icon-btn"
+        (click)="toggleDarkMode()"
+        [attr.aria-label]="isDarkMode ? 'Activer le mode clair' : 'Activer le mode sombre'"
+        [attr.aria-pressed]="isDarkMode">
+        <app-lucide-icon [name]="isDarkMode ? 'sun' : 'moon'" [size]="18"></app-lucide-icon>
+      </button>
+
+      <!-- Notifications -->
+      <div class="notif-wrapper" (click)="$event.stopPropagation()">
+        <button
+          class="header-icon-btn"
+          (click)="toggleNotifications($event)"
+          [attr.aria-label]="'Notifications (' + notificationCount + ' récentes)'"
+          [attr.aria-expanded]="showNotifications">
+          <app-lucide-icon name="bell" [size]="18" className="bell-icon"></app-lucide-icon>
+          <span class="notif-badge" *ngIf="notificationCount > 0" aria-hidden="true">{{ notificationCount }}</span>
+        </button>
+
+        <div class="notif-dropdown" *ngIf="showNotifications" @dropdownPop role="menu" aria-label="Activité récente">
+          <div class="notif-header">
+            <div class="notif-header-title">
+              <app-lucide-icon name="activity" [size]="16"></app-lucide-icon>
+              <span>Activité récente</span>
+            </div>
+            <span class="notif-count-pill" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+          </div>
+
+          <div class="notif-body" [@listStagger]="notifications.length">
+            <div class="notif-loading" *ngIf="loadingNotifications">
+              <span class="notif-spinner"></span>
+            </div>
+
+            <ng-container *ngIf="!loadingNotifications">
+              <div class="notif-item" *ngFor="let item of notifications" role="menuitem"
+                   (click)="selectNotification(item, $event)" style="cursor: pointer;">
+                <div class="notif-item-icon" [style.background]="item.color + '18'" [style.color]="item.color">
+                  <app-lucide-icon [name]="item.icon" [size]="16"></app-lucide-icon>
+                </div>
+                <div class="notif-item-content">
+                  <span class="notif-item-text">{{ item.text }}</span>
+                  <span class="notif-item-time">{{ item.time }}</span>
+                </div>
+              </div>
+
+              <div class="notif-empty" *ngIf="notifications.length === 0">
+                <app-lucide-icon name="bell" [size]="28"></app-lucide-icon>
+                <p>Aucune activité pour le moment</p>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="notif-footer" *ngIf="isAdmin && notifications.length > 0">
+            <button type="button" class="notif-clear-btn" (click)="clearAllNotifications($event)" [disabled]="clearingNotifications">
+              <span class="notif-spinner notif-spinner-sm" *ngIf="clearingNotifications"></span>
+              <app-lucide-icon *ngIf="!clearingNotifications" name="trash-2" [size]="15"></app-lucide-icon>
+              <span>Effacer tout l'historique</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User -->
+      <a routerLink="/profile" class="header-user-block text-decoration-none" aria-label="Mon profil">
+        <div class="header-avatar" aria-hidden="true">{{ initials }}</div>
+        <div class="header-user-info d-none d-md-flex">
+          <span class="header-user-name">
+            {{ authService.getUser()?.prenom }} {{ authService.getUser()?.nom }}
+          </span>
+          <span class="role-pill">{{ authService.getRole() }}</span>
+        </div>
+      </a>
+
+      <!-- Logout -->
+      <button class="btn-header-logout" (click)="logout()" aria-label="Se déconnecter">
+        <app-lucide-icon name="log-out" [size]="16"></app-lucide-icon>
+        <span class="d-none d-sm-inline">Déconnexion</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Logout confirmation modal -->
+<div
+  class="logout-overlay"
+  *ngIf="showLogoutConfirm"
+  @backdropFade
+  (click)="cancelLogout()"
+  role="presentation">
+  <div
+    class="logout-modal"
+    @modalPop
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="logout-modal-title"
+    aria-describedby="logout-modal-desc">
+    <div class="logout-modal-pattern" aria-hidden="true"></div>
+
+    <div class="logout-modal-icon">
+      <app-lucide-icon name="log-out" [size]="26"></app-lucide-icon>
+    </div>
+
+    <h3 id="logout-modal-title" class="logout-modal-title">Confirmer la déconnexion</h3>
+    <p id="logout-modal-desc" class="logout-modal-text">
+      Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à nouveau à votre espace.
+    </p>
+
+    <div class="logout-modal-actions">
+      <button type="button" class="logout-btn logout-btn-cancel" (click)="cancelLogout()">
+        Annuler
+      </button>
+      <button type="button" class="logout-btn logout-btn-confirm" (click)="confirmLogout()">
+        <app-lucide-icon name="check-circle" [size]="16"></app-lucide-icon>
+        Se déconnecter
+      </button>
+    </div>
+  </div>
+</div>

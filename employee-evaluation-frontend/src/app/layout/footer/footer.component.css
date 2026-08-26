@@ -1,0 +1,27 @@
+.atb-footer {
+  margin-left: 260px;
+  background: var(--atb-card);
+  border-top: 1px solid var(--atb-border);
+  padding: 0 1.5rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  color: var(--atb-text-secondary);
+  font-size: 0.85rem;
+  transition: background var(--atb-transition), border-color var(--atb-transition), color var(--atb-transition);
+}
+
+.footer-version {
+  font-size: 0.7rem;
+  background: var(--atb-bg);
+  padding: 2px 12px;
+  border-radius: 12px;
+  color: var(--atb-text-secondary);
+  transition: background var(--atb-transition), color var(--atb-transition);
+}
+
+@media (max-width: 768px) {
+  .atb-footer {
+    margin-left: 0;
+  }
+}

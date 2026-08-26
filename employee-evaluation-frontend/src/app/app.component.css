@@ -1,0 +1,13 @@
+main {
+  margin-left: 250px;
+  min-height: calc(100vh - 56px - 56px);
+  background-color: var(--atb-bg);
+  color: var(--atb-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  main {
+    margin-left: 0;
+  }
+}
